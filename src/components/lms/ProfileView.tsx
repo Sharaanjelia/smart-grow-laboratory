@@ -1,0 +1,941 @@
+import React, { useState } from 'react';
+import { User } from '../../types';
+import { 
+  User as UserIcon, 
+  Mail, 
+  Phone, 
+  MapPin, 
+  Building2, 
+  BookOpen, 
+  Calendar, 
+  Github, 
+  Linkedin, 
+  Globe, 
+  Edit3, 
+  Key, 
+  Upload, 
+  CheckCircle2, 
+  Sparkles, 
+  Activity, 
+  ShieldCheck, 
+  Clock, 
+  Laptop, 
+  Award,
+  X,
+  FileText,
+  BarChart3,
+  Users,
+  Briefcase,
+  Layers,
+  Star,
+  ExternalLink,
+  ChevronRight,
+  GraduationCap
+} from 'lucide-react';
+
+interface ProfileViewProps {
+  currentUser: User;
+  onUpdateProfile?: (updatedUser: User) => void;
+  darkMode?: boolean;
+}
+
+export default function ProfileView({ currentUser, onUpdateProfile, darkMode = false }: ProfileViewProps) {
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  const isDirector = currentUser.role === 'director';
+  const isAssistant = currentUser.role === 'assistant';
+
+  // Editable Profile Form State
+  const [name, setName] = useState(currentUser.name || '');
+  const [studentId, setStudentId] = useState(currentUser.studentId || (isDirector ? 'NIP. 197804122005012002' : '1301210042'));
+  const [institution, setInstitution] = useState(currentUser.institution || 'Telkom University');
+  const [major, setMajor] = useState(currentUser.major || (isDirector ? 'Teknik Komputer & Sistem Cerdas' : 'Informatika'));
+  const [semester, setSemester] = useState(currentUser.semester || (isDirector ? 'Guru Besar / Profesor' : 'Semester 7'));
+  const [phone, setPhone] = useState(currentUser.phone || '+62 812-3456-7890');
+  const [address, setAddress] = useState(currentUser.address || 'Gedung FIT Lt. 3, Lab Smart Grow, Telkom University');
+  const [bio, setBio] = useState(
+    currentUser.bio || (isDirector 
+      ? 'Kepala Laboratorium Smart Grow & Profesor Riset bidang Wireless Communications, IoT Sensors, & Precision Smart Agriculture. Berfokus pada penderesan inovasi pertanian pintar berbasis AI & Container Hydroponics.'
+      : 'Pengembang IoT & Sistem Pertanian Cerdas Telkom University.')
+  );
+  const [github, setGithub] = useState(currentUser.github || 'https://github.com/smartgrowlab');
+  const [linkedin, setLinkedin] = useState(currentUser.linkedin || 'https://linkedin.com/in/indrarini-dyah-irawati');
+  const [portfolio, setPortfolio] = useState(currentUser.portfolio || 'https://smartgrowlab.telkomuniversity.ac.id');
+  const [avatarUrl, setAvatarUrl] = useState(currentUser.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300');
+
+  // Password Form State
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(''), 3500);
+  };
+
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    const updated: User = {
+      ...currentUser,
+      name,
+      studentId,
+      institution,
+      major,
+      semester,
+      phone,
+      address,
+      bio,
+      github,
+      linkedin,
+      portfolio,
+      avatar: avatarUrl
+    };
+    if (onUpdateProfile) onUpdateProfile(updated);
+    setEditModalOpen(false);
+    showToast('Profil Anda berhasil diperbarui!');
+  };
+
+  const handleChangePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      alert('Kata sandi baru dan konfirmasi tidak cocok!');
+      return;
+    }
+    setPasswordModalOpen(false);
+    setOldPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    showToast('Kata sandi berhasil diperbarui!');
+  };
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setAvatarUrl(url);
+      showToast('Foto profil baru berhasil diunggah!');
+    }
+  };
+
+  // ==========================================
+  // RENDER DIRECTOR SPECIALIZED EXECUTIVE VIEW
+  // ==========================================
+  if (isDirector) {
+    return (
+      <div className="space-y-6 animate-fade-in text-slate-800 dark:text-slate-100">
+        
+        {/* Toast Notification */}
+        {toastMessage && (
+          <div className="fixed top-6 right-6 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 animate-bounce">
+            <CheckCircle2 className="h-5 w-5" />
+            <span className="text-xs font-semibold">{toastMessage}</span>
+          </div>
+        )}
+
+        {/* EXECUTIVE DIRECTOR HERO CARD */}
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-slate-900 via-teal-950 to-emerald-950 text-white p-6 sm:p-8 shadow-2xl border border-emerald-500/30">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-end justify-between gap-6">
+            
+            <div className="flex flex-col sm:flex-row items-center sm:items-start md:items-center gap-6 text-center sm:text-left">
+              {/* Large Director Picture */}
+              <div className="relative group shrink-0">
+                <img 
+                  src={avatarUrl} 
+                  alt={currentUser.name}
+                  className="w-32 h-32 sm:w-36 sm:h-36 rounded-3xl object-cover border-4 border-amber-400/50 shadow-2xl transition-transform group-hover:scale-105"
+                />
+                <label className="absolute inset-0 bg-black/50 rounded-3xl opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-xs font-medium cursor-pointer transition-opacity backdrop-blur-xs">
+                  <Upload className="h-6 w-6 mb-1 text-emerald-400" />
+                  <span>Ganti Foto</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                </label>
+                <span className="absolute -bottom-2 -right-2 bg-amber-500 text-slate-950 p-1.5 rounded-full ring-4 ring-slate-900" title="Verifikasi Kepala Laboratorium">
+                  <Award className="h-4 w-4" />
+                </span>
+              </div>
+
+              {/* Director Info Header */}
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold border border-amber-400/30">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                  <span>Direktur Utama & Kepala Laboratorium Smart Grow</span>
+                </div>
+                
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                  {currentUser.name}
+                </h1>
+                
+                <p className="text-xs sm:text-sm text-emerald-200 font-medium">
+                  Profesor Teknik Komputer & Lead Principal Investigator (PI) Smart Agriculture Telkom University
+                </p>
+                
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs text-slate-300 pt-1 font-mono">
+                  <span className="flex items-center gap-1.5 text-emerald-300">
+                    <GraduationCap className="h-4 w-4 text-emerald-400" />
+                    <span>{studentId}</span>
+                  </span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1.5 text-blue-300">
+                    <Building2 className="h-4 w-4 text-blue-400" />
+                    <span>NIDN. 0412047801</span>
+                  </span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1.5 text-purple-300">
+                    <Award className="h-4 w-4 text-purple-400" />
+                    <span>Guru Besar / Profesor</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Executive Actions */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                onClick={() => setEditModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md transition-all cursor-pointer"
+              >
+                <Edit3 className="h-4 w-4" />
+                <span>Edit Profil Direktur</span>
+              </button>
+              <button
+                onClick={() => setPasswordModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 backdrop-blur-md transition-all cursor-pointer"
+              >
+                <Key className="h-4 w-4 text-emerald-300" />
+                <span>Ubah Password</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        {/* EXECUTIVE METRICS & KPI HIGHLIGHTS */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">Total Hibah & Dana Riset</span>
+            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">Rp 1.85 Miliar+</p>
+            <p className="text-[10px] text-slate-400">Kedaireka, Dikti & Industri 2024-2026</p>
+          </div>
+
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 block">Publikasi Scopus & Jurnal</span>
+            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">42 Paper</p>
+            <p className="text-[10px] text-slate-400">Q1 & Q2 Smart Precision Farming</p>
+          </div>
+
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 block">Paten & HKI Terdaftar</span>
+            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">6 Hak Cipta</p>
+            <p className="text-[10px] text-slate-400">Sistem Algoritma & Hardware</p>
+          </div>
+
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">Mahasiswa Dalam Bimbingan</span>
+            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">38 Mahasiswa</p>
+            <p className="text-[10px] text-slate-400">Magang, Riset & Tugas Akhir</p>
+          </div>
+        </div>
+
+        {/* TWO COLUMN DETAILS FOR DIRECTOR */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* LEFT COLUMN: EXECUTIVE CONTACT & ACADEMIC APPOINTMENTS */}
+          <div className="space-y-6">
+            
+            {/* Executive Office Info */}
+            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-4">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-3">
+                <Building2 className="h-4 w-4 text-[#2E7D32]" />
+                <span>Informasi Kantor & Jabatan Eksekutif</span>
+              </h3>
+
+              <div className="space-y-3 text-xs text-slate-600 dark:text-slate-300">
+                <div>
+                  <p className="text-[10px] text-slate-400 font-medium">Jabatan Akademik & Fungsional</p>
+                  <p className="font-extrabold text-slate-800 dark:text-slate-100">Guru Besar / Profesor Teknik Komputer</p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] text-slate-400 font-medium">Kelompok Keahlian (Research Group)</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">Wireless Communication & Intelligent Systems (WCIS)</p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] text-slate-400 font-medium">Fakultas & Perguruan Tinggi</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">Fakultas Teknik Elektro, Telkom University</p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] text-slate-400 font-medium">Alamat Ruang Kerja Kantor</p>
+                  <p className="font-medium text-slate-700 dark:text-slate-300">Gedung FIT Lt. 3, Ruang R.304 / Smart Grow Laboratory</p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] text-slate-400 font-medium">Email Kedinasan Direktur</p>
+                  <p className="font-mono font-bold text-[#2E7D32]">indrarini@telkomuniversity.ac.id</p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] text-slate-400 font-medium">Telepon Sekretariat / Lab</p>
+                  <p className="font-mono font-semibold text-slate-800 dark:text-slate-200">+62 22 7564108 ext. 304</p>
+                </div>
+              </div>
+
+              <hr className="border-slate-100 dark:border-slate-700" />
+
+              {/* External Profiles */}
+              <div className="space-y-2">
+                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Profil Akademik & Riset</p>
+                
+                <div className="flex flex-col gap-2">
+                  <a href={portfolio} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors">
+                    <span className="flex items-center gap-2">
+                      <Globe className="h-4 w-4 text-emerald-600" />
+                      <span>Portal Smart Grow Laboratory</span>
+                    </span>
+                    <ExternalLink className="h-3.5 w-3.5 text-emerald-600" />
+                  </a>
+
+                  <a href={linkedin} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors">
+                    <span className="flex items-center gap-2">
+                      <Linkedin className="h-4 w-4 text-blue-600" />
+                      <span>LinkedIn Prof. Indrarini</span>
+                    </span>
+                    <ExternalLink className="h-3.5 w-3.5 text-blue-600" />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Strategic Partners & Grants Card */}
+            <div className="p-6 rounded-3xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/80 space-y-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#2E7D32] dark:text-emerald-400">
+                <Briefcase className="h-4 w-4" />
+                <span>Mitra Riset Strategis Direktur</span>
+              </div>
+              
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-slate-800 border border-emerald-200/60 dark:border-emerald-800/60">
+                  <span className="font-bold text-slate-800 dark:text-slate-200">Kementerian Pertanian RI</span>
+                  <span className="text-[10px] text-emerald-600 font-bold">Hibah Smart Farming</span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-slate-800 border border-emerald-200/60 dark:border-emerald-800/60">
+                  <span className="font-bold text-slate-800 dark:text-slate-200">PT Telkom Indonesia Tbk</span>
+                  <span className="text-[10px] text-blue-600 font-bold">IoT Infrastructure</span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-slate-800 border border-emerald-200/60 dark:border-emerald-800/60">
+                  <span className="font-bold text-slate-800 dark:text-slate-200">IPB University</span>
+                  <span className="text-[10px] text-purple-600 font-bold">Riset Agronomi AI</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* RIGHT TWO COLUMNS: VISION, ADVISORY STRUCTURE & PUBLICATIONS */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* Leadership Vision Card */}
+            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-4">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-amber-500" />
+                <span>Visi Kepemimpinan & Pengarahan Riset</span>
+              </h3>
+
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200/60 dark:border-slate-700/60 text-xs leading-relaxed text-slate-700 dark:text-slate-200 space-y-2">
+                <p className="font-medium italic">
+                  "{bio}"
+                </p>
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-700 flex flex-wrap gap-2">
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-bold text-[11px]">
+                    Smart Agriculture
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 font-bold text-[11px]">
+                    RS485 Sensor Networks
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 font-bold text-[11px]">
+                    Container Hydroponics AI
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-bold text-[11px]">
+                    Computer Vision YOLO
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Laboratory Advisory Structure */}
+            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <Users className="h-4 w-4 text-[#2E7D32]" />
+                  <span>Struktur Tim Asisten & Supervisi Laboratorium</span>
+                </h3>
+                <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950 px-2.5 py-1 rounded-full border border-emerald-300">
+                  Di Bawah Naungan Direktur
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-emerald-100 text-[#2E7D32] font-bold shrink-0">
+                    <UserIcon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-800 dark:text-slate-100">Budi Santoso, S.T., M.T.</h4>
+                    <p className="text-[10px] text-slate-400">Koordinator Asisten Riset Hardware</p>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-blue-100 text-blue-700 font-bold shrink-0">
+                    <UserIcon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-800 dark:text-slate-100">Siti Rahmawati, S.T.</h4>
+                    <p className="text-[10px] text-slate-400">Asisten Riset Firmware & Cloud IoT</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Direct Governance & Approval Logs */}
+            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-4">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <Activity className="h-4 w-4 text-[#2E7D32]" />
+                <span>Riwayat Pengesahan & Keputusan Direktur Terakhir</span>
+              </h3>
+
+              <div className="space-y-3 text-xs">
+                {[
+                  { title: 'Menyetujui Penambahan 2 Modul Container Farm HYCOSMARTS', date: '22 Juli 2026 10:15 WIB', type: 'Proyek Riset' },
+                  { title: 'Mengesahkan Sertifikat Magang 8 Mahasiswa Batch I 2026', date: '20 Juli 2026 14:30 WIB', type: 'Akademik' },
+                  { title: 'Menyetujui Anggaran Pengadaan Sensor RS485 Modbus NPK', date: '18 Juli 2026 09:00 WIB', type: 'Anggaran' }
+                ].map((log, idx) => (
+                  <div key={idx} className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-slate-800 dark:text-slate-100">{log.title}</h4>
+                      <p className="text-[10px] text-slate-400 font-mono mt-0.5">{log.date}</p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-[#2E7D32] font-bold text-[10px]">
+                      {log.type}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* MODAL: EDIT PROFILE FOR DIRECTOR */}
+        {editModalOpen && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl border border-slate-100 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Edit Profil Direktur Utama</h3>
+                <button onClick={() => setEditModalOpen(false)} className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+                  <X className="h-5 w-5 text-slate-400" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Nama Lengkap & Gelar</label>
+                    <input type="text" value={name} onChange={e => setName(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                  </div>
+                  <div>
+                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">NIP Direktur</label>
+                    <input type="text" value={studentId} onChange={e => setStudentId(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Bidang Kepakaran</label>
+                    <input type="text" value={major} onChange={e => setMajor(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                  </div>
+                  <div>
+                    <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Jabatan Fungsional</label>
+                    <input type="text" value={semester} onChange={e => setSemester(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Alamat Ruang Kerja</label>
+                  <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                </div>
+
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Visi Kepemimpinan / Biografi Singkat</label>
+                  <textarea rows={3} value={bio} onChange={e => setBio(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button type="button" onClick={() => setEditModalOpen(false)} className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 font-semibold text-slate-600 dark:text-slate-300">Batal</button>
+                  <button type="submit" className="px-5 py-2 rounded-xl bg-[#2E7D32] hover:bg-emerald-700 text-white font-semibold shadow-md">Simpan Perubahan</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: CHANGE PASSWORD */}
+        {passwordModalOpen && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100 dark:border-slate-700">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Ganti Kata Sandi Direktur</h3>
+                <button onClick={() => setPasswordModalOpen(false)} className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+                  <X className="h-5 w-5 text-slate-400" />
+                </button>
+              </div>
+
+              <form onSubmit={handleChangePassword} className="space-y-3 text-xs">
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Kata Sandi Lama</label>
+                  <input type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Kata Sandi Baru</label>
+                  <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Konfirmasi Kata Sandi Baru</label>
+                  <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button type="button" onClick={() => setPasswordModalOpen(false)} className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 font-semibold text-slate-600 dark:text-slate-300">Batal</button>
+                  <button type="submit" className="px-5 py-2 rounded-xl bg-[#2E7D32] hover:bg-emerald-700 text-white font-semibold shadow-md">Perbarui Password</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+      </div>
+    );
+  }
+
+  // ==========================================
+  // RENDER STANDARD PROFILE VIEW (STUDENT & ASSISTANT)
+  // ==========================================
+  return (
+    <div className="space-y-6 animate-fade-in text-slate-800 dark:text-slate-100">
+      
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-6 right-6 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 animate-bounce">
+          <CheckCircle2 className="h-5 w-5" />
+          <span className="text-xs font-semibold">{toastMessage}</span>
+        </div>
+      )}
+
+      {/* HEADER HERO CARD */}
+      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-emerald-800 via-teal-800 to-slate-900 text-white p-6 sm:p-8 shadow-xl">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-center md:items-end gap-6">
+          
+          {/* Profile Picture */}
+          <div className="relative group">
+            <img 
+              src={avatarUrl} 
+              alt={currentUser.name}
+              className="w-32 h-32 sm:w-36 sm:h-36 rounded-2xl object-cover border-4 border-white/20 shadow-2xl transition-transform group-hover:scale-105"
+            />
+            <label className="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-xs font-medium cursor-pointer transition-opacity backdrop-blur-xs">
+              <Upload className="h-6 w-6 mb-1 text-emerald-400" />
+              <span>Ganti Foto</span>
+              <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+            </label>
+            <span className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-1.5 rounded-full ring-4 ring-slate-900" title="Akun Terverifikasi">
+              <ShieldCheck className="h-4 w-4" />
+            </span>
+          </div>
+
+          {/* User Basic Info */}
+          <div className="flex-1 text-center md:text-left space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-400/30">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>{isAssistant ? 'Asisten Laboratorium' : 'Mahasiswa Magang Riset'}</span>
+            </div>
+            
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{currentUser.name}</h1>
+            <p className="text-sm text-emerald-100/90 font-medium">{currentUser.title || 'Peneliti Smart Grow Laboratory'}</p>
+            
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs text-slate-300 pt-1">
+              <span className="flex items-center gap-1.5">
+                <BookOpen className="h-3.5 w-3.5 text-emerald-400" />
+                <span>NIM/NIP: {studentId}</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Building2 className="h-3.5 w-3.5 text-emerald-400" />
+                <span>{institution}</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Bergabung: {currentUser.joinedDate}</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setEditModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold shadow-md transition-all cursor-pointer"
+            >
+              <Edit3 className="h-4 w-4" />
+              <span>Edit Profil</span>
+            </button>
+            <button
+              onClick={() => setPasswordModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 backdrop-blur-md transition-all cursor-pointer"
+            >
+              <Key className="h-4 w-4 text-emerald-300" />
+              <span>Ganti Password</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* TWO COLUMN GRID DETAILS */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* LEFT COLUMN: CONTACT & SOCIALS */}
+        <div className="space-y-6">
+          
+          {/* Contact Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-4">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <UserIcon className="h-4 w-4 text-[#2E7D32]" />
+              <span>Informasi Kontak & Akademik</span>
+            </h3>
+
+            <div className="space-y-3 text-xs text-slate-600 dark:text-slate-300">
+              <div className="flex items-center gap-3">
+                <Mail className="h-4 w-4 text-slate-400 shrink-0" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-medium">Email Resmi</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">{currentUser.email}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Phone className="h-4 w-4 text-slate-400 shrink-0" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-medium">Nomor WhatsApp / HP</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">{phone}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <BookOpen className="h-4 w-4 text-slate-400 shrink-0" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-medium">Program Studi / Semester</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">{major} ({semester})</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <MapPin className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-medium">Alamat Domisili</p>
+                  <p className="font-medium text-slate-700 dark:text-slate-300">{address}</p>
+                </div>
+              </div>
+            </div>
+
+            <hr className="border-slate-100 dark:border-slate-700" />
+
+            {/* Social Links */}
+            <div className="space-y-2">
+              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Portofolio & Media</p>
+              
+              <div className="flex flex-col gap-2">
+                <a href={github} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors">
+                  <span className="flex items-center gap-2">
+                    <Github className="h-4 w-4 text-slate-800 dark:text-slate-100" />
+                    <span>GitHub Repository</span>
+                  </span>
+                  <span className="text-[10px] text-emerald-600 font-bold">Kunjungi &rarr;</span>
+                </a>
+
+                <a href={linkedin} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors">
+                  <span className="flex items-center gap-2">
+                    <Linkedin className="h-4 w-4 text-blue-600" />
+                    <span>LinkedIn Profile</span>
+                  </span>
+                  <span className="text-[10px] text-blue-600 font-bold">Kunjungi &rarr;</span>
+                </a>
+
+                <a href={portfolio} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors">
+                  <span className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-emerald-600" />
+                    <span>Website Portofolio</span>
+                  </span>
+                  <span className="text-[10px] text-emerald-600 font-bold">Kunjungi &rarr;</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Supervisor Info Card */}
+          <div className="bg-emerald-50/70 dark:bg-emerald-950/40 rounded-3xl p-6 border border-emerald-200/80 dark:border-emerald-800/80 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#2E7D32] dark:text-emerald-400">
+              <Award className="h-4 w-4" />
+              <span>Pembimbing & Status Riset</span>
+            </div>
+            
+            <div className="space-y-2 text-xs">
+              <div>
+                <p className="text-[10px] text-slate-500 font-medium">Pembimbing Utama Laboratorium</p>
+                <p className="font-bold text-slate-800 dark:text-slate-100">Prof. Dr. Indrarini Dyah Irawati, S.T., M.T.</p>
+              </div>
+
+              <div>
+                <p className="text-[10px] text-slate-500 font-medium">Status Keanggotaan</p>
+                <span className="inline-block mt-0.5 px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-semibold">
+                  {currentUser.internshipStatus || 'Peneliti Aktif Smart Grow Lab'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT TWO COLUMNS: BIO, SKILLS & LOGS */}
+        <div className="lg:col-span-2 space-y-6">
+          
+          {/* Bio Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-5">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-2">Biografi Singkat</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-700/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
+                {bio}
+              </p>
+            </div>
+
+            {/* Skills & Tech Stack */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              
+              <div className="space-y-2">
+                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Keahlian Utama</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(currentUser.skillsList || ['IoT Sensors', 'ESP32 C++', 'Modbus RS485', 'React.js', 'Kalibrasi EC/pH']).map((sk, i) => (
+                    <span key={i} className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-[#2E7D32] dark:text-emerald-300 text-[11px] font-semibold border border-emerald-200/80 dark:border-emerald-800">
+                      {sk}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Bahasa Pemrograman</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(currentUser.languages || ['C++', 'Python', 'TypeScript', 'SQL']).map((lang, i) => (
+                    <span key={i} className="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-[11px] font-semibold border border-blue-200 dark:border-blue-800">
+                      {lang}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Framework & Tools</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(currentUser.frameworks || ['React.js', 'TailwindCSS', 'PyTorch', 'TensorRT', 'Grafana']).map((fw, i) => (
+                    <span key={i} className="px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 text-[11px] font-semibold border border-purple-200 dark:border-purple-800">
+                      {fw}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Activity History Timeline */}
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <Activity className="h-4 w-4 text-[#2E7D32]" />
+                <span>Riwayat Aktivitas Terakhir</span>
+              </h3>
+              <span className="text-[11px] text-slate-400">Terorganisir Otomatis</span>
+            </div>
+
+            <div className="space-y-3">
+              {(currentUser.activityHistory || [
+                { id: '1', action: 'Submit Progress Tugas #2', date: '22 Juli 2026 09:30 WIB', details: 'Mengirimkan pembaruan model YOLOv8 TensorRT ke Jetson Orin Nano.' },
+                { id: '2', action: 'Presensi Masuk Tepat Waktu', date: '22 Juli 2026 08:05 WIB', details: 'Check-in di Lab Smart Grow (Lokasi: Gedung FIT Lt. 3)' },
+                { id: '3', action: 'Pembaruan Dokumen Riset', date: '21 Juli 2026 14:10 WIB', details: 'Mengunggah file skematik PCB Dosing Pump ke proyek NFT Hydroponics.' }
+              ]).map(act => (
+                <div key={act.id} className="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-100 dark:border-slate-700">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-[#2E7D32] dark:text-emerald-300 flex items-center justify-center shrink-0 mt-0.5">
+                    <CheckCircle2 className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1 text-xs">
+                    <div className="flex items-center justify-between font-bold text-slate-800 dark:text-slate-200">
+                      <span>{act.action}</span>
+                      <span className="text-[10px] text-slate-400 font-normal">{act.date}</span>
+                    </div>
+                    <p className="text-slate-500 dark:text-slate-400 mt-1">{act.details}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Login History */}
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-4">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <Laptop className="h-4 w-4 text-[#2E7D32]" />
+              <span>Riwayat Login & Keamanan Perangkat</span>
+            </h3>
+
+            <div className="space-y-2">
+              {(currentUser.loginHistory || [
+                { id: 'l1', ip: '103.14.22.82', device: 'Windows 11 PC • Chrome 126', date: '22 Juli 2026 08:02 WIB' },
+                { id: 'l2', ip: '103.14.22.82', device: 'macOS Sonoma • Safari 17', date: '21 Juli 2026 08:00 WIB' }
+              ]).map(log => (
+                <div key={log.id} className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-700/30 text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <Clock className="h-3.5 w-3.5 text-slate-400" />
+                    <div>
+                      <p className="font-semibold text-slate-700 dark:text-slate-200">{log.device}</p>
+                      <p className="text-[10px] text-slate-400">IP: {log.ip}</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+                    {log.date}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* MODAL: EDIT PROFILE */}
+      {editModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl border border-slate-100 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Edit Profil Pengguna</h3>
+              <button onClick={() => setEditModalOpen(false)} className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+                <X className="h-5 w-5 text-slate-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Nama Lengkap</label>
+                  <input type="text" value={name} onChange={e => setName(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">NIM / NIP</label>
+                  <input type="text" value={studentId} onChange={e => setStudentId(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Program Studi</label>
+                  <input type="text" value={major} onChange={e => setMajor(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Semester / Tingkat</label>
+                  <input type="text" value={semester} onChange={e => setSemester(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Nomor HP / WhatsApp</label>
+                  <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Universitas</label>
+                  <input type="text" value={institution} onChange={e => setInstitution(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Alamat Domisili</label>
+                <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+              </div>
+
+              <div>
+                <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Biografi Singkat</label>
+                <textarea rows={3} value={bio} onChange={e => setBio(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Link GitHub</label>
+                  <input type="text" value={github} onChange={e => setGithub(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Link LinkedIn</label>
+                  <input type="text" value={linkedin} onChange={e => setLinkedin(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                </div>
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Link Portofolio</label>
+                  <input type="text" value={portfolio} onChange={e => setPortfolio(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setEditModalOpen(false)} className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 font-semibold text-slate-600 dark:text-slate-300">Batal</button>
+                <button type="submit" className="px-5 py-2 rounded-xl bg-[#2E7D32] hover:bg-emerald-700 text-white font-semibold shadow-md">Simpan Perubahan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: CHANGE PASSWORD */}
+      {passwordModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100 dark:border-slate-700">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Ganti Kata Sandi</h3>
+              <button onClick={() => setPasswordModalOpen(false)} className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+                <X className="h-5 w-5 text-slate-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handleChangePassword} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Kata Sandi Lama</label>
+                <input type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+              </div>
+              <div>
+                <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Kata Sandi Baru</label>
+                <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+              </div>
+              <div>
+                <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Konfirmasi Kata Sandi Baru</label>
+                <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setPasswordModalOpen(false)} className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 font-semibold text-slate-600 dark:text-slate-300">Batal</button>
+                <button type="submit" className="px-5 py-2 rounded-xl bg-[#2E7D32] hover:bg-emerald-700 text-white font-semibold shadow-md">Perbarui Password</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
+

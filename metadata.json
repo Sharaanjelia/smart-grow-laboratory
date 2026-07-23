@@ -1,0 +1,6 @@
+{
+  "name": "Smart Grow Laboratory",
+  "description": "Sleek, futuristic, Gen-Z styled multi-page web platform for an integrated smart agriculture research hub.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
