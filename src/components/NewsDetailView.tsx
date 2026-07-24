@@ -18,6 +18,9 @@ import {
 import { NewsItem, Comment } from '../types';
 import SmartHydroponicsShowcase from './SmartHydroponicsShowcase';
 import LuminetShowcase from './LuminetShowcase';
+import HycosmartsShowcase from './HycosmartsShowcase';
+import SimonaShowcase from './SimonaShowcase';
+import FlocifyShowcase from './FlocifyShowcase';
 
 interface NewsDetailViewProps {
   item: NewsItem;
@@ -27,6 +30,54 @@ interface NewsDetailViewProps {
 }
 
 export default function NewsDetailView({ item, comments, onBack, onAddComment }: NewsDetailViewProps) {
+  // If it is FLOCIFY article, render dedicated FLOCIFY showcase!
+  if (item.id === 'flocify-biofloc-ai' || item.id === 'flocify') {
+    return (
+      <FlocifyShowcase 
+        item={item} 
+        comments={comments} 
+        onBack={onBack} 
+        onAddComment={onAddComment} 
+      />
+    );
+  }
+
+  // If it is LUMINET article, render dedicated LUMINET showcase!
+  if (item.id === 'luminet-smart-lighting' || item.id === 'luminet') {
+    return (
+      <LuminetShowcase 
+        item={item} 
+        comments={comments} 
+        onBack={onBack} 
+        onAddComment={onAddComment} 
+      />
+    );
+  }
+
+  // If it is SIMONA article, render dedicated SIMONA showcase!
+  if (item.id === 'simona-aquaponics' || item.id === 'simona') {
+    return (
+      <SimonaShowcase 
+        item={item} 
+        comments={comments} 
+        onBack={onBack} 
+        onAddComment={onAddComment} 
+      />
+    );
+  }
+
+  // If it is HYCOSMARTS article, render dedicated HYCOSMARTS showcase!
+  if (item.id === 'hycosmarts-container' || item.id === 'hycosmarts') {
+    return (
+      <HycosmartsShowcase 
+        item={item} 
+        comments={comments} 
+        onBack={onBack} 
+        onAddComment={onAddComment} 
+      />
+    );
+  }
+
   // If it is the smart hydroponics article, render our high-fidelity premium showcase!
   if (item.id === 'smart-hydroponics') {
     return (

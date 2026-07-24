@@ -91,6 +91,34 @@ export default function TeamAvatar({ id, name, className = '' }: TeamAvatarProps
     );
   }
 
+  // Nasywa Zauja Noor - IoT Specialist (Real Photo - Cropped ceiling for clear face focus)
+  if (id === 'member-nasywa' || name.toLowerCase().includes('nasywa')) {
+    return (
+      <div className={`relative overflow-hidden bg-slate-900 border border-teal-800 shadow-inner flex items-center justify-center ${className}`}>
+        <img 
+          src="/images/team/nasywa-zauja-noor.jpg" 
+          alt={name} 
+          className="w-full h-full object-cover object-[center_55%] scale-110" 
+        />
+        <div className="absolute bottom-2 left-2 right-2 bg-teal-950/85 backdrop-blur-md text-teal-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-teal-800">
+          IOT SPECIALIST
+        </div>
+      </div>
+    );
+  }
+
+  // Divia Nuralika Namira - IoT Specialist (Real Photo)
+  if (id === 'member-divia' || name.toLowerCase().includes('divia')) {
+    return (
+      <div className={`relative overflow-hidden bg-slate-900 border border-blue-900 shadow-inner flex items-center justify-center ${className}`}>
+        <img src="/images/team/divia-nuralika-namira.jpg" alt={name} className="w-full h-full object-cover object-top" />
+        <div className="absolute bottom-2 left-2 right-2 bg-blue-950/85 backdrop-blur-md text-sky-300 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-blue-800">
+          IOT SPECIALIST
+        </div>
+      </div>
+    );
+  }
+
   // Arimbi Dwi - Lead Hardware Engineer (Real Photo - Black jacket with ARIMBI patch)
   if (id === 'member-arimbi' || name.toLowerCase().includes('arimbi')) {
     return (

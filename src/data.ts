@@ -2,74 +2,106 @@ import { NewsItem, ProjectItem, TeamMember } from './types';
 
 export const newsData: NewsItem[] = [
   {
-    id: 'luminet-btp',
-    title: 'Luminet: XBee-Based Public Street Lighting Management Intelligence System - BTP Grant',
-    category: 'IoT',
-    date: 'Juni 2025',
-    image: 'https://images.unsplash.com/photo-1509395062183-67c5ad6faff9?auto=format&fit=crop&w=800&q=80', // High-tech street / IoT theme
-    excerpt: 'The implementation of efficient and adaptable public street lighting (PJU) is a critical requirement for the development of smart cities. Funded by the BTP Grant, this project integrates intelligent node mesh network control.',
-    content: `Efficient public street lighting (PJU) is a fundamental pillar of smart city infrastructure. Supported by the Bandung Techno Park (BTP) Grant, the Luminet project introduces an advanced intelligent management system powered by XBee-based mesh networking.
+    id: 'hycosmarts-container',
+    title: 'HYCOSMARTS: Smart Container-Based Intelligent Farming System',
+    category: 'Container Hydroponics',
+    date: 'Juli 2026',
+    image: '/images/hycosmarts/hycosmarts-3.png',
+    excerpt: 'HYCOSMARTS is a smart container-based intelligent farming system designed to manage indoor hydroponic farming automatically, efficiently, and sustainably with pH, TDS, DO, EC, and ultrasonic sensors.',
+    content: `HYCOSMARTS is a smart container-based intelligent farming system designed to manage indoor hydroponic farming automatically, efficiently, and sustainably.
 
-The system permits each lighting node to dynamically adapt its brightness based on ambient light levels, vehicular traffic, and specific scheduling rules. By utilizing peer-to-peer communication over XBee modules, the streetlights form a robust, self-healing network that reports energy consumption metrics, lamp status, and structural failures back to a central system dashboard in real time.
+The system is equipped with various important sensors such as pH, TDS, DO, EC, and ultrasonic sensors to monitor water quality, nutrient availability, and growing conditions in real time. With artificial intelligence support and integration with web-based dashboards and mobile apps, HYCOSMARTS can precisely regulate plant needs and provide early notifications of potential crop failures.
+
+In addition to being energy-efficient and self-sufficient, the system is also suitable for implementation in 3T areas (remote, frontier, and outer regions) as an innovative solution to enhance agricultural productivity and food self-sufficiency through technology.
+
+### Key Innovations:
+* **Multi-Sensor Real-Time Telemetry:** pH, TDS, Dissolved Oxygen (DO), Electrical Conductivity (EC), and Ultrasonic water level sensors.
+* **Edge AI & Failure Early Alert System:** Predictive AI models that continuously evaluate growth conditions and alert operators via Web and Mobile Apps before crop failures happen.
+* **Suitable for 3T Regions:** Modular, self-sufficient shipping container architecture designed for remote, frontier, and outer regions.`,
+    readTime: '5 min',
+    comments: [
+      {
+        id: 'c_hyco1',
+        name: 'Dr. Ahmad Rizal',
+        email: 'rizal@telkomuniversity.ac.id',
+        content: 'Inovasi HYCOSMARTS luar biasa! Penggunaan kontainer kargo yang mandiri dan terintegrasi AI sangat berpotensi meningkatkan ketahanan pangan di wilayah 3T.',
+        timestamp: '2026-07-22 14:20'
+      }
+    ]
+  },
+  {
+    id: 'simona-aquaponics',
+    title: 'SIMONA: Aquaponics Monitoring System',
+    category: 'Aquaponics IoT',
+    date: 'Juli 2026',
+    image: '/images/simona/simona-control-box-farm.jpg',
+    excerpt: 'SIMONA (Aquaponics Monitoring System) is an integrated smart system designed to support sustainable farming by combining aquaculture and hydroponics with IoT sensors and remote access.',
+    content: `SIMONA (Aquaponics Monitoring System) is an integrated smart system designed to support sustainable farming by combining aquaculture and hydroponics in a mutually beneficial ecosystem.
+
+It utilizes a range of sensors to monitor key environmental parameters such as water level, pH, temperature, and Total Dissolved Solids (TDS), ensuring optimal conditions for both fish and plant growth. Powered by microcontrollers like Arduino or Raspberry Pi, SIMONA automates essential functions and displays real-time data through a user-friendly interface.
+
+With IoT connectivity and remote access via a responsive web platform, users can monitor and control the system anytime, anywhere. SIMONA enhances productivity, reduces manual workload, enables early problem detection, and promotes efficient, technology-driven aquaponic farming.
 
 ### Key Technological Features:
-* **XBee Mesh Networking:** Ensures resilient, low-latency node-to-node telemetry across dense urban sectors.
-* **Intelligent Dimming Engine:** Saves up to 45% more energy compared to conventional static LED timers by analyzing movement profiles.
-* **Predictive Maintenance:** Automates localized diagnosis, allowing the central municipal dispatch to immediately replace failing luminaires before citizen complaints occur.`,
+* **Multi-Sensor Real-Time Telemetry:** Water level (Ultrasonic), pH, Temperature, and TDS sensors.
+* **Arduino / Raspberry Pi Microcontroller Integration:** Automated actuation for pumps, aerators, and automated feeders.
+* **Blynk & Web Remote Access:** Seamless mobile app connectivity and responsive web dashboard for remote control anywhere.`,
     readTime: '4 min',
     comments: [
       {
-        id: 'c1',
-        name: 'Rian Kurnia',
-        email: 'rian@gmail.com',
-        content: 'Luar biasa! Teknologi mesh network XBee ini sangat efisien untuk implementasi smart city di area kampus.',
-        timestamp: '2026-06-15 10:30'
+        id: 'c_simona1',
+        name: 'Budi Santoso',
+        email: 'budi@student.telkomuniversity.ac.id',
+        content: 'Sistem akuaponik SIMONA sangat membantu menjaga kualitas air kolam ikan sekaligus memberikan nutrisi organik pada sayuran pakcoy!',
+        timestamp: '2026-07-23 09:15'
       }
     ]
   },
   {
-    id: 'smart-hydroponics',
-    title: 'Smart Hydroponik: Modular Hydroponic Automated Grow System',
-    category: 'Hydroponic',
-    date: 'September 2022',
-    image: 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=800&q=80', // Vertical farm violet lights
-    excerpt: 'Modular hydroponic system with customized planting racks. Perfectly calibrated for indoor space farming, integrated with IoT sensing nodes for optimal resource delivery.',
-    content: `Our Smart Hydroponik system is an integrated solution engineered specifically to maximize yield in confined space environments. By engineering custom modular planting racks, the system accommodates varying crop types from leafy greens to vine-based cultivars.
+    id: 'luminet-smart-lighting',
+    title: 'LUMINET: Smart Street Lighting Management System',
+    category: 'Smart City PJU IoT',
+    date: 'Juli 2026',
+    image: '/images/luminet/luminet-logo.jpg',
+    excerpt: 'LUMINET (Smart Street Lighting Management System) is an Internet of Things (IoT)-based smart system for automatically and efficiently managing public street lighting (PJU).',
+    content: `LUMINET (Smart Street Lighting Management System) is an Internet of Things (IoT)-based smart system for automatically and efficiently managing public street lighting (PJU). The system uses XBee communication for centralized monitoring and control via a web dashboard and mobile app.
 
-With customized LED grow light profiles that mimic sunlight bands essential for photosynthesis, crops experience accelerated development cycles of up to 30%. The modularity allows agriculturalists to easily expand production capacities by stacking trays vertically, making it highly suitable for urban farming initiatives and high-density laboratory research.
+LUMINET supports multi-point control with automation logic based on time, light intensity (LDR), and Correlated Color Temperature (CCT). The system also monitors electrical conditions (power, voltage, current) in real-time and is equipped with GPS for PJU location identification.
 
-### Key Innovations:
-* **Spectra-Optimized Lighting:** Tailored purple/blue grow bands that trigger precise growth stages.
-* **Precision Dosing pumps:** Delivers micro-nutrients in exact ratios, avoiding nutrient burn and ensuring ideal EC levels.
-* **Vertical Bento Design:** Optimizes square footage, achieving high-capacity production within compact footprint structures.`,
-    readTime: '3 min',
+Anomaly notifications are automatically sent to expedite issue resolution. With its modular design, LUMINET is suitable for implementation by local governments, industrial zones, and smart city managers to enhance energy efficiency, reduce operational costs, and accelerate on-site repair responses.`,
+    readTime: '5 min',
     comments: [
       {
-        id: 'c2',
-        name: 'Siti Aminah',
-        email: 'siti@mail.com',
-        content: 'Rancangan rak modularnya sangat inspiratif, menghemat banyak ruang di lab kami!',
-        timestamp: '2022-10-02 14:15'
+        id: 'c_luminet1',
+        name: 'Deni Kurniawan',
+        email: 'deni@bandung.go.id',
+        content: 'Sistem LUMINET XBee Mesh terbukti menghemat hingga 45% energi PJU dan sangat membantu pemantauan lokasi node via GIS map!',
+        timestamp: '2026-07-24 08:30'
       }
     ]
   },
   {
-    id: 'aquaponics-monitor',
-    title: 'Aquaponik Monitor: Multi-Sensor Ecological Telemetry Node',
-    category: 'Aquaponics',
-    date: 'September 2024',
-    image: 'https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=800&q=80', // IoT monitoring rig
-    excerpt: 'Integrated monitoring system for temperature, pH, TDS, and water turbidity in closed-loop aquaponic ecosystems, enabling safe co-habitation of aquatic life and organic plants.',
-    content: `Aquaponic systems depend heavily on a fragile symbiotic balance between aquatic organisms (fish) and organic flora. The Aquaponik Monitor serves as the central electronic brain that tracks, logs, and alerts operators to shifts in the water chemical balance.
+    id: 'flocify-biofloc-ai',
+    title: 'FLOCIFY: IoT & Deep Learning Biofloc Solution',
+    category: 'Biofloc AI Aquaculture',
+    date: 'Juli 2026',
+    image: '/images/flocify/flocify-biofloc-tank-iso.png',
+    excerpt: 'Flocify is an innovative Internet of Things (IoT) and Deep Learning-based solution designed to optimize fish farming in biofloc systems.',
+    content: `Flocify is an innovative Internet of Things (IoT) and Deep Learning-based solution designed to optimize fish farming in biofloc systems. The platform integrates smart sensing technologies, real-time monitoring, artificial intelligence-driven analytics, and automated control mechanisms to maintain sustainable aquaculture environments.
 
-By tracking Temperature, pH, Total Dissolved Solids (TDS), and water Turbidity, the monitor prevents critical failures such as toxic ammonia accumulation, pH crashes, or oxygen depletion. Built on low-power Wi-Fi microcontrollers, all telemetry is instantly broadcasted to a cloud web-dashboard, triggering SMS or email warnings for rapid troubleshooting.
+Through continuous monitoring of critical water quality parameters, including temperature, pH, dissolved oxygen (DO), ammonia concentration, and other relevant environmental indicators, Flocify enables the acquisition of real-time data to support adaptive aquaculture management.
 
-### Integrated Sensors:
-* **Analog pH Sensor:** Constantly samples acidity levels to prevent shock in tilapia/carp habitats.
-* **TDS Probe:** Analyzes overall nutrient concentration to guarantee crops receive rich minerals from bio-filtered fish waste.
-* **Turbidity Meter:** Measures water clarity to monitor filtration system performance and solid waste buildup.`,
+The integration of Deep Learning algorithms facilitates pattern recognition, anomaly detection, and predictive analysis of environmental conditions, thereby enabling early identification of potential risks and supporting evidence-based decision-making.`,
     readTime: '5 min',
-    comments: []
+    comments: [
+      {
+        id: 'c_flocify1',
+        name: 'Hendra Saputra',
+        email: 'hendra@aquaculture.id',
+        content: 'Flocify sangat membantu mencegah lonjakan amonia beracun pada kolam biofloc lele dan nila secara real-time!',
+        timestamp: '2026-07-24 08:50'
+      }
+    ]
   }
 ];
 
@@ -77,18 +109,19 @@ export const projectsData: ProjectItem[] = [
   {
     id: 'hycosmarts',
     title: 'HYCOSMARTS',
-    tagline: 'Futuristic Intelligent Container Farming System',
+    tagline: 'Smart Container-Based Intelligent Farming System',
     category: 'Container-based Smart Agriculture',
-    description: 'A fully automated, high-yield vertical grow unit designed inside repurposed shipping containers. Powered by custom edge AI diagnostic models and multi-point sensor arrays.',
-    fullDescription: 'HYCOSMARTS represents the absolute cutting-edge of climate-controlled, modular agriculture. By utilizing standard shipping container volumes, our team built a hermetically sealed micro-climate unit capable of growing highly nutritious crops in any environment—from dense, congested urban districts to extreme arid regions. Equipped with advanced automated dosing arrays, spectral lighting dimmers, and edge-computing cameras, HYCOSMARTS optimizes resource delivery by continuously analyzing plant transpiration and leaf color spectrums.',
-    image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=1200&q=80', // Beautiful modern greenhouse container look
+    description: 'HYCOSMARTS is a smart container-based intelligent farming system designed to manage indoor hydroponic farming automatically, efficiently, and sustainably.',
+    fullDescription: 'HYCOSMARTS is a smart container-based intelligent farming system designed to manage indoor hydroponic farming automatically, efficiently, and sustainably. The system is equipped with various important sensors such as pH, TDS, DO, EC, and ultrasonic sensors to monitor water quality, nutrient availability, and growing conditions in real time. With artificial intelligence support and integration with web-based dashboards and mobile apps, HYCOSMARTS can precisely regulate plant needs and provide early notifications of potential crop failures. In addition to being energy-efficient and self-sufficient, the system is also suitable for implementation in 3T areas (remote, frontier, and outer regions) as an innovative solution to enhance agricultural productivity and food self-sufficiency through technology.',
+    image: '/images/hycosmarts/hycosmarts-3.png',
     gallery: [
-      'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1509395062183-67c5ad6faff9?auto=format&fit=crop&w=600&q=80'
+      '/images/hycosmarts/hycosmarts-3.png',
+      '/images/hycosmarts/hycosmarts-2.png',
+      '/images/hycosmarts/hycosmarts-5.png',
+      '/images/hycosmarts/hycosmarts-4.png',
+      '/images/hycosmarts/hycosmarts-1.png'
     ],
-    date: '2026-03-15',
+    date: '2026-07-24',
     sensors: [
       {
         name: 'Acidity (pH)',
@@ -96,7 +129,7 @@ export const projectsData: ProjectItem[] = [
         unit: 'pH',
         minSafe: 5.5,
         maxSafe: 6.5,
-        description: 'Measures water pH levels. Optimal pH ensures proper absorption of essential macro and micronutrients.'
+        description: 'Monitors solution acidity. Optimal pH ensures proper absorption of essential macro and micronutrients.'
       },
       {
         name: 'Nutrients (TDS)',
@@ -104,7 +137,7 @@ export const projectsData: ProjectItem[] = [
         unit: 'ppm',
         minSafe: 800,
         maxSafe: 1400,
-        description: 'Total Dissolved Solids indicates chemical nutrient density inside the active hydroponic reservoir.'
+        description: 'Total Dissolved Solids measures active nutrient density in the hydroponic liquid reservoir.'
       },
       {
         name: 'Dissolved Oxygen (DO)',
@@ -112,7 +145,7 @@ export const projectsData: ProjectItem[] = [
         unit: 'mg/L',
         minSafe: 6.0,
         maxSafe: 9.0,
-        description: 'Dissolved oxygen levels prevent root stagnation, rot, and encourage robust root health.'
+        description: 'Tracks oxygen dissolved in water to prevent root stagnation and accelerate crop development.'
       },
       {
         name: 'Electrical Conductivity (EC)',
@@ -120,128 +153,173 @@ export const projectsData: ProjectItem[] = [
         unit: 'mS/cm',
         minSafe: 1.2,
         maxSafe: 2.2,
-        description: 'EC measures the capability of solution to conduct electrical currents, correlating directly to salt concentrations.'
+        description: 'Electrical Conductivity evaluates mineral salt concentration and ionic strength.'
+      },
+      {
+        name: 'Ultrasonic Water Level',
+        value: 88,
+        unit: '%',
+        minSafe: 30,
+        maxSafe: 100,
+        description: 'Non-contact ultrasonic telemetry measuring water reservoir volume to prevent pump dry-run.'
       },
       {
         name: 'Ambient Temperature',
-        value: 24.5,
+        value: 23.5,
         unit: '°C',
         minSafe: 18.0,
         maxSafe: 28.0,
-        description: 'Controlling air temperature stabilizes plant respiration rates and maintains photosynthesis efficiency.'
+        description: 'Container microclimate temperature control for optimal leaf respiration and growth.'
+      }
+    ]
+  },
+  {
+    id: 'simona',
+    title: 'SIMONA',
+    tagline: 'Aquaponics Monitoring System',
+    category: 'Aquaponics',
+    description: 'SIMONA (Aquaponics Monitoring System) is an integrated smart system designed to support sustainable farming by combining aquaculture and hydroponics in a mutually beneficial ecosystem.',
+    fullDescription: 'SIMONA (Aquaponics Monitoring System) is an integrated smart system designed to support sustainable farming by combining aquaculture and hydroponics in a mutually beneficial ecosystem. It utilizes a range of sensors to monitor key environmental parameters such as water level, pH, temperature, and Total Dissolved Solids (TDS), ensuring optimal conditions for both fish and plant growth. Powered by microcontrollers like Arduino or Raspberry Pi, SIMONA automates essential functions and displays real-time data through a user-friendly interface. With IoT connectivity and remote access via a responsive web platform, users can monitor and control the system anytime, anywhere. SIMONA enhances productivity, reduces manual workload, enables early problem detection, and promotes efficient, technology-driven aquaponic farming.',
+    image: '/images/simona/simona-logo.png',
+    gallery: [
+      '/images/simona/simona-logo.png',
+      '/images/simona/simona-hardware-blynk.png',
+      '/images/simona/simona-control-box-farm.jpg',
+      '/images/simona/simona-outdoor-farm.jpg',
+      '/images/simona/simona-crops-close.jpg'
+    ],
+    date: '2026-07-24',
+    sensors: [
+      {
+        name: 'Water Level (Ultrasonic)',
+        value: 85,
+        unit: '%',
+        minSafe: 30,
+        maxSafe: 100,
+        description: 'Ultrasonic sensor tracking water volume in fish tanks and hydroponic channels.'
+      },
+      {
+        name: 'Acidity (pH)',
+        value: 7.2,
+        unit: 'pH',
+        minSafe: 6.5,
+        maxSafe: 7.8,
+        description: 'Monitors pH level for safe co-habitation of aquatic life and organic plants.'
+      },
+      {
+        name: 'Water Temperature',
+        value: 27.25,
+        unit: '°C',
+        minSafe: 22.0,
+        maxSafe: 30.0,
+        description: 'Measures water temperature to maintain stable fish metabolic rates.'
+      },
+      {
+        name: 'Nutrients (TDS)',
+        value: 154,
+        unit: 'ppm',
+        minSafe: 100,
+        maxSafe: 500,
+        description: 'Total Dissolved Solids measuring bio-filtered fish waste nutrient density.'
       }
     ]
   },
   {
     id: 'luminet',
     title: 'LUMINET',
-    tagline: 'XBee-Based Public Street Lighting Management Intelligence System',
-    category: 'IoT',
-    description: 'XBee mesh network controlled public street lighting (PJU) system. Optimizes energy by 45% via pedestrian and vehicular density adaptive dimming.',
-    fullDescription: 'Luminet is an advanced street lighting management system funded by the Bandung Techno Park (BTP) Grant. Built on a low-latency XBee-based mesh network, each luminaire acts as an intelligent sensor node that measures local motion density and adjusts light levels dynamically. Telemetry is routed continuously back to municipal dashboards for remote fault analysis.',
-    image: 'https://images.unsplash.com/photo-1509395062183-67c5ad6faff9?auto=format&fit=crop&w=1200&q=80',
+    tagline: 'Smart Street Lighting Management System',
+    category: 'Smart City PJU',
+    description: 'LUMINET (Smart Street Lighting Management System) is an Internet of Things (IoT)-based smart system for automatically and efficiently managing public street lighting (PJU).',
+    fullDescription: 'LUMINET (Smart Street Lighting Management System) is an Internet of Things (IoT)-based smart system for automatically and efficiently managing public street lighting (PJU). The system uses XBee communication for centralized monitoring and control via a web dashboard and mobile app. LUMINET supports multi-point control with automation logic based on time, light intensity (LDR), and Correlated Color Temperature (CCT). The system also monitors electrical conditions (power, voltage, current) in real-time and is equipped with GPS for PJU location identification. Anomaly notifications are automatically sent to expedite issue resolution. With its modular design, LUMINET is suitable for implementation by local governments, industrial zones, and smart city managers to enhance energy efficiency, reduce operational costs, and accelerate on-site repair responses.',
+    image: '/images/luminet/luminet-logo.jpg',
     gallery: [
-      'https://images.unsplash.com/photo-1509395062183-67c5ad6faff9?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=600&q=80'
+      '/images/luminet/luminet-logo.jpg',
+      '/images/luminet/luminet-pju-map-dashboard.png',
+      '/images/luminet/luminet-hardware-box-lcd.jpg',
+      '/images/luminet/luminet-interluc-street-light.jpg'
     ],
-    date: '2025-06-20',
+    date: '2026-07-24',
     sensors: [
       {
-        name: 'Motion Activity',
-        value: 78,
-        unit: '%',
-        minSafe: 0,
-        maxSafe: 100,
-        description: 'Density percentage of pedestrians and cars detected on active road segments.'
-      },
-      {
-        name: 'Lamp Wattage',
-        value: 45,
-        unit: 'W',
-        minSafe: 10,
-        maxSafe: 120,
-        description: 'Active energy input. Dims dynamically during midnight and zero activity to save massive grids.'
-      },
-      {
-        name: 'Grid Voltage',
-        value: 220.4,
+        name: 'Voltage Telemetry (AC)',
+        value: 220,
         unit: 'V',
-        minSafe: 210.0,
-        maxSafe: 230.0,
-        description: 'Grid voltage metrics to identify brownouts and surge overloads.'
+        minSafe: 200,
+        maxSafe: 240,
+        description: 'Real-time grid voltage monitoring across PJU distribution nodes.'
+      },
+      {
+        name: 'Current Sensor (RMS)',
+        value: 0.45,
+        unit: 'A',
+        minSafe: 0.1,
+        maxSafe: 1.5,
+        description: 'Measures luminaire current to detect burnt LEDs or line breaks.'
+      },
+      {
+        name: 'Luminance (LDR)',
+        value: 420,
+        unit: 'lux',
+        minSafe: 50,
+        maxSafe: 1200,
+        description: 'Ambient light sensor for automatic dusk-to-dawn dimming activation.'
+      },
+      {
+        name: 'Dimming Level (PWM)',
+        value: 39,
+        unit: '%',
+        minSafe: 10,
+        maxSafe: 100,
+        description: 'Adaptive brightness control optimizing energy efficiency by up to 45%.'
       }
     ]
   },
   {
-    id: 'aquaponics-monitor',
-    title: 'AQUAPONIK MONITOR',
-    tagline: 'Multi-Sensor Ecological Telemetry Node',
-    category: 'Aquaponics',
-    description: 'SYmbiotic monitoring node for closed-loop aquaponics, allowing Tilapia aquaculture and organic leafy plants to coexist safely.',
-    fullDescription: 'The Aquaponik Monitor serves as the ecological telemetry node tracking biological balances. By measuring pH, temperature, water turbidity, and Total Dissolved Solids, the system warns operators about ammonia spikes and filtration clogging in real time.',
-    image: 'https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=1200&q=80',
+    id: 'flocify',
+    title: 'FLOCIFY',
+    tagline: 'IoT & Deep Learning Biofloc Solution',
+    category: 'Biofloc AI Aquaculture',
+    description: 'Flocify is an innovative Internet of Things (IoT) and Deep Learning-based solution designed to optimize fish farming in biofloc systems.',
+    fullDescription: 'Flocify is an innovative Internet of Things (IoT) and Deep Learning-based solution designed to optimize fish farming in biofloc systems. The platform integrates smart sensing technologies, real-time monitoring, artificial intelligence-driven analytics, and automated control mechanisms to maintain sustainable aquaculture environments. Through continuous monitoring of critical water quality parameters, including temperature, pH, dissolved oxygen (DO), ammonia concentration, and other relevant environmental indicators, Flocify enables the acquisition of real-time data to support adaptive aquaculture management. The integration of Deep Learning algorithms facilitates pattern recognition, anomaly detection, and predictive analysis of environmental conditions, thereby enabling early identification of potential risks and supporting evidence-based decision-making. Furthermore, the system can provide automated recommendations and control mechanisms to maintain optimal culture conditions, improve production performance, and enhance the sustainability of biofloc-based fish farming operations. The adoption of Flocify is expected to reduce fish mortality rates, improve feed utilization efficiency, lower operational burdens for farmers, and minimize investment risks. Furthermore, the solution can enhance the competitiveness of small and medium-scale aquaculture producers by promoting smarter, more productive, and sustainable farming practices.',
+    image: '/images/flocify/flocify-biofloc-tank-iso.png',
     gallery: [
-      'https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=600&q=80'
+      '/images/flocify/flocify-biofloc-tank-iso.png',
+      '/images/flocify/flocify-topview-tank.png',
+      '/images/flocify/flocify-perspective-tank.png'
     ],
-    date: '2024-09-10',
+    date: '2026-07-24',
     sensors: [
       {
-        name: 'Water pH',
+        name: 'Dissolved Oxygen (DO)',
         value: 6.8,
-        unit: 'pH',
-        minSafe: 6.5,
-        maxSafe: 7.5,
-        description: 'Water pH level, crucial for keeping both fish and vertical organic crops within healthy bio-tolerances.'
+        unit: 'mg/L',
+        minSafe: 5.0,
+        maxSafe: 9.0,
+        description: 'Dissolved oxygen monitoring essential for bacterial biofloc respiration and fish metabolic health.'
       },
       {
-        name: 'Turbidity',
-        value: 12,
-        unit: 'NTU',
-        minSafe: 0,
-        maxSafe: 25,
-        description: 'Water clarity measurement to identify organic waste pile-ups and evaluate active bio-filters.'
+        name: 'Ammonia Concentration (NH3/NH4+)',
+        value: 0.08,
+        unit: 'mg/L',
+        minSafe: 0.0,
+        maxSafe: 0.20,
+        description: 'Deep Learning predictive anomaly tracking to prevent toxic ammonia spikes in biofloc tanks.'
       },
       {
         name: 'Water Temperature',
-        value: 23.2,
+        value: 28.5,
         unit: '°C',
-        minSafe: 20.0,
-        maxSafe: 28.0,
-        description: 'Water temperature control is crucial to prevent aquatic metabolic stress and ensure stable root cell respiration.'
-      }
-    ]
-  },
-  {
-    id: 'smart-hydroponics-rack',
-    title: 'SMART HYDROPONIK',
-    tagline: 'Modular Hydroponic Automated Grow System',
-    category: 'Hydroponics',
-    description: 'Precision stackable modular racks featuring automated nutrient dosing pumps and optimized grow LED spectra.',
-    fullDescription: 'Our Smart Hydroponik system utilizes space-saving vertical racks to maximize yield per square meter. Equipped with tailor-made red/blue grow bands and precision peristaltic chemical injectors, it ensures healthy vegetable cultivation for research laboratories.',
-    image: 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=1200&q=80',
-    gallery: [
-      'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80'
-    ],
-    date: '2022-09-05',
-    sensors: [
-      {
-        name: 'Solution EC',
-        value: 1.6,
-        unit: 'mS/cm',
-        minSafe: 1.0,
-        maxSafe: 2.0,
-        description: 'Electrical conductivity of mineral liquid, representing active nutrient concentrations in the reservoir.'
+        minSafe: 26.0,
+        maxSafe: 31.0,
+        description: 'Optimal temperature maintenance for biofloc microbial activity and fish digestive performance.'
       },
       {
-        name: 'LED Output',
-        value: 85,
-        unit: '%',
-        minSafe: 50,
-        maxSafe: 100,
-        description: 'Tailored agricultural light bands active to speed up photosynthetic plant growth cycles.'
+        name: 'Acidity (pH)',
+        value: 7.4,
+        unit: 'pH',
+        minSafe: 7.0,
+        maxSafe: 7.8,
+        description: 'Monitors nitrifying bacterial environment for stable biofloc C:N ratio transformation.'
       }
     ]
   }
@@ -310,6 +388,24 @@ export const teamData: TeamMember[] = [
     email: 'tiaranuriawati@student.telkomuniversity.ac.id',
     bio: 'Pengembangan arsitektur sensor suhu, pH, dan kelembapan secara terintegrasi dengan jaringan akuisisi data real-time.',
     skills: ['IoT Architecture', 'Microcontroller Programming', 'Real-time Telemetry', 'Sensor Fusion']
+  },
+  {
+    id: 'member-nasywa',
+    name: 'Nasywa Zauja Noor',
+    role: 'IoT Specialist',
+    image: 'member-nasywa',
+    email: 'nasywazaujanoor@student.telkomuniversity.ac.id',
+    bio: 'Menangani kalibrasi sensor nirkabel telemetry, komunikasi data mikro, serta optimalisasi komunikasi antar modul IoT.',
+    skills: ['IoT Sensors', 'Wireless Protocols', 'Telemetry Monitoring', 'Data Analytics']
+  },
+  {
+    id: 'member-divia',
+    name: 'Divia Nuralika Namira',
+    role: 'IoT Specialist',
+    image: 'member-divia',
+    email: 'divianuralikanamira@student.telkomuniversity.ac.id',
+    bio: 'Menangani kalibrasi sensor nirkabel telemetry, komunikasi data mikro, serta optimalisasi komunikasi antar modul IoT.',
+    skills: ['IoT Sensors', 'Wireless Protocols', 'Telemetry Monitoring', 'Data Analytics']
   },
   {
     id: 'member-arimbi',

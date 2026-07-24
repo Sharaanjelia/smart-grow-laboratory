@@ -37,6 +37,10 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import NewsDetailView from './components/NewsDetailView';
 import JoinLabView from './components/JoinLabView';
+import HycosmartsShowcase from './components/HycosmartsShowcase';
+import SimonaShowcase from './components/SimonaShowcase';
+import LuminetShowcase from './components/LuminetShowcase';
+import FlocifyShowcase from './components/FlocifyShowcase';
 
 import LoginView from './components/lms/LoginView';
 import LmsLayout from './components/lms/LmsLayout';
@@ -118,6 +122,11 @@ export default function App() {
   const [newsList, setNewsList] = useState<NewsItem[]>(newsData);
   const [projectsList, setProjectsList] = useState<ProjectItem[]>(projectsData);
   const [teamList, setTeamList] = useState<TeamMember[]>(teamData);
+
+  // Sync teamList whenever teamData is updated
+  useEffect(() => {
+    setTeamList(teamData);
+  }, []);
 
   // CMS Handlers
   const handleAddNews = (newItem: Omit<NewsItem, 'id'>) => {
@@ -1226,11 +1235,15 @@ export default function App() {
                         >
                           <div className="space-y-5">
                             {/* Card Media Preview */}
-                            <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-100">
+                            <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-950">
                               <img
                                 src={project.image}
                                 alt={project.title}
-                                className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                                className={`h-full w-full transition-transform duration-700 group-hover:scale-105 ${
+                                  project.image.includes('logo') 
+                                    ? 'object-contain p-6 bg-slate-950' 
+                                    : 'object-cover object-center'
+                                }`}
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent" />
                               
@@ -1282,6 +1295,54 @@ export default function App() {
               (() => {
                 const project = projectsList.find(p => p.id === selectedProjectId);
                 if (!project) return null;
+
+                if (project.id === 'hycosmarts') {
+                  return (
+                    <HycosmartsShowcase
+                      item={project}
+                      onBack={() => {
+                        setSelectedProjectId(null);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
+                  );
+                }
+
+                if (project.id === 'simona') {
+                  return (
+                    <SimonaShowcase
+                      item={project}
+                      onBack={() => {
+                        setSelectedProjectId(null);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
+                  );
+                }
+
+                if (project.id === 'luminet') {
+                  return (
+                    <LuminetShowcase
+                      item={project}
+                      onBack={() => {
+                        setSelectedProjectId(null);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
+                  );
+                }
+
+                if (project.id === 'flocify') {
+                  return (
+                    <FlocifyShowcase
+                      item={project}
+                      onBack={() => {
+                        setSelectedProjectId(null);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
+                  );
+                }
 
                 const formatProjectDate = (dateStr: string) => {
                   const parts = dateStr.split('-');

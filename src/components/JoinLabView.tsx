@@ -126,7 +126,7 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none z-0" 
         style={{ 
-          backgroundImage: `url('https://images.unsplash.com/photo-1628102479107-d1a10057b5da?auto=format&fit=crop&q=80&w=1920')`,
+          backgroundImage: `url('/images/auth-bg.jpg')`,
           filter: 'brightness(0.85) contrast(1.05)'
         }}
       />
