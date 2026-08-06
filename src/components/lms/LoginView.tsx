@@ -12,7 +12,7 @@ import {
   sendEmailVerification,
   signOut
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { 
   Lock, 
   Mail, 
