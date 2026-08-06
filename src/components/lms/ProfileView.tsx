@@ -77,23 +77,24 @@ export default function ProfileView({
   const [github, setGithub] = useState(currentUser.github || '');
   const [linkedin, setLinkedin] = useState(currentUser.linkedin || '');
   const [portfolio, setPortfolio] = useState(currentUser.portfolio || '');
+  const cName = (currentUser.name || '').toLowerCase();
   const [avatarUrl, setAvatarUrl] = useState(
     currentUser.avatar && !currentUser.avatar.includes('unsplash.com') 
       ? currentUser.avatar 
-      : currentUser.name.toLowerCase().includes('indrarini') ? '/images/team/indrarini.jpg'
-      : currentUser.name.toLowerCase().includes('azliny') ? '/images/team/azliny.jpg'
-      : currentUser.name.toLowerCase().includes('shara') ? '/images/team/shara.jpg'
-      : currentUser.name.toLowerCase().includes('chiko') ? '/images/team/chiko.jpg'
-      : currentUser.name.toLowerCase().includes('shella') || currentUser.name.toLowerCase().includes('shela') ? '/images/team/shela.jpg'
-      : currentUser.name.toLowerCase().includes('sirvani') ? '/images/team/sirvani.jpg'
-      : currentUser.name.toLowerCase().includes('tiara') ? '/images/team/tiara.jpg'
-      : currentUser.name.toLowerCase().includes('nasywa') ? '/images/team/nasywa-zauja-noor.jpg'
-      : currentUser.name.toLowerCase().includes('divia') ? '/images/team/divia-nuralika-namira.jpg'
-      : currentUser.name.toLowerCase().includes('arimbi') ? '/images/team/arimbi.jpg'
-      : currentUser.name.toLowerCase().includes('daffa') ? '/images/team/daffa.jpg'
-      : currentUser.name.toLowerCase().includes('hannani') ? '/images/team/hannani.jpg'
-      : currentUser.name.toLowerCase().includes('elyasa') ? '/images/team/elyasa.jpg'
-      : currentUser.name.toLowerCase().includes('humam') ? '/images/team/humam.jpg'
+      : cName.includes('indrarini') ? '/images/team/indrarini.jpg'
+      : cName.includes('azliny') ? '/images/team/azliny.jpg'
+      : cName.includes('shara') ? '/images/team/shara.jpg'
+      : cName.includes('chiko') ? '/images/team/chiko.jpg'
+      : cName.includes('shella') || cName.includes('shela') ? '/images/team/shela.jpg'
+      : cName.includes('sirvani') ? '/images/team/sirvani.jpg'
+      : cName.includes('tiara') ? '/images/team/tiara.jpg'
+      : cName.includes('nasywa') ? '/images/team/nasywa-zauja-noor.jpg'
+      : cName.includes('divia') ? '/images/team/divia-nuralika-namira.jpg'
+      : cName.includes('arimbi') ? '/images/team/arimbi.jpg'
+      : cName.includes('daffa') ? '/images/team/daffa.jpg'
+      : cName.includes('hannani') ? '/images/team/hannani.jpg'
+      : cName.includes('elyasa') ? '/images/team/elyasa.jpg'
+      : cName.includes('humam') ? '/images/team/humam.jpg'
       : (currentUser.avatar || '')
   );
 

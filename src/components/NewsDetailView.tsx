@@ -20,9 +20,9 @@ export default function NewsDetailView({ item, comments, onBack, onAddComment, o
   // 1. Lowongan Magang / Recruitment news ➔ dedicated RecruitmentNewsShowcase!
   if (
     item.id === 'open-recruitment-magang-2026' || 
-    item.category.toLowerCase().includes('magang') || 
-    item.category.toLowerCase().includes('recruitment') ||
-    item.title.toLowerCase().includes('magang')
+    (item.category || '').toLowerCase().includes('magang') || 
+    (item.category || '').toLowerCase().includes('recruitment') ||
+    (item.title || '').toLowerCase().includes('magang')
   ) {
     return (
       <RecruitmentNewsShowcase 

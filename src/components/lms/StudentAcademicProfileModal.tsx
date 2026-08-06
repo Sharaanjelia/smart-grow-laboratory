@@ -74,7 +74,8 @@ export default function StudentAcademicProfileModal({
 
   // Active Project calculation
   const activeProjName = student.activeProjects?.[0] || 'HYCOSMARTS - Container Farm Cerdas Berbasis AI';
-  const matchedProject = projects.find(p => p.title.toLowerCase().includes(activeProjName.toLowerCase())) || projects[0];
+  const matchedProject = projects.find(p => (p.title || '').toLowerCase().includes((activeProjName || '').toLowerCase())) || projects[0];
+  const sName = (student.name || '').toLowerCase();
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,15 +151,15 @@ export default function StudentAcademicProfileModal({
                   src={
                     student.avatar && !student.avatar.includes('unsplash.com') 
                       ? student.avatar 
-                      : student.name.toLowerCase().includes('shara') ? '/images/team/shara.jpg'
-                      : student.name.toLowerCase().includes('shella') || student.name.toLowerCase().includes('shela') ? '/images/team/shela.jpg'
-                      : student.name.toLowerCase().includes('sirvani') ? '/images/team/sirvani.jpg'
-                      : student.name.toLowerCase().includes('tiara') ? '/images/team/tiara.jpg'
-                      : student.name.toLowerCase().includes('nasywa') ? '/images/team/nasywa-zauja-noor.jpg'
-                      : student.name.toLowerCase().includes('divia') ? '/images/team/divia-nuralika-namira.jpg'
-                      : student.name.toLowerCase().includes('azliny') ? '/images/team/azliny.jpg'
-                      : student.name.toLowerCase().includes('chiko') ? '/images/team/chiko.jpg'
-                      : student.name.toLowerCase().includes('indrarini') ? '/images/team/indrarini.jpg'
+                      : sName.includes('shara') ? '/images/team/shara.jpg'
+                      : sName.includes('shella') || sName.includes('shela') ? '/images/team/shela.jpg'
+                      : sName.includes('sirvani') ? '/images/team/sirvani.jpg'
+                      : sName.includes('tiara') ? '/images/team/tiara.jpg'
+                      : sName.includes('nasywa') ? '/images/team/nasywa-zauja-noor.jpg'
+                      : sName.includes('divia') ? '/images/team/divia-nuralika-namira.jpg'
+                      : sName.includes('azliny') ? '/images/team/azliny.jpg'
+                      : sName.includes('chiko') ? '/images/team/chiko.jpg'
+                      : sName.includes('indrarini') ? '/images/team/indrarini.jpg'
                       : student.avatar || '/images/team/shara.jpg'
                   }
                   alt={student.name}
