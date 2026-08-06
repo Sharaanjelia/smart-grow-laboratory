@@ -361,7 +361,11 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
       }
 
       // Store in Firestore collection pending_registrations
-      await setDoc(doc(db, 'pending_registrations', pendingId), JSON.parse(JSON.stringify(pendingRecord)));
+      try {
+        await setDoc(doc(db, 'pending_registrations', pendingId), JSON.parse(JSON.stringify(pendingRecord)));
+      } catch (dbErr: any) {
+        console.warn('Firestore setDoc pending_registrations notice:', dbErr?.message);
+      }
 
       if (onPendingRegister) {
         onPendingRegister(pendingRecord);
