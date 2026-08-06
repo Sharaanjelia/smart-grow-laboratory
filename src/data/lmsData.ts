@@ -1231,3 +1231,36 @@ export const initialSystemLogs: SystemLog[] = [
     details: 'Mengirimkan permintaan revisi tugas TGS-2026-004 ke Shella Nadya Putri'
   }
 ];
+
+export const initialPendingRegistrations: PendingRegistration[] = [
+  {
+    id: 'preg_1',
+    fullName: 'Bintang Pratama',
+    university: 'Telkom University',
+    studyProgram: 'D3 Sistem Informasi',
+    division: 'IoT Specialist / Hardware Engineer',
+    email: 'bintang.pratama@student.telkomuniversity.ac.id',
+    registrationTime: '2026-08-06 09:30 WIB',
+    status: 'Pending Approval'
+  },
+  {
+    id: 'preg_2',
+    fullName: 'Clara Salsabila',
+    university: 'Telkom University',
+    studyProgram: 'D3 Teknik Telekomunikasi',
+    division: 'Full-stack Web Developer',
+    email: 'clara.salsabila@student.telkomuniversity.ac.id',
+    registrationTime: '2026-08-06 10:15 WIB',
+    status: 'Pending Approval'
+  },
+  {
+    id: 'preg_3',
+    fullName: 'Daffa Alamsyah',
+    university: 'Telkom University',
+    studyProgram: 'S1 Teknik Elektro',
+    division: 'Firmware & Microcontroller Developer',
+    email: 'daffa.alamsyah@student.telkomuniversity.ac.id',
+    registrationTime: '2026-08-05 14:20 WIB',
+    status: 'Pending Approval'
+  }
+];

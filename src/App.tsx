@@ -14,7 +14,8 @@ import {
   initialApprovalRequests, 
   initialNotifications, 
   initialApplicants, 
-  initialSystemLogs 
+  initialSystemLogs,
+  initialPendingRegistrations 
 } from './data/lmsData';
 import { 
   PageId, 
@@ -125,7 +126,7 @@ export default function App() {
   const [approvalRequests, setApprovalRequests] = useState<ApprovalRequest[]>(initialApprovalRequests);
   const [notifications, setNotifications] = useState<LmsNotification[]>(initialNotifications);
   const [applicants, setApplicants] = useState<ApplicantRecord[]>(initialApplicants);
-  const [pendingRegistrations, setPendingRegistrations] = useState<PendingRegistration[]>([]);
+  const [pendingRegistrations, setPendingRegistrations] = useState<PendingRegistration[]>(initialPendingRegistrations);
   const [systemLogs, setSystemLogs] = useState<SystemLog[]>(initialSystemLogs);
 
   // CMS Content State

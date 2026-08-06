@@ -10,7 +10,8 @@ import {
   initialApprovalRequests,
   initialNotifications,
   initialApplicants,
-  initialSystemLogs
+  initialSystemLogs,
+  initialPendingRegistrations
 } from '../data/lmsData';
 
 export interface SeedProgress {
@@ -79,6 +80,9 @@ export async function seedAllDataToFirebase(onProgress?: (msg: string) => void):
 
     // 12. System Logs
     await seedCollection('system_logs', initialSystemLogs, (item) => item.id);
+
+    // 13. Pending Registrations
+    await seedCollection('pending_registrations', initialPendingRegistrations, (item) => item.id);
 
     log('🎉 ALL DATA DUMMY SMART GROW SUCCESSFULLY SEEDED TO FIREBASE!');
     return { success: true, message: 'Berhasil mengunggah semua data dummy Smart Grow ke Firebase Firestore!' };
