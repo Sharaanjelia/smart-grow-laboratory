@@ -138,8 +138,8 @@ export default function AnnouncementsManager({
   };
 
   const filteredAnnouncements = announcements.filter(a => {
-    const matchesSearch = a.title.toLowerCase().includes(search.toLowerCase()) || 
-                          a.content.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = (a.title || '').toLowerCase().includes(search.toLowerCase()) || 
+                          (a.content || '').toLowerCase().includes(search.toLowerCase());
     if (!matchesSearch) return false;
     if (categoryFilter !== 'all' && a.category !== categoryFilter) return false;
     return true;

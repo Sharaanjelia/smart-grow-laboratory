@@ -505,7 +505,7 @@ export default function DirectorDashboard({
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {students
-              .filter(s => s.name.toLowerCase().includes(studentSearch.toLowerCase()) || (s.studentId && s.studentId.includes(studentSearch)))
+              .filter(s => (s.name || '').toLowerCase().includes(studentSearch.toLowerCase()) || (s.studentId && s.studentId.includes(studentSearch)))
               .map(student => {
                 const studentTasks = tasks.filter(t => t.assignedStudentId === student.id);
                 const completedTasks = studentTasks.filter(t => t.status === 'completed').length;

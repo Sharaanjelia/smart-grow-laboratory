@@ -1821,7 +1821,7 @@ export default function App() {
                 {/* Projects Grid */}
                 {(() => {
                   const filtered = [...projectsList]
-                    .filter(p => projectCategory === 'All' || p.category.toLowerCase().includes(projectCategory.toLowerCase()))
+                    .filter(p => projectCategory === 'All' || (p.category || '').toLowerCase().includes((projectCategory || '').toLowerCase()))
                     .sort((a, b) => {
                       const dateA = new Date(a.date).getTime();
                       const dateB = new Date(b.date).getTime();

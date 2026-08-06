@@ -52,7 +52,7 @@ export default function InternshipStudentsView({
 
   // Filter students
   const filteredStudents = students.filter(s => {
-    const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) || 
+    const matchesSearch = (s.name || '').toLowerCase().includes(search.toLowerCase()) || 
                           (s.studentId && s.studentId.toLowerCase().includes(search.toLowerCase())) ||
                           (s.institution && s.institution.toLowerCase().includes(search.toLowerCase())) ||
                           (s.major && s.major.toLowerCase().includes(search.toLowerCase()));

@@ -89,8 +89,8 @@ export default function AttendanceView({
 
   // Filter logic based on range tab & search query
   const filteredAttendance = displayAttendance.filter(rec => {
-    const matchesSearch = rec.studentName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          rec.date.includes(searchQuery);
+    const matchesSearch = (rec.studentName || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (rec.date || '').includes(searchQuery);
 
     if (!matchesSearch) return false;
 

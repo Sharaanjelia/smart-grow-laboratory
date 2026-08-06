@@ -113,14 +113,14 @@ export default function StudentDashboard({
 
   const myTasks = tasks.filter(t => 
     t.assignedStudentId === currentUser.id || 
-    (currentUser.name && t.assignedStudentName?.toLowerCase() === currentUser.name.toLowerCase())
+    (currentUser.name && (t.assignedStudentName || '').toLowerCase() === (currentUser.name || '').toLowerCase())
   );
   const myProjects = projects.filter(p => 
     p.assignedStudentIds?.includes(currentUser.id)
   );
   const myAttendance = attendance.filter(a => 
     a.studentId === currentUser.id || 
-    (currentUser.name && a.studentName?.toLowerCase() === currentUser.name.toLowerCase())
+    (currentUser.name && (a.studentName || '').toLowerCase() === (currentUser.name || '').toLowerCase())
   );
 
   const isNewStudent = currentUser.isNewStudent || (myTasks.length === 0 && myAttendance.length === 0);

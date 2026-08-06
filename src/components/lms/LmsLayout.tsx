@@ -403,13 +403,13 @@ export default function LmsLayout({
                   src={
                     currentUser.avatar && !currentUser.avatar.includes('unsplash.com')
                       ? currentUser.avatar
-                      : currentUser.name.toLowerCase().includes('indrarini') ? '/images/team/indrarini.jpg'
-                      : currentUser.name.toLowerCase().includes('azliny') ? '/images/team/azliny.jpg'
-                      : currentUser.name.toLowerCase().includes('shara') ? '/images/team/shara.jpg'
-                      : currentUser.name.toLowerCase().includes('chiko') ? '/images/team/chiko.jpg'
+                      : (currentUser.name || '').toLowerCase().includes('indrarini') ? '/images/team/indrarini.jpg'
+                      : (currentUser.name || '').toLowerCase().includes('azliny') ? '/images/team/azliny.jpg'
+                      : (currentUser.name || '').toLowerCase().includes('shara') ? '/images/team/shara.jpg'
+                      : (currentUser.name || '').toLowerCase().includes('chiko') ? '/images/team/chiko.jpg'
                       : currentUser.avatar || '/images/team/indrarini.jpg'
                   } 
-                  alt={currentUser.name}
+                  alt={currentUser.name || ''}
                   className="w-7 h-7 rounded-lg object-cover ring-2 ring-[#2E7D32]"
                 />
                 <div className="hidden sm:block text-left">

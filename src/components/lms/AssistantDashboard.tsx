@@ -311,8 +311,8 @@ export default function AssistantDashboard({
 
   // Filter Tasks
   const filteredTasks = tasks.filter(t => {
-    const matchesSearch = t.title.toLowerCase().includes(taskSearch.toLowerCase()) || 
-                          t.assignedStudentName.toLowerCase().includes(taskSearch.toLowerCase()) ||
+    const matchesSearch = (t.title || '').toLowerCase().includes(taskSearch.toLowerCase()) || 
+                          (t.assignedStudentName || '').toLowerCase().includes(taskSearch.toLowerCase()) ||
                           (t.taskNumber && t.taskNumber.toLowerCase().includes(taskSearch.toLowerCase()));
     if (!matchesSearch) return false;
     if (taskStatusFilter !== 'all' && t.status !== taskStatusFilter) return false;
