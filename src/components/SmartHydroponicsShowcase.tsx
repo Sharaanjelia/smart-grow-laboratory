@@ -628,7 +628,7 @@ export default function SmartHydroponicsShowcase({
                   <input 
                     type="text" 
                     required
-                    placeholder="Contoh: Budi Santoso"
+                    placeholder="Contoh: Nama Lengkap Anda"
                     value={nameInput}
                     onChange={(e) => setNameInput(e.target.value)}
                     className="bg-slate-50 border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100/40 transition-all rounded-xl px-4 py-3.5 font-medium"

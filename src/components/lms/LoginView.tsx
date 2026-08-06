@@ -796,7 +796,7 @@ export default function LoginView({ onLogin, onRegister, users = initialUsers, o
                                 required
                                 value={regFullName}
                                 onChange={e => setRegFullName(e.target.value)}
-                                placeholder="e.g. Budi Santoso"
+                                placeholder="e.g. Nama Lengkap Anda"
                                 className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
                               />
                             </div>
@@ -821,7 +821,7 @@ export default function LoginView({ onLogin, onRegister, users = initialUsers, o
                               required
                               value={regStudyProgram}
                               onChange={e => setRegStudyProgram(e.target.value)}
-                              placeholder="e.g. S1 Teknik Informatika / S1 Teknik Elektro"
+                              placeholder="e.g. D3 Sistem Informasi / D3 Teknik Telekomunikasi"
                               className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
                             />
                           </div>
