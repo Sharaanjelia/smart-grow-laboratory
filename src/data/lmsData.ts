@@ -7,7 +7,8 @@ import {
   ApprovalRequest, 
   LmsNotification, 
   ApplicantRecord, 
-  SystemLog 
+  SystemLog,
+  PendingRegistration
 } from '../types';
 
 export const initialUsers: User[] = [

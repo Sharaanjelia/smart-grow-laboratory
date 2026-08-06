@@ -262,11 +262,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
       // Strict Status Check: Must be 'active'
       if (foundUser.status && foundUser.status !== 'active') {
         await signOut(auth);
-        if (foundUser.status === 'pending' || foundUser.status === 'Pending Approval') {
-          setError('Akun Anda belum diaktifkan oleh Pembina / Mentor / Admin Laboratorium. Silakan tunggu hingga proses verifikasi selesai.');
-        } else {
-          setError('Akun Anda saat ini dinonaktifkan. Silakan hubungi Pembina Laboratorium.');
-        }
+        setError('Akun Anda belum diaktifkan atau saat ini dinonaktifkan. Silakan hubungi Pembina / Mentor / Admin Laboratorium.');
         setIsLoading(false);
         return;
       }
