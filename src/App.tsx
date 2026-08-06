@@ -1139,6 +1139,7 @@ export default function App() {
           users={users} 
           onLogin={handleLogin} 
           onRegister={(newUser) => setUsers(prev => [newUser, ...prev])}
+          onPendingRegister={(newPending) => setPendingRegistrations(prev => [newPending, ...prev])}
           onBack={() => handleNavigate('home')} 
         />
       )}

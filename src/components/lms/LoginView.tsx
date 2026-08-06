@@ -43,6 +43,7 @@ export const TELKOM_HYDROPONIC_TEAM_PHOTO_SVG = '/images/auth-bg.jpg';
 interface LoginViewProps {
   onLogin: (user: User) => void;
   onRegister?: (user: User) => void;
+  onPendingRegister?: (pending: PendingRegistration) => void;
   users?: User[];
   onBackToSite?: () => void;
   onBack?: () => void;
@@ -50,7 +51,7 @@ interface LoginViewProps {
 
 type AuthTab = 'login' | 'register' | 'forgot';
 
-export default function LoginView({ onLogin, onRegister, users = initialUsers, onBackToSite, onBack }: LoginViewProps) {
+export default function LoginView({ onLogin, onRegister, onPendingRegister, users = initialUsers, onBackToSite, onBack }: LoginViewProps) {
   const [activeTab, setActiveTab] = useState<AuthTab>('login');
   const [selectedRole, setSelectedRole] = useState<UserRole>('student');
   const [isBlurActive, setIsBlurActive] = useState(true);
@@ -361,6 +362,10 @@ export default function LoginView({ onLogin, onRegister, users = initialUsers, o
 
       // Store in Firestore collection pending_registrations
       await setDoc(doc(db, 'pending_registrations', pendingId), JSON.parse(JSON.stringify(pendingRecord)));
+
+      if (onPendingRegister) {
+        onPendingRegister(pendingRecord);
+      }
 
       setRegSuccess(true);
     } catch (err: any) {
@@ -807,20 +812,46 @@ export default function LoginView({ onLogin, onRegister, users = initialUsers, o
                       )}
 
                       {regSuccess ? (
-                        <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-3">
-                          <CheckCircle2 className="h-10 w-10 text-[#2E7D32] mx-auto animate-bounce" />
-                          <h3 className="font-bold text-sm text-[#2E7D32]">Pendaftaran Berhasil!</h3>
-                          <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                            Silakan menunggu persetujuan dari Mentor, Assistant, atau Administrator.
+                        <div className="p-6 sm:p-8 rounded-3xl bg-emerald-50/90 border border-emerald-200 text-center space-y-4 shadow-sm animate-fade-in">
+                          <div className="w-16 h-16 rounded-full bg-emerald-100 text-[#2E7D32] flex items-center justify-center mx-auto shadow-inner">
+                            <CheckCircle2 className="h-10 w-10 text-[#2E7D32] animate-bounce" />
+                          </div>
+                          
+                          <div className="space-y-1">
+                            <h3 className="font-extrabold text-lg text-[#2E7D32] font-display">Pendaftaran Berhasil! 🎉</h3>
+                            <div className="inline-block px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-[11px] font-mono font-bold uppercase mt-1">
+                              ⏳ Status: Menunggu Aktivasi & Persetujuan Akun
+                            </div>
+                          </div>
+
+                          <p className="text-xs text-slate-700 leading-relaxed font-medium max-w-md mx-auto">
+                            Data pengajuan magang Anda telah berhasil tersimpan di sistem Smart Grow Laboratory dan saat ini dalam antrean verifikasi Pembina (Director), Mentor, atau Admin.
                           </p>
-                          <p className="text-[11px] text-emerald-900 bg-white p-3 rounded-xl border border-emerald-200 font-sans">
-                            Anda akan menerima email aktivasi setelah akun disetujui.
+
+                          <div className="p-3.5 rounded-2xl bg-white border border-emerald-200 text-left space-y-1 font-mono text-[11px] text-emerald-950">
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">Nama Pendaftar:</span>
+                              <span className="font-bold text-slate-900">{regFullName}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">Email Terdaftar:</span>
+                              <span className="font-bold text-[#2E7D32]">{regEmail}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">Divisi Magang:</span>
+                              <span className="font-bold text-slate-900">{regDivision}</span>
+                            </div>
+                          </div>
+
+                          <p className="text-[11px] text-slate-500 font-sans">
+                            Anda akan menerima notifikasi email aktivasi setelah akun Anda disetujui.
                           </p>
+
                           <div className="pt-2">
                             <button
                               type="button"
                               onClick={() => { setActiveTab('login'); setRegSuccess(false); setError(''); }}
-                              className="px-5 py-2.5 rounded-xl bg-[#2E7D32] text-white font-bold text-xs hover:bg-[#1b5e20] transition-all cursor-pointer shadow-md"
+                              className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#2E7D32] text-white font-bold text-xs hover:bg-[#1b5e20] active:scale-95 transition-all cursor-pointer shadow-md shadow-emerald-800/20"
                             >
                               Kembali ke Halaman Login
                             </button>
