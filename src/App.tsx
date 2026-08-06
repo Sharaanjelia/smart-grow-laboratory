@@ -219,6 +219,26 @@ export default function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        const cleanEmail = (firebaseUser.email || '').toLowerCase();
+
+        // 1. Check if user is in pending_registrations and still pending/rejected
+        try {
+          const qPending = query(collection(db, 'pending_registrations'), where('email', '==', cleanEmail));
+          const snapPending = await getDocs(qPending);
+          if (!snapPending.empty) {
+            const docs = snapPending.docs.map(d => d.data() as PendingRegistration);
+            docs.sort((a, b) => new Date(b.registrationTime || 0).getTime() - new Date(a.registrationTime || 0).getTime());
+            if (docs[0].status === 'Pending Approval' || docs[0].status === 'Rejected') {
+              await signOut(auth);
+              setCurrentUser(null);
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('Pending registration check warning:', e);
+        }
+
+        // 2. Fetch matched user from Firestore or local state
         let matchedUser: User | null = null;
         try {
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
@@ -229,37 +249,23 @@ export default function App() {
           console.warn('Error fetching Firestore user profile:', err);
         }
 
-        if (!matchedUser && firebaseUser.email) {
-          const cleanEmail = firebaseUser.email.toLowerCase();
+        if (!matchedUser && cleanEmail) {
           matchedUser = users.find(u => u.email.toLowerCase() === cleanEmail) ||
             initialUsers.find(u => u.email.toLowerCase() === cleanEmail) || null;
         }
 
-        if (!matchedUser && firebaseUser.email) {
-          const cleanEmail = firebaseUser.email.toLowerCase();
-          const rawName = cleanEmail.split('@')[0];
-          const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
-          matchedUser = {
-            id: firebaseUser.uid,
-            name: displayName,
-            email: cleanEmail,
-            role: 'student',
-            title: 'Mahasiswa Magang Riset',
-            studentId: `130${Math.floor(1000000 + Math.random() * 9000000)}`,
-            institution: 'Telkom University',
-            major: 'Informatika',
-            specialty: 'IoT Sensors',
-            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
-            joinedDate: new Date().toISOString().split('T')[0],
-            status: 'active'
-          };
+        // 3. Block auto-login if account is not active or not approved
+        if (!matchedUser || (matchedUser.status && matchedUser.status !== 'active')) {
+          await signOut(auth);
+          setCurrentUser(null);
+          return;
         }
 
         if (matchedUser) {
           // Strictly enforce that non-director emails cannot be director
           matchedUser = enforceStrictUserRole(matchedUser);
 
-          // If email is verified, ensure status is marked as active in Firestore
+          // Sync active status in Firestore for valid approved users
           try {
             await setDoc(doc(db, 'users', firebaseUser.uid), { role: matchedUser.role, status: 'active' }, { merge: true });
           } catch (e: any) {
@@ -267,9 +273,6 @@ export default function App() {
           }
           
           setCurrentUser(matchedUser);
-          if (currentPage === 'login') {
-            setCurrentPage('dashboard');
-          }
         }
       } else {
         setCurrentUser(null);
