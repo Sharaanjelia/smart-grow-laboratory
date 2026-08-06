@@ -94,10 +94,10 @@ Telkom University`;
 
   const filteredRegistrations = registrations.filter(reg => {
     const matchesSearch = 
-      reg.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reg.university.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reg.division.toLowerCase().includes(searchTerm.toLowerCase());
+      (reg.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (reg.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (reg.university || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (reg.division || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     if (filterStatus === 'all') return matchesSearch;
     return matchesSearch && reg.status === filterStatus;

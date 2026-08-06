@@ -76,9 +76,9 @@ export default function InternshipRecruitmentManager({
   const filteredApplicants = applicants.filter(app => {
     const stageMatch = activeStageFilter === 'all' || (app.stage || 1) === activeStageFilter;
     const searchMatch = 
-      app.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.roleInterest.toLowerCase().includes(searchTerm.toLowerCase());
+      (app.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (app.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (app.roleInterest || '').toLowerCase().includes(searchTerm.toLowerCase());
     return stageMatch && searchMatch;
   });
 

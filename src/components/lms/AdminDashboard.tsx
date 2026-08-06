@@ -620,7 +620,7 @@ export default function AdminDashboard({
               <tbody className="divide-y divide-slate-100">
                 {users
                   .filter(u => roleFilter === 'ALL' || u.role === roleFilter)
-                  .filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase()) || u.email.toLowerCase().includes(userSearch.toLowerCase()))
+                  .filter(u => (u.name || '').toLowerCase().includes(userSearch.toLowerCase()) || (u.email || '').toLowerCase().includes(userSearch.toLowerCase()))
                   .map(user => (
                     <tr key={user.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="p-3.5">

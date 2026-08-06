@@ -255,8 +255,8 @@ export default function App() {
         }
 
         if (!matchedUser && cleanEmail) {
-          matchedUser = users.find(u => u.email.toLowerCase() === cleanEmail) ||
-            initialUsers.find(u => u.email.toLowerCase() === cleanEmail) || null;
+          matchedUser = users.find(u => (u.email || '').toLowerCase() === cleanEmail) ||
+            initialUsers.find(u => (u.email || '').toLowerCase() === cleanEmail) || null;
         }
 
         // 3. Block auto-login ONLY if status is explicitly set and NOT 'active'
@@ -796,8 +796,8 @@ export default function App() {
     };
 
     setUsers(prev => {
-      if (prev.some(u => u.email.toLowerCase() === pendingReg.email.toLowerCase())) {
-        return prev.map(u => u.email.toLowerCase() === pendingReg.email.toLowerCase() ? { ...u, ...newStudentUser, status: 'active' } : u);
+      if (prev.some(u => (u.email || '').toLowerCase() === (pendingReg.email || '').toLowerCase())) {
+        return prev.map(u => (u.email || '').toLowerCase() === (pendingReg.email || '').toLowerCase() ? { ...u, ...newStudentUser, status: 'active' } : u);
       }
       return [newStudentUser, ...prev];
     });

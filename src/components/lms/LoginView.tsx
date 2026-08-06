@@ -175,8 +175,8 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
           err.code === 'auth/invalid-credential' ||
           err.code === 'auth/wrong-password'
         ) {
-          const matchedInitial = users.find(u => u.email.trim().toLowerCase() === cleanEmail) 
-            || initialUsers.find(u => u.email.trim().toLowerCase() === cleanEmail);
+          const matchedInitial = users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail) 
+            || initialUsers.find(u => (u.email || '').trim().toLowerCase() === cleanEmail);
           
           if (matchedInitial) {
             // Coba buat akun baru jika belum ada di Firebase Auth
@@ -238,8 +238,8 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
       }
 
       if (!foundUser) {
-        foundUser = users.find(u => u.email.trim().toLowerCase() === cleanEmail) 
-          || initialUsers.find(u => u.email.trim().toLowerCase() === cleanEmail) || null;
+        foundUser = users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail) 
+          || initialUsers.find(u => (u.email || '').trim().toLowerCase() === cleanEmail) || null;
       }
 
       // If user approved from pending registration but user doc not yet created in Firestore
