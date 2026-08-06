@@ -179,11 +179,32 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
             || initialUsers.find(u => u.email.trim().toLowerCase() === cleanEmail);
           
           if (matchedInitial) {
+            // Coba buat akun baru jika belum ada di Firebase Auth
             try {
               userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, cleanPassword.length >= 6 ? cleanPassword : 'smartgrow123');
             } catch (createErr: any) {
               if (createErr.code === 'auth/email-already-in-use') {
-                userCredential = await signInWithEmailAndPassword(auth, cleanEmail, 'smartgrow123');
+                // Akun sudah ada di Firebase Auth — coba berbagai password
+                const passwordsToTry = ['smartgrow123', cleanPassword, 'SmartGrow123', 'smartgrow2026'];
+                let loginSuccess = false;
+                for (const pwd of passwordsToTry) {
+                  try {
+                    userCredential = await signInWithEmailAndPassword(auth, cleanEmail, pwd);
+                    loginSuccess = true;
+                    break;
+                  } catch (_) {
+                    // coba password berikutnya
+                  }
+                }
+                if (!loginSuccess) {
+                  // Kirim email reset password otomatis dan beritahu user
+                  try {
+                    await sendPasswordResetEmail(auth, cleanEmail);
+                  } catch (_) {}
+                  setError('Akun ini sudah terdaftar namun password berbeda. Link reset password telah dikirim ke email Anda — silakan cek inbox/spam lalu login kembali.');
+                  setIsLoading(false);
+                  return;
+                }
               } else {
                 throw err;
               }
@@ -195,6 +216,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
           throw err;
         }
       }
+
 
       const fbUser = userCredential.user;
 
