@@ -796,7 +796,7 @@ export default function LoginView({ onLogin, onRegister, users = initialUsers, o
                                 required
                                 value={regFullName}
                                 onChange={e => setRegFullName(e.target.value)}
-                                placeholder="e.g. Shara Anjelia"
+                                placeholder="e.g. Budi Santoso"
                                 className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
                               />
                             </div>
@@ -821,7 +821,7 @@ export default function LoginView({ onLogin, onRegister, users = initialUsers, o
                               required
                               value={regStudyProgram}
                               onChange={e => setRegStudyProgram(e.target.value)}
-                              placeholder="e.g. S1 Informatika / S1 Teknik Telekomunikasi"
+                              placeholder="e.g. S1 Teknik Informatika / S1 Teknik Elektro"
                               className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
                             />
                           </div>
@@ -852,7 +852,7 @@ export default function LoginView({ onLogin, onRegister, users = initialUsers, o
                               required
                               value={regEmail}
                               onChange={e => setRegEmail(e.target.value)}
-                              placeholder="shara@student.telkomuniversity.ac.id"
+                              placeholder="mahasiswa@student.telkomuniversity.ac.id"
                               className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
                             />
                           </div>
