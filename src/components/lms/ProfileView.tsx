@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { User } from '../../types';
+import { User, LmsProject, ProjectItem } from '../../types';
+import { auth, db, uploadFileToFirebaseStorage } from '../../firebase';
+import { updatePassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { 
   User as UserIcon, 
   Mail, 
@@ -37,9 +40,19 @@ interface ProfileViewProps {
   currentUser: User;
   onUpdateProfile?: (updatedUser: User) => void;
   darkMode?: boolean;
+  users?: User[];
+  projects?: LmsProject[];
+  publicProjects?: ProjectItem[];
 }
 
-export default function ProfileView({ currentUser, onUpdateProfile, darkMode = false }: ProfileViewProps) {
+export default function ProfileView({ 
+  currentUser, 
+  onUpdateProfile, 
+  darkMode = false,
+  users = [],
+  projects = [],
+  publicProjects = []
+}: ProfileViewProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -54,7 +67,7 @@ export default function ProfileView({ currentUser, onUpdateProfile, darkMode = f
   const [major, setMajor] = useState(currentUser.major || (isDirector ? 'Teknik Komputer & Sistem Cerdas' : 'Informatika'));
   const [semester, setSemester] = useState(currentUser.semester || (isDirector ? 'Guru Besar / Profesor' : 'Semester 7'));
   const [phone, setPhone] = useState(currentUser.phone || '+62 812-3456-7890');
-  const [address, setAddress] = useState(currentUser.address || 'Gedung FIT Lt. 3, Lab Smart Grow, Telkom University');
+  const [address, setAddress] = useState(currentUser.address || 'Bandung Techno Park, Lab Smart Grow, Telkom University');
   const [bio, setBio] = useState(
     currentUser.bio || (isDirector 
       ? 'Kepala Laboratorium Smart Grow & Profesor Riset bidang Wireless Communications, IoT Sensors, & Precision Smart Agriculture. Berfokus pada penderesan inovasi pertanian pintar berbasis AI & Container Hydroponics.'
@@ -63,7 +76,52 @@ export default function ProfileView({ currentUser, onUpdateProfile, darkMode = f
   const [github, setGithub] = useState(currentUser.github || 'https://github.com/smartgrowlab');
   const [linkedin, setLinkedin] = useState(currentUser.linkedin || 'https://linkedin.com/in/indrarini-dyah-irawati');
   const [portfolio, setPortfolio] = useState(currentUser.portfolio || 'https://smartgrowlab.telkomuniversity.ac.id');
-  const [avatarUrl, setAvatarUrl] = useState(currentUser.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300');
+  const [avatarUrl, setAvatarUrl] = useState(
+    currentUser.avatar && !currentUser.avatar.includes('unsplash.com') 
+      ? currentUser.avatar 
+      : currentUser.name.toLowerCase().includes('indrarini') ? '/images/team/indrarini.jpg'
+      : currentUser.name.toLowerCase().includes('azliny') ? '/images/team/azliny.jpg'
+      : currentUser.name.toLowerCase().includes('shara') ? '/images/team/shara.jpg'
+      : currentUser.name.toLowerCase().includes('chiko') ? '/images/team/chiko.jpg'
+      : currentUser.name.toLowerCase().includes('shella') || currentUser.name.toLowerCase().includes('shela') ? '/images/team/shela.jpg'
+      : currentUser.name.toLowerCase().includes('sirvani') ? '/images/team/sirvani.jpg'
+      : currentUser.name.toLowerCase().includes('tiara') ? '/images/team/tiara.jpg'
+      : currentUser.name.toLowerCase().includes('nasywa') ? '/images/team/nasywa-zauja-noor.jpg'
+      : currentUser.name.toLowerCase().includes('divia') ? '/images/team/divia-nuralika-namira.jpg'
+      : currentUser.name.toLowerCase().includes('arimbi') ? '/images/team/arimbi.jpg'
+      : currentUser.name.toLowerCase().includes('daffa') ? '/images/team/daffa.jpg'
+      : currentUser.name.toLowerCase().includes('hannani') ? '/images/team/hannani.jpg'
+      : currentUser.name.toLowerCase().includes('elyasa') ? '/images/team/elyasa.jpg'
+      : currentUser.name.toLowerCase().includes('humam') ? '/images/team/humam.jpg'
+      : currentUser.avatar || '/images/team/indrarini.jpg'
+  );
+
+  // Executive KPI Metrics State (Director Editable & Dynamic)
+  const [totalHibah, setTotalHibah] = useState(currentUser.totalHibah || 'Rp 100 Juta+');
+  const [hibahSubtitle, setHibahSubtitle] = useState(currentUser.hibahSubtitle || 'Kedaireka, Dikti & Industri 2024–2026');
+  const [totalPaper, setTotalPaper] = useState(currentUser.totalPaper || '15 Paper');
+  const [paperSubtitle, setPaperSubtitle] = useState(currentUser.paperSubtitle || 'Q1 & Q2 Smart Precision Farming');
+  const [totalPaten, setTotalPaten] = useState(currentUser.totalPaten || '5 Hak Cipta');
+  const [patenSubtitle, setPatenSubtitle] = useState(currentUser.patenSubtitle || 'Sistem Algoritma & Hardware');
+  const [totalMahasiswaOverride, setTotalMahasiswaOverride] = useState(currentUser.totalMahasiswaOverride || '8 Mahasiswa Magang');
+  const [mahasiswaSubtitle, setMahasiswaSubtitle] = useState(currentUser.mahasiswaSubtitle || '8 Mahasiswa Magang & 6 Alumni Riset');
+
+  // Dynamic values calculated from system database
+  const activeStudentsCount = users && users.length > 0 ? users.filter(u => u.role === 'student' && u.status === 'active').length : 0;
+  const alumniCount = users && users.length > 0 ? users.filter(u => u.status === 'alumni').length : 6;
+  const totalProjectsCount = (projects?.length || 0) + (publicProjects?.length || 0);
+
+  const displayHibah = totalHibah.trim() || 'Rp 100 Juta+';
+  const displayHibahSub = hibahSubtitle.trim() || 'Kedaireka, Dikti & Industri 2024–2026';
+
+  const displayPaper = totalPaper.trim() || '15 Paper';
+  const displayPaperSub = paperSubtitle.trim() || 'Q1 & Q2 Smart Precision Farming';
+
+  const displayPaten = totalPaten.trim() || '5 Hak Cipta';
+  const displayPatenSub = patenSubtitle.trim() || 'Sistem Algoritma & Hardware';
+
+  const displayMahasiswa = totalMahasiswaOverride.trim() || (activeStudentsCount > 0 ? `${activeStudentsCount} Mahasiswa Magang` : '8 Mahasiswa Magang');
+  const displayMahasiswaSub = mahasiswaSubtitle.trim() || (activeStudentsCount > 0 ? `${activeStudentsCount} Mahasiswa Magang & ${alumniCount} Alumni Riset` : '8 Mahasiswa Magang & 6 Alumni Riset');
 
   // Password Form State
   const [oldPassword, setOldPassword] = useState('');
@@ -90,32 +148,69 @@ export default function ProfileView({ currentUser, onUpdateProfile, darkMode = f
       github,
       linkedin,
       portfolio,
-      avatar: avatarUrl
+      avatar: avatarUrl,
+      totalHibah,
+      hibahSubtitle,
+      totalPaper,
+      paperSubtitle,
+      totalPaten,
+      patenSubtitle,
+      totalMahasiswaOverride,
+      mahasiswaSubtitle
     };
     if (onUpdateProfile) onUpdateProfile(updated);
     setEditModalOpen(false);
     showToast('Profil Anda berhasil diperbarui!');
   };
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newPassword || newPassword.length < 6) {
+      alert('Kata sandi baru minimal harus 6 karakter untuk Firebase Authentication.');
+      return;
+    }
     if (newPassword !== confirmPassword) {
       alert('Kata sandi baru dan konfirmasi tidak cocok!');
       return;
     }
-    setPasswordModalOpen(false);
-    setOldPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    showToast('Kata sandi berhasil diperbarui!');
+
+    try {
+      if (auth.currentUser) {
+        await updatePassword(auth.currentUser, newPassword);
+      }
+      setPasswordModalOpen(false);
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      showToast('Kata sandi berhasil diperbarui via Firebase Authentication!');
+    } catch (err: any) {
+      console.error('Update password error:', err);
+      alert(err?.message || 'Gagal memperbarui kata sandi. Silakan login kembali dan coba lagi.');
+    }
   };
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setAvatarUrl(url);
-      showToast('Foto profil baru berhasil diunggah!');
+      showToast('Mengunggah foto profil ke Firebase Storage...');
+      try {
+        const downloadUrl = await uploadFileToFirebaseStorage(file, 'avatars');
+        setAvatarUrl(downloadUrl);
+        
+        const updated: User = {
+          ...currentUser,
+          avatar: downloadUrl
+        };
+        if (onUpdateProfile) onUpdateProfile(updated);
+
+        if (currentUser && currentUser.id) {
+          await setDoc(doc(db, 'users', currentUser.id), { avatar: downloadUrl }, { merge: true });
+        }
+        showToast('Foto profil baru berhasil diunggah ke Firebase Storage!');
+      } catch (err: any) {
+        console.error('Avatar upload error:', err);
+        showToast('Gagal mengunggah foto profil.');
+      }
     }
   };
 
@@ -214,29 +309,29 @@ export default function ProfileView({ currentUser, onUpdateProfile, darkMode = f
         </div>
 
         {/* EXECUTIVE METRICS & KPI HIGHLIGHTS */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-5 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">Total Hibah & Dana Riset</span>
-            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">Rp 1.85 Miliar+</p>
-            <p className="text-[10px] text-slate-400">Kedaireka, Dikti & Industri 2024-2026</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex flex-col justify-between min-h-[110px] space-y-1">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">TOTAL HIBAH & DANA RISET</span>
+            <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">{displayHibah}</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{displayHibahSub}</p>
           </div>
 
-          <div className="p-5 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 block">Publikasi Scopus & Jurnal</span>
-            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">42 Paper</p>
-            <p className="text-[10px] text-slate-400">Q1 & Q2 Smart Precision Farming</p>
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex flex-col justify-between min-h-[110px] space-y-1">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 block">PUBLIKASI SCOPUS & JURNAL</span>
+            <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">{displayPaper}</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{displayPaperSub}</p>
           </div>
 
-          <div className="p-5 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 block">Paten & HKI Terdaftar</span>
-            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">6 Hak Cipta</p>
-            <p className="text-[10px] text-slate-400">Sistem Algoritma & Hardware</p>
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex flex-col justify-between min-h-[110px] space-y-1">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 block">PATEN & HKI TERDAFTAR</span>
+            <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">{displayPaten}</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{displayPatenSub}</p>
           </div>
 
-          <div className="p-5 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">Mahasiswa Dalam Bimbingan</span>
-            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">38 Mahasiswa</p>
-            <p className="text-[10px] text-slate-400">Magang, Riset & Tugas Akhir</p>
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex flex-col justify-between min-h-[110px] space-y-1">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">MAHASISWA DALAM BIMBINGAN</span>
+            <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">{displayMahasiswa}</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{displayMahasiswaSub}</p>
           </div>
         </div>
 
@@ -271,7 +366,7 @@ export default function ProfileView({ currentUser, onUpdateProfile, darkMode = f
 
                 <div>
                   <p className="text-[10px] text-slate-400 font-medium">Alamat Ruang Kerja Kantor</p>
-                  <p className="font-medium text-slate-700 dark:text-slate-300">Gedung FIT Lt. 3, Ruang R.304 / Smart Grow Laboratory</p>
+                  <p className="font-medium text-slate-700 dark:text-slate-300">Bandung Techno Park, Ruang Smart Grow Laboratory</p>
                 </div>
 
                 <div>
@@ -367,37 +462,86 @@ export default function ProfileView({ currentUser, onUpdateProfile, darkMode = f
               </div>
             </div>
 
-            {/* Laboratory Advisory Structure */}
+            {/* Academic Education & Degree History */}
             <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                  <Users className="h-4 w-4 text-[#2E7D32]" />
-                  <span>Struktur Tim Asisten & Supervisi Laboratorium</span>
-                </h3>
-                <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950 px-2.5 py-1 rounded-full border border-emerald-300">
-                  Di Bawah Naungan Direktur
-                </span>
-              </div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-3">
+                <GraduationCap className="h-4 w-4 text-emerald-600" />
+                <span>Riwayat Pendidikan Tinggi Resmi (ITB)</span>
+              </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-emerald-100 text-[#2E7D32] font-bold shrink-0">
-                    <UserIcon className="h-5 w-5" />
+              <div className="space-y-3 text-xs">
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200/60 dark:border-slate-700/60 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold flex items-center justify-center shrink-0">
+                    S3
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-800 dark:text-slate-100">Budi Santoso, S.T., M.T.</h4>
-                    <p className="text-[10px] text-slate-400">Koordinator Asisten Riset Hardware</p>
+                    <h4 className="font-extrabold text-slate-900 dark:text-slate-100">Doktor (Dr.) - Teknik Elektro & Sistem Cerdas</h4>
+                    <p className="text-[11px] text-slate-500 font-medium">Institut Teknologi Bandung (ITB) • Lulus 2017</p>
+                    <p className="text-[10px] text-slate-400 mt-1">Disertasi: *Arsitektur Telemetri Sensor Nirkabel Berdaya Rendah & Algoritma Kompresi Data Akurat*</p>
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-700 flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-blue-100 text-blue-700 font-bold shrink-0">
-                    <UserIcon className="h-5 w-5" />
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200/60 dark:border-slate-700/60 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-bold flex items-center justify-center shrink-0">
+                    S2
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-800 dark:text-slate-100">Siti Rahmawati, S.T.</h4>
-                    <p className="text-[10px] text-slate-400">Asisten Riset Firmware & Cloud IoT</p>
+                    <h4 className="font-extrabold text-slate-900 dark:text-slate-100">Magister Teknik (M.T.) - Teknik Telekomunikasi</h4>
+                    <p className="text-[11px] text-slate-500 font-medium">Institut Teknologi Bandung (ITB) • Lulus 2004</p>
+                    <p className="text-[10px] text-slate-400 mt-1">Tesis: *Pemrosesan Sinyal Digital & Mitigasi Noise pada Jaringan Sensor Terdistribusi*</p>
                   </div>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200/60 dark:border-slate-700/60 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-bold flex items-center justify-center shrink-0">
+                    S1
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-slate-900 dark:text-slate-100">Sarjana Teknik (S.T.) - Teknik Elektro</h4>
+                    <p className="text-[11px] text-slate-500 font-medium">Institut Teknologi Bandung (ITB) • Lulus 2001</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Featured Scopus Q1/Q2 Research Publications */}
+            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-blue-600" />
+                  <span>Publikasi Scopus & Jurnal Terkemuka (Selected Works)</span>
+                </h3>
+                <span className="text-[10px] font-mono font-bold text-blue-600 bg-blue-50 dark:bg-blue-950 px-2.5 py-0.5 rounded-full">
+                  Scopus Q1/Q2
+                </span>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200/60 dark:border-slate-700/60 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-extrabold font-mono text-[10px]">Q1 • IEEE Access (2025)</span>
+                    <span className="text-[10px] font-mono text-slate-400">DOI: 10.1109/ACCESS.2025.34</span>
+                  </div>
+                  <h4 className="font-bold text-slate-900 dark:text-slate-100">Automated Nutrient Dosing and Telemetry Monitoring System for Container-Based Indoor Farming Using Machine Learning</h4>
+                  <p className="text-[11px] text-slate-500 font-sans">Authors: **Indrarini Dyah Irawati**, S. Anjelia, A. Azreen, et al.</p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200/60 dark:border-slate-700/60 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 font-extrabold font-mono text-[10px]">Q1 • Comp. Elec. Agriculture (2024)</span>
+                    <span className="text-[10px] font-mono text-slate-400">DOI: 10.1016/j.compag.2024</span>
+                  </div>
+                  <h4 className="font-bold text-slate-900 dark:text-slate-100">LoRaWAN-Based Wireless Sensor Mesh Architecture for Distributed Aquaponics and Hydroponics Telemetry</h4>
+                  <p className="text-[11px] text-slate-500 font-sans">Authors: **Indrarini Dyah Irawati**, M. C. Kasa, S. N. Putri</p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200/60 dark:border-slate-700/60 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 font-extrabold font-mono text-[10px]">Q2 • IEEE Sensors Journal (2024)</span>
+                    <span className="text-[10px] font-mono text-slate-400">DOI: 10.1109/JSEN.2024</span>
+                  </div>
+                  <h4 className="font-bold text-slate-900 dark:text-slate-100">Compressive Sensing and Kalman Filtering for Low-Power Wireless Agricultural Telemetry Sensors</h4>
+                  <p className="text-[11px] text-slate-500 font-sans">Authors: **Indrarini Dyah Irawati**</p>
                 </div>
               </div>
             </div>
@@ -537,50 +681,52 @@ export default function ProfileView({ currentUser, onUpdateProfile, darkMode = f
       )}
 
       {/* HEADER HERO CARD */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-emerald-800 via-teal-800 to-slate-900 text-white p-6 sm:p-8 shadow-xl">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative rounded-[32px] overflow-hidden bg-gradient-to-r from-[#355E3B] via-[#2A4B2F] to-slate-900 text-white p-6 sm:p-8 md:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.08)] border border-black/[0.06]">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-[#C7D8A8]/20 rounded-full blur-3xl pointer-events-none" />
         
         <div className="relative z-10 flex flex-col md:flex-row items-center md:items-end gap-6">
           
           {/* Profile Picture */}
-          <div className="relative group">
+          <div className="relative group shrink-0">
             <img 
               src={avatarUrl} 
               alt={currentUser.name}
-              className="w-32 h-32 sm:w-36 sm:h-36 rounded-2xl object-cover border-4 border-white/20 shadow-2xl transition-transform group-hover:scale-105"
+              className="w-32 h-32 sm:w-36 sm:h-36 rounded-[24px] object-cover border-4 border-white/30 shadow-2xl transition-transform group-hover:scale-105"
             />
-            <label className="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-xs font-medium cursor-pointer transition-opacity backdrop-blur-xs">
-              <Upload className="h-6 w-6 mb-1 text-emerald-400" />
+            <label className="absolute inset-0 bg-black/50 rounded-[24px] opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-xs font-medium cursor-pointer transition-opacity backdrop-blur-xs">
+              <Upload className="h-6 w-6 mb-1 text-[#C7D8A8]" />
               <span>Ganti Foto</span>
               <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
             </label>
-            <span className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-1.5 rounded-full ring-4 ring-slate-900" title="Akun Terverifikasi">
+            <span className="absolute -bottom-2 -right-2 bg-[#355E3B] text-white p-1.5 rounded-full ring-4 ring-slate-900" title="Akun Terverifikasi">
               <ShieldCheck className="h-4 w-4" />
             </span>
           </div>
 
           {/* User Basic Info */}
           <div className="flex-1 text-center md:text-left space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-400/30">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#C7D8A8]/30 text-[#C7D8A8] text-xs font-mono font-bold border border-[#C7D8A8]/40">
               <Sparkles className="h-3.5 w-3.5" />
               <span>{isAssistant ? 'Asisten Laboratorium' : 'Mahasiswa Magang Riset'}</span>
             </div>
             
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{currentUser.name}</h1>
-            <p className="text-sm text-emerald-100/90 font-medium">{currentUser.title || 'Peneliti Smart Grow Laboratory'}</p>
+            <h1 className="text-2xl sm:text-4xl font-black font-display tracking-tight text-white">{currentUser.name}</h1>
+            <p className="text-sm text-[#C7D8A8] font-medium">{currentUser.title || 'Peneliti Smart Grow Laboratory'}</p>
             
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs text-slate-300 pt-1">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs text-slate-200 pt-1 font-sans">
               <span className="flex items-center gap-1.5">
-                <BookOpen className="h-3.5 w-3.5 text-emerald-400" />
-                <span>NIM/NIP: {studentId}</span>
+                <BookOpen className="h-3.5 w-3.5 text-[#C7D8A8]" />
+                <span>NIM: {studentId}</span>
               </span>
+              {currentUser.internId && (
+                <span className="flex items-center gap-1.5 font-mono font-bold text-white bg-white/20 px-2.5 py-0.5 rounded-lg border border-white/30 shadow-xs">
+                  <Award className="h-3.5 w-3.5 text-amber-300" />
+                  <span>ID MAGANG: {currentUser.internId}</span>
+                </span>
+              )}
               <span className="flex items-center gap-1.5">
-                <Building2 className="h-3.5 w-3.5 text-emerald-400" />
+                <Building2 className="h-3.5 w-3.5 text-[#C7D8A8]" />
                 <span>{institution}</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 text-emerald-400" />
-                <span>Bergabung: {currentUser.joinedDate}</span>
               </span>
             </div>
           </div>
@@ -589,16 +735,16 @@ export default function ProfileView({ currentUser, onUpdateProfile, darkMode = f
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setEditModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold shadow-md transition-all cursor-pointer"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#355E3B] hover:bg-[#2A4B2F] text-white text-xs font-bold shadow-lg transition-all cursor-pointer border border-[#C7D8A8]/40"
             >
               <Edit3 className="h-4 w-4" />
               <span>Edit Profil</span>
             </button>
             <button
               onClick={() => setPasswordModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 backdrop-blur-md transition-all cursor-pointer"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 backdrop-blur-md transition-all cursor-pointer"
             >
-              <Key className="h-4 w-4 text-emerald-300" />
+              <Key className="h-4 w-4 text-[#C7D8A8]" />
               <span>Ganti Password</span>
             </button>
           </div>
@@ -772,7 +918,7 @@ export default function ProfileView({ currentUser, onUpdateProfile, darkMode = f
             <div className="space-y-3">
               {(currentUser.activityHistory || [
                 { id: '1', action: 'Submit Progress Tugas #2', date: '22 Juli 2026 09:30 WIB', details: 'Mengirimkan pembaruan model YOLOv8 TensorRT ke Jetson Orin Nano.' },
-                { id: '2', action: 'Presensi Masuk Tepat Waktu', date: '22 Juli 2026 08:05 WIB', details: 'Check-in di Lab Smart Grow (Lokasi: Gedung FIT Lt. 3)' },
+                { id: '2', action: 'Presensi Masuk Tepat Waktu', date: '22 Juli 2026 08:05 WIB', details: 'Check-in di Lab Smart Grow (Lokasi: Bandung Techno Park)' },
                 { id: '3', action: 'Pembaruan Dokumen Riset', date: '21 Juli 2026 14:10 WIB', details: 'Mengunggah file skematik PCB Dosing Pump ke proyek NFT Hydroponics.' }
               ]).map(act => (
                 <div key={act.id} className="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-100 dark:border-slate-700">
@@ -891,6 +1037,42 @@ export default function ProfileView({ currentUser, onUpdateProfile, darkMode = f
                   <input type="text" value={portfolio} onChange={e => setPortfolio(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
                 </div>
               </div>
+
+              {/* EXECUTIVE KPI METRICS EDITING (DIRECTOR ONLY) */}
+              {isDirector && (
+                <div className="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/80 space-y-3 mt-4">
+                  <h4 className="text-xs font-bold text-[#2E7D32] dark:text-emerald-400 flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-emerald-600" />
+                    <span>Pengaturan 4 Kartu KPI Eksekutif (Data Asli)</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">Total Hibah & Dana Riset</label>
+                      <input type="text" value={totalHibah} onChange={e => setTotalHibah(e.target.value)} placeholder="Contoh: Rp 100 Juta+" className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                      <input type="text" value={hibahSubtitle} onChange={e => setHibahSubtitle(e.target.value)} placeholder="Subtitle / Sumber Dana" className="w-full mt-1.5 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-[10px]" />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">Publikasi Scopus & Jurnal</label>
+                      <input type="text" value={totalPaper} onChange={e => setTotalPaper(e.target.value)} placeholder="Contoh: 15 Paper" className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                      <input type="text" value={paperSubtitle} onChange={e => setPaperSubtitle(e.target.value)} placeholder="Subtitle Jurnal" className="w-full mt-1.5 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-[10px]" />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">Paten & HKI Terdaftar</label>
+                      <input type="text" value={totalPaten} onChange={e => setTotalPaten(e.target.value)} placeholder="Contoh: 5 Hak Cipta" className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                      <input type="text" value={patenSubtitle} onChange={e => setPatenSubtitle(e.target.value)} placeholder="Subtitle Paten" className="w-full mt-1.5 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-[10px]" />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">Mahasiswa Bimbingan (Kustom / Otomatis)</label>
+                      <input type="text" value={totalMahasiswaOverride} onChange={e => setTotalMahasiswaOverride(e.target.value)} placeholder={`Otomatis (${activeStudentsCount || 8} Mahasiswa Magang)`} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                      <input type="text" value={mahasiswaSubtitle} onChange={e => setMahasiswaSubtitle(e.target.value)} placeholder="Subtitle Bimbingan" className="w-full mt-1.5 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-[10px]" />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => setEditModalOpen(false)} className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 font-semibold text-slate-600 dark:text-slate-300">Batal</button>

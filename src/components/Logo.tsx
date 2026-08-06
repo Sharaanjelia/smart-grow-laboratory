@@ -6,13 +6,13 @@ interface LogoProps {
 }
 
 export default function Logo({ variant = 'navbar', className = '' }: LogoProps) {
-  const logoPath = '/images/smart-grow-logo.png';
+  const smartGrowLogo = '/images/smart-grow-logo.png?v=3';
 
   if (variant === 'icon-only') {
     return (
-      <div className={`relative inline-flex items-center justify-center rounded-full bg-[#1F4E4F] p-1.5 overflow-hidden shadow-sm ${className}`}>
+      <div className={`relative inline-flex items-center justify-center rounded-full bg-[#0A5247] p-1.5 overflow-hidden shadow-sm ${className}`}>
         <img 
-          src={logoPath} 
+          src={smartGrowLogo} 
           alt="Smart Grow Laboratory Icon" 
           className="h-full w-auto object-contain filter brightness-0 invert" 
         />
@@ -23,11 +23,11 @@ export default function Logo({ variant = 'navbar', className = '' }: LogoProps) 
   if (variant === 'footer') {
     return (
       <div className={`flex items-center select-none ${className}`}>
-        <div className="bg-white/95 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/20 shadow-sm">
+        <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 shadow-sm flex items-center">
           <img 
-            src={logoPath} 
+            src={smartGrowLogo} 
             alt="Smart Grow Laboratory" 
-            className="h-12 sm:h-14 w-auto object-contain" 
+            className="h-10 sm:h-12 w-auto object-contain" 
           />
         </div>
       </div>
@@ -37,9 +37,9 @@ export default function Logo({ variant = 'navbar', className = '' }: LogoProps) 
   if (variant === 'sidebar') {
     return (
       <div className={`flex items-center select-none ${className}`}>
-        <div className="bg-white/95 px-3 py-1.5 rounded-xl shadow-xs">
+        <div className="bg-white/95 px-3 py-1.5 rounded-xl shadow-xs flex items-center">
           <img 
-            src={logoPath} 
+            src={smartGrowLogo} 
             alt="Smart Grow Laboratory" 
             className="h-7 sm:h-8 w-auto object-contain" 
           />
@@ -48,14 +48,18 @@ export default function Logo({ variant = 'navbar', className = '' }: LogoProps) 
     );
   }
 
-  // Navbar default variant matching uploaded image brand identity
+  // Navbar default variant
   return (
     <div className={`flex items-center select-none ${className}`}>
       <img 
-        src={logoPath} 
+        src={smartGrowLogo} 
         alt="Smart Grow Laboratory" 
-        className="h-7 sm:h-8 w-auto object-contain transition-transform duration-300 group-hover:scale-105" 
+        className="h-8 sm:h-9 w-auto object-contain transition-transform duration-300 group-hover:scale-105" 
       />
     </div>
   );
 }
+
+
+
+

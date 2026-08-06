@@ -1,0 +1,170 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================================
+    // HELPER FUNCTIONS FOR ROLE-BASED ACCESS CONTROL (RBAC)
+    // =========================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function getUserRole() {
+      return isAuthenticated() ? getUserData().role : null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() == 'admin';
+    }
+    
+    function isDirector() {
+      return isAuthenticated() && (getUserRole() == 'director' || isAdmin());
+    }
+    
+    function isAssistant() {
+      return isAuthenticated() && (getUserRole() == 'assistant' || isDirector());
+    }
+    
+    function isStudent() {
+      return isAuthenticated() && getUserRole() == 'student';
+    }
+
+    // =========================================================================
+    // COLLECTION SECURITY RULES
+    // =========================================================================
+
+    // 1. Users collection
+    // Students can read and update only their own profile.
+    // Assistants, Directors, and Admins can manage members.
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isUser(userId) || isAssistant() || isDirector() || isAdmin();
+      allow delete: if isDirector() || isAdmin();
+    }
+
+    // 2. Tasks & Revision History collection
+    // Students can read & submit progress on tasks assigned to them.
+    // Assistants, Directors, and Admins can create, update, review, and delete tasks.
+    match /tasks/{taskId} {
+      allow read: if isAuthenticated() && (
+        isAssistant() || isDirector() || isAdmin() ||
+        resource.data.assignedStudentId == request.auth.uid ||
+        resource.data.assignedStudentName == getUserData().name
+      );
+      allow create: if isAssistant() || isDirector() || isAdmin();
+      allow update: if isAssistant() || isDirector() || isAdmin() || (
+        isAuthenticated() && (
+          resource.data.assignedStudentId == request.auth.uid ||
+          resource.data.assignedStudentName == getUserData().name
+        )
+      );
+      allow delete: if isAssistant() || isDirector() || isAdmin();
+    }
+
+    // 3. Attendance & Daily Logbook collection
+    // Students can read and create/update only their own attendance and logbooks.
+    // Assistants, Directors, and Admins can manage all attendance records.
+    match /attendance/{attId} {
+      allow read: if isAuthenticated() && (
+        isAssistant() || isDirector() || isAdmin() ||
+        resource.data.studentId == request.auth.uid ||
+        resource.data.studentName == getUserData().name
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAssistant() || isDirector() || isAdmin() || (
+        isAuthenticated() && (
+          resource.data.studentId == request.auth.uid ||
+          resource.data.studentName == getUserData().name
+        )
+      );
+      allow delete: if isDirector() || isAdmin();
+    }
+
+    // 4. Announcements collection
+    // All authenticated users can read.
+    // Assistants, Directors, and Admins can publish, update, and delete announcements.
+    match /announcements/{annId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAssistant() || isDirector() || isAdmin();
+    }
+
+    // 5. Approval Requests collection
+    // Students can read and create their own approval requests.
+    // Assistants, Directors, and Admins can view and approve/reject all requests.
+    match /approval_requests/{reqId} {
+      allow read: if isAuthenticated() && (
+        isAssistant() || isDirector() || isAdmin() ||
+        resource.data.studentId == request.auth.uid ||
+        resource.data.studentName == getUserData().name
+      );
+      allow create: if isAuthenticated();
+      allow update, delete: if isAssistant() || isDirector() || isAdmin();
+    }
+
+    // 6. Notifications collection
+    // Users can read notifications directed to everyone, their role, or their UID.
+    // Assistants, Directors, and Admins can issue notifications.
+    match /notifications/{notifId} {
+      allow read: if isAuthenticated() && (
+        isAssistant() || isDirector() || isAdmin() ||
+        resource.data.recipientRole == 'all' ||
+        resource.data.recipientRole == getUserRole() ||
+        resource.data.recipientRole == request.auth.uid
+      );
+      allow create, update, delete: if isAssistant() || isDirector() || isAdmin();
+    }
+
+    // 7. System Logs collection
+    // System audit logs read restricted to Assistants, Directors, and Admins.
+    // Authenticated users can write log entries upon system actions.
+    match /system_logs/{logId} {
+      allow read: if isAssistant() || isDirector() || isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if isDirector() || isAdmin();
+    }
+
+    // 8. Applicants (Recruitment) collection
+    // Public creation allowed for prospective internship applicants.
+    // Directors and Admins manage, advance stages, approve, or reject applicants.
+    match /applicants/{appId} {
+      allow read: if isAuthenticated();
+      allow create: if true; // Public submission from Join Us form
+      allow update, delete: if isAssistant() || isDirector() || isAdmin();
+    }
+
+    // 9. LMS Research Projects collection
+    // Authenticated users can read research projects.
+    // Assistants, Directors, and Admins can create, update, or archive projects.
+    match /lms_projects/{lmsProjId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAssistant() || isDirector() || isAdmin();
+    }
+
+    // 10. Public Showcase Projects collection
+    // Public read access for laboratory showcase pages.
+    // Directors and Admins manage showcase projects.
+    match /projects/{projId} {
+      allow read: if true;
+      allow create, update, delete: if isDirector() || isAdmin();
+    }
+
+    // 11. News & Articles collection
+    // Public read access for laboratory news articles.
+    // Directors and Admins manage news content.
+    match /news/{newsId} {
+      allow read: if true;
+      allow create, update, delete: if isDirector() || isAdmin();
+    }
+
+  }
+}

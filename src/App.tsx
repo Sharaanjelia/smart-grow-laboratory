@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import TeamAvatar from './components/TeamAvatar';
 import { 
   newsData, 
@@ -30,6 +30,8 @@ import {
   ApprovalRequest, 
   LmsNotification, 
   ApplicantRecord, 
+  PendingRegistration,
+  SelectionStage,
   SystemLog,
   UserRole
 } from './types';
@@ -44,10 +46,15 @@ import FlocifyShowcase from './components/FlocifyShowcase';
 
 import LoginView from './components/lms/LoginView';
 import LmsLayout from './components/lms/LmsLayout';
-import DirectorDashboard from './components/lms/DirectorDashboard';
-import AssistantDashboard from './components/lms/AssistantDashboard';
-import StudentDashboard from './components/lms/StudentDashboard';
-import AdminDashboard from './components/lms/AdminDashboard';
+const DirectorDashboard = React.lazy(() => import('./components/lms/DirectorDashboard'));
+const AssistantDashboard = React.lazy(() => import('./components/lms/AssistantDashboard'));
+const StudentDashboard = React.lazy(() => import('./components/lms/StudentDashboard'));
+const AdminDashboard = React.lazy(() => import('./components/lms/AdminDashboard'));
+import { FirebaseSeederModal } from './components/FirebaseSeederModal';
+import { auth, db, uploadAttendancePhotoToStorage, backupPhotoToGoogleDrive } from './firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, getDoc, getDocs, query, where, limit, orderBy } from 'firebase/firestore';
+import { Database } from 'lucide-react';
 import { 
   ChevronRight, 
   Send, 
@@ -76,16 +83,18 @@ import {
   Heart,
   Leaf,
   Calendar,
-  MessageSquare
+  MessageSquare,
+  ExternalLink
 } from 'lucide-react';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageId>('home');
   const [selectedNewsId, setSelectedNewsId] = useState<string | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
-  const [projectSort, setProjectSort] = useState<'newest' | 'oldest'>('newest');
+
   const [projectCategory, setProjectCategory] = useState<string>('All');
   const [joinModalOpen, setJoinModalOpen] = useState(false);
+  const [isFirebaseSeederOpen, setIsFirebaseSeederOpen] = useState(false);
 
   // ==========================================
   // LABORATORY MANAGEMENT SYSTEM (LMS) STATE
@@ -116,6 +125,7 @@ export default function App() {
   const [approvalRequests, setApprovalRequests] = useState<ApprovalRequest[]>(initialApprovalRequests);
   const [notifications, setNotifications] = useState<LmsNotification[]>(initialNotifications);
   const [applicants, setApplicants] = useState<ApplicantRecord[]>(initialApplicants);
+  const [pendingRegistrations, setPendingRegistrations] = useState<PendingRegistration[]>([]);
   const [systemLogs, setSystemLogs] = useState<SystemLog[]>(initialSystemLogs);
 
   // CMS Content State
@@ -123,28 +133,58 @@ export default function App() {
   const [projectsList, setProjectsList] = useState<ProjectItem[]>(projectsData);
   const [teamList, setTeamList] = useState<TeamMember[]>(teamData);
 
-  // Sync teamList whenever teamData is updated
+  // Sync newsList & teamList whenever newsData or teamData is updated
   useEffect(() => {
+    setNewsList(newsData);
     setTeamList(teamData);
   }, []);
 
   // CMS Handlers
-  const handleAddNews = (newItem: Omit<NewsItem, 'id'>) => {
+  const handleAddNews = async (newItem: Omit<NewsItem, 'id'>) => {
     const item: NewsItem = { ...newItem, id: `news_${Date.now()}` };
     setNewsList(prev => [item, ...prev]);
+    try {
+      await setDoc(doc(db, 'news', item.id), JSON.parse(JSON.stringify(item)));
+    } catch (e: any) {
+      console.warn('Firestore add news notice:', e?.message);
+    }
   };
 
-  const handleDeleteNews = (id: string) => {
+  const handleDeleteNews = async (id: string) => {
     setNewsList(prev => prev.filter(n => n.id !== id));
+    try {
+      await deleteDoc(doc(db, 'news', id));
+    } catch (e: any) {
+      console.warn('Firestore delete news notice:', e?.message);
+    }
   };
 
-  const handleAddProject = (newProj: Omit<ProjectItem, 'id'>) => {
+  const handleAddProject = async (newProj: Omit<ProjectItem, 'id'>) => {
     const proj: ProjectItem = { ...newProj, id: `proj_${Date.now()}` };
     setProjectsList(prev => [proj, ...prev]);
+    try {
+      await setDoc(doc(db, 'projects', proj.id), JSON.parse(JSON.stringify(proj)));
+    } catch (e: any) {
+      console.warn('Firestore add project notice:', e?.message);
+    }
   };
 
-  const handleDeleteProject = (id: string) => {
+  const handleEditProject = async (updatedProj: ProjectItem) => {
+    setProjectsList(prev => prev.map(p => p.id === updatedProj.id ? updatedProj : p));
+    try {
+      await setDoc(doc(db, 'projects', updatedProj.id), JSON.parse(JSON.stringify(updatedProj)));
+    } catch (e: any) {
+      console.warn('Firestore edit project notice:', e?.message);
+    }
+  };
+
+  const handleDeleteProject = async (id: string) => {
     setProjectsList(prev => prev.filter(p => p.id !== id));
+    try {
+      await deleteDoc(doc(db, 'projects', id));
+    } catch (e: any) {
+      console.warn('Firestore delete project notice:', e?.message);
+    }
   };
 
   const handleAddTeamMember = (member: Omit<TeamMember, 'id'>) => {
@@ -156,28 +196,97 @@ export default function App() {
     setTeamList(prev => prev.filter(m => m.id !== id));
   };
 
-  // Auto restore session on page reload/mount
+  // Auto restore session & listen to Firebase Authentication state changes
+  // Helper function to strictly enforce Director role only for official director email
+  const isDirectorEmail = (emailStr?: string): boolean => {
+    const clean = (emailStr || '').trim().toLowerCase();
+    return clean === 'indrarini@telkomuniversity.ac.id' || clean === 'director@smartgrowlab.com';
+  };
+
+  const enforceStrictUserRole = (user: User): User => {
+    const cleanEmail = (user.email || '').trim().toLowerCase();
+    if (user.role === 'director' && !isDirectorEmail(cleanEmail)) {
+      return {
+        ...user,
+        role: 'student',
+        title: user.title === 'Kepala & Direktur Utama Smart Grow Laboratory' ? 'Mahasiswa Magang Riset' : (user.title || 'Mahasiswa Magang Riset')
+      };
+    }
+    return user;
+  };
+
   useEffect(() => {
-    try {
-      const savedUserJson = localStorage.getItem('smartgrow_session_user');
-      if (savedUserJson) {
-        const savedUser = JSON.parse(savedUserJson) as User;
-        if (savedUser && savedUser.id) {
-          const matchedUser = initialUsers.find(u => u.id === savedUser.id || u.email.toLowerCase() === savedUser.email.toLowerCase()) || savedUser;
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        let matchedUser: User | null = null;
+        try {
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          if (userDoc.exists()) {
+            matchedUser = userDoc.data() as User;
+          }
+        } catch (err) {
+          console.warn('Error fetching Firestore user profile:', err);
+        }
+
+        if (!matchedUser && firebaseUser.email) {
+          const cleanEmail = firebaseUser.email.toLowerCase();
+          matchedUser = users.find(u => u.email.toLowerCase() === cleanEmail) ||
+            initialUsers.find(u => u.email.toLowerCase() === cleanEmail) || null;
+        }
+
+        if (!matchedUser && firebaseUser.email) {
+          const cleanEmail = firebaseUser.email.toLowerCase();
+          const rawName = cleanEmail.split('@')[0];
+          const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+          matchedUser = {
+            id: firebaseUser.uid,
+            name: displayName,
+            email: cleanEmail,
+            role: 'student',
+            title: 'Mahasiswa Magang Riset',
+            studentId: `130${Math.floor(1000000 + Math.random() * 9000000)}`,
+            institution: 'Telkom University',
+            major: 'Informatika',
+            specialty: 'IoT Sensors',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+            joinedDate: new Date().toISOString().split('T')[0],
+            status: 'active'
+          };
+        }
+
+        if (matchedUser) {
+          // Strictly enforce that non-director emails cannot be director
+          matchedUser = enforceStrictUserRole(matchedUser);
+
+          // If email is verified, ensure status is marked as active in Firestore
+          try {
+            await setDoc(doc(db, 'users', firebaseUser.uid), { role: matchedUser.role, status: 'active' }, { merge: true });
+          } catch (e: any) {
+            console.warn('Sync active status on auth change notice:', e?.message);
+          }
+          
           setCurrentUser(matchedUser);
-          setCurrentPage('dashboard');
+          if (currentPage === 'login') {
+            setCurrentPage('dashboard');
+          }
+        }
+      } else {
+        setCurrentUser(null);
+        if (currentPage === 'dashboard') {
+          setCurrentPage('login');
         }
       }
-    } catch (err) {
-      console.error('Error restoring session:', err);
-    }
-  }, []);
+    });
+
+    return () => unsubscribe();
+  }, [currentPage, users]);
 
   // LMS Handlers
   const handleLogin = (user: User) => {
-    setCurrentUser(user);
+    const sanitizedUser = enforceStrictUserRole(user);
+    setCurrentUser(sanitizedUser);
     try {
-      localStorage.setItem('smartgrow_session_user', JSON.stringify(user));
+      localStorage.setItem('smartgrow_session_user', JSON.stringify(sanitizedUser));
     } catch (err) {
       console.error('Error saving session:', err);
     }
@@ -186,15 +295,21 @@ export default function App() {
   };
 
   const handleSwitchUser = (newUser: User) => {
-    setCurrentUser(newUser);
+    const sanitizedUser = enforceStrictUserRole(newUser);
+    setCurrentUser(sanitizedUser);
     try {
-      localStorage.setItem('smartgrow_session_user', JSON.stringify(newUser));
+      localStorage.setItem('smartgrow_session_user', JSON.stringify(sanitizedUser));
     } catch (err) {
       console.error('Error saving switched session:', err);
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error('Error during signOut:', err);
+    }
     setCurrentUser(null);
     try {
       localStorage.removeItem('smartgrow_session_user');
@@ -204,7 +319,24 @@ export default function App() {
     setCurrentPage('home');
   };
 
-  const handleCreateTask = (newTask: Omit<Task, 'id' | 'status' | 'createdAt'>) => {
+  // Helper functions for Firestore persistence
+  const saveToFirestore = async (collectionName: string, id: string, data: any) => {
+    try {
+      await setDoc(doc(db, collectionName, id), JSON.parse(JSON.stringify(data)), { merge: true });
+    } catch (e: any) {
+      console.warn(`Firestore save notice for ${collectionName}/${id}:`, e?.message);
+    }
+  };
+
+  const deleteFromFirestore = async (collectionName: string, id: string) => {
+    try {
+      await deleteDoc(doc(db, collectionName, id));
+    } catch (e: any) {
+      console.warn(`Firestore delete notice for ${collectionName}/${id}:`, e?.message);
+    }
+  };
+
+  const handleCreateTask = async (newTask: Omit<Task, 'id' | 'status' | 'createdAt'>) => {
     const count = tasks.length + 1;
     const taskObj: Task = {
       ...newTask,
@@ -216,6 +348,7 @@ export default function App() {
       createdAt: new Date().toISOString().split('T')[0]
     };
     setTasks(prev => [taskObj, ...prev]);
+    saveToFirestore('tasks', taskObj.id, taskObj);
 
     // Add log
     const logObj: SystemLog = {
@@ -226,17 +359,21 @@ export default function App() {
       details: `Membuat tugas "${newTask.title}" (${taskObj.taskNumber}) untuk ${newTask.assignedStudentName}`
     };
     setSystemLogs(prev => [logObj, ...prev]);
+    saveToFirestore('system_logs', logObj.id, logObj);
   };
 
-  const handleUpdateTask = (updatedTask: Task) => {
+  const handleUpdateTask = async (updatedTask: Task) => {
     setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
+    saveToFirestore('tasks', updatedTask.id, updatedTask);
   };
 
-  const handleDeleteTask = (taskId: string) => {
+  const handleDeleteTask = async (taskId: string) => {
     setTasks(prev => prev.filter(t => t.id !== taskId));
+    deleteFromFirestore('tasks', taskId);
   };
 
-  const handleRequestRevision = (taskId: string, revisionNote: string, assistantNotes: string) => {
+  const handleRequestRevision = async (taskId: string, revisionNote: string, assistantNotes: string) => {
+    let updatedTaskObj: Task | null = null;
     setTasks(prev => prev.map(t => {
       if (t.id === taskId) {
         const count = (t.revisions?.length || 0) + 1;
@@ -250,24 +387,29 @@ export default function App() {
           status: 'pending' as const,
           history: `Diminta revisi oleh ${currentUser?.name || 'Asisten'} pada ${new Date().toLocaleDateString('id-ID')}`
         };
-        return {
+        updatedTaskObj = {
           ...t,
           status: 'revision' as const,
           feedback: assistantNotes,
           revisions: [newRev, ...(t.revisions || [])]
         };
+        return updatedTaskObj;
       }
       return t;
     }));
+    if (updatedTaskObj) {
+      saveToFirestore('tasks', taskId, updatedTaskObj);
+    }
   };
 
   // Project CRUD Handlers
-  const handleCreateLmsProject = (newProject: Omit<LmsProject, 'id'>) => {
+  const handleCreateLmsProject = async (newProject: Omit<LmsProject, 'id'>) => {
     const projObj: LmsProject = {
       ...newProject,
       id: `proj_${Date.now()}`
     };
     setLmsProjects(prev => [projObj, ...prev]);
+    saveToFirestore('lms_projects', projObj.id, projObj);
 
     // Log
     const logObj: SystemLog = {
@@ -278,38 +420,68 @@ export default function App() {
       details: `Menambahkan proyek riset baru "${newProject.title}" (${newProject.projectNumber})`
     };
     setSystemLogs(prev => [logObj, ...prev]);
+    saveToFirestore('system_logs', logObj.id, logObj);
   };
 
-  const handleUpdateLmsProject = (updatedProject: LmsProject) => {
+  const handleUpdateLmsProject = async (updatedProject: LmsProject) => {
     setLmsProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+    saveToFirestore('lms_projects', updatedProject.id, updatedProject);
   };
 
-  const handleDeleteLmsProject = (projectId: string) => {
+  const handleDeleteLmsProject = async (projectId: string) => {
     setLmsProjects(prev => prev.filter(p => p.id !== projectId));
+    deleteFromFirestore('lms_projects', projectId);
   };
 
-  const handleArchiveLmsProject = (projectId: string) => {
-    setLmsProjects(prev => prev.map(p => p.id === projectId ? { ...p, status: 'archived' as const } : p));
+  const handleArchiveLmsProject = async (projectId: string) => {
+    setLmsProjects(prev => prev.map(p => {
+      if (p.id === projectId) {
+        const updated = { ...p, status: 'archived' as const };
+        saveToFirestore('lms_projects', projectId, updated);
+        return updated;
+      }
+      return p;
+    }));
   };
 
-  const handleApproveTask = (taskId: string) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' as const } : t));
+  const handleApproveTask = async (taskId: string) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        const updated = { ...t, status: 'completed' as const };
+        saveToFirestore('tasks', taskId, updated);
+        return updated;
+      }
+      return t;
+    }));
   };
 
-  const handleRejectTask = (taskId: string, feedback: string) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'revision' as const, feedback } : t));
+  const handleRejectTask = async (taskId: string, feedback: string) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        const updated = { ...t, status: 'revision' as const, feedback };
+        saveToFirestore('tasks', taskId, updated);
+        return updated;
+      }
+      return t;
+    }));
   };
 
-  const handleCreateAnnouncement = (ann: Omit<Announcement, 'id' | 'date'>) => {
+  const handleCreateAnnouncement = async (ann: Omit<Announcement, 'id' | 'date'>) => {
     const annObj: Announcement = {
       ...ann,
       id: `ann_${Date.now()}`,
       date: new Date().toISOString().split('T')[0]
     };
     setAnnouncements(prev => [annObj, ...prev]);
+    saveToFirestore('announcements', annObj.id, annObj);
   };
 
-  const handleCheckIn = (studentId: string, studentName: string) => {
+  // NOTE: One-time getDocs fetch removed — realtime onSnapshot listeners below provide
+  // initial data load AND continuous updates, eliminating duplicate fetching.
+  // Public data (news, projects) loaded via public listener (always active).
+  // Private data loaded via authenticated listener (active only when logged in).
+
+  const handleCheckIn = async (studentId: string, studentName: string, rawPhotoUrl?: string, locationAddress?: string) => {
     const today = new Date().toISOString().split('T')[0];
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     
@@ -318,42 +490,119 @@ export default function App() {
     const minute = new Date().getMinutes();
     const isLate = hour > 8 || (hour === 8 && minute > 30);
 
+    // 1. Upload selfie photo to Firebase Storage `attendance/` folder
+    let publicPhotoUrl = rawPhotoUrl || '';
+    if (rawPhotoUrl && rawPhotoUrl.startsWith('data:image')) {
+      publicPhotoUrl = await uploadAttendancePhotoToStorage(rawPhotoUrl, studentId);
+    }
+
+    // 2. Trigger async background GDrive backup
+    const gdriveStatus = await backupPhotoToGoogleDrive(publicPhotoUrl, studentName, today);
+
+    // Get current user details for division & mentor
+    const currentStudentObj = users.find(u => u.id === studentId || u.name === studentName);
+
     const record: AttendanceRecord = {
       id: `att_${Date.now()}`,
       studentId,
+      internshipId: currentStudentObj?.studentId || `13012100${Math.floor(10 + Math.random() * 89)}`,
       studentName,
+      division: currentStudentObj?.specialty || currentStudentObj?.title || 'IoT & Hardware Engineering',
+      mentor: currentStudentObj?.advisor || 'Prof. Dr. Indrarini Dyah Irawati',
       date: today,
       checkInTime: now,
-      status: isLate ? 'late' : 'present'
+      status: isLate ? 'late' : 'present',
+      location: locationAddress || 'Smart Grow Laboratory • Area Bandung Techno Park (BTP) Telkom University',
+      address: 'Jl. Telekomunikasi No.1, Sukapura, Dayeuhkolot, Bandung, Jawa Barat 40257',
+      latitude: -6.9706,
+      longitude: 107.6297,
+      gpsAccuracy: 8,
+      locationRadius: 100,
+      deviceName: navigator.userAgent.includes('Windows') ? 'Windows PC' : navigator.userAgent.includes('Mac') ? 'MacBook Pro' : 'Mobile Device',
+      browser: navigator.userAgent.includes('Chrome') ? 'Chrome' : 'Browser Web',
+      operatingSystem: navigator.platform || 'Desktop',
+      checkInPhoto: publicPhotoUrl,
+      photoUrl: publicPhotoUrl,
+      firebaseStorageUrl: publicPhotoUrl,
+      photoFileName: `selfie_${studentId}_${today}.jpg`,
+      photoSize: '245 KB',
+      photoResolution: '640x480',
+      gdriveBackupStatus: gdriveStatus,
+      dailyNotes: 'Monitoring Smart Farming & Kalibrasi Sensor pH/EC',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
 
     setAttendance(prev => [record, ...prev]);
+    saveToFirestore('attendance', record.id, record);
+
+    // Save System Log
+    const logObj: SystemLog = {
+      id: `log_${Date.now()}`,
+      timestamp: new Date().toLocaleString('id-ID'),
+      user: studentName,
+      action: 'PRESENSI_CHECKIN',
+      details: `Presensi check-in selfie terverifikasi BTP Telkom University (Jam ${now} WIB)`
+    };
+    setSystemLogs(prev => [logObj, ...prev]);
+    saveToFirestore('system_logs', logObj.id, logObj);
   };
 
-  const handleCheckOut = (studentId: string) => {
+  const handleCheckOut = async (studentId: string) => {
     const today = new Date().toISOString().split('T')[0];
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    setAttendance(prev => prev.map(a => 
-      (a.studentId === studentId && (a.date === today || a.date === '2026-07-22'))
-        ? { ...a, checkOutTime: now } 
-        : a
-    ));
+    setAttendance(prev => prev.map(a => {
+      if (a.studentId === studentId && (a.date === today || a.date === '2026-07-22')) {
+        const updated: AttendanceRecord = { 
+          ...a, 
+          checkOutTime: now,
+          workDuration: '7 Jam 45 Menit',
+          duration: '7 Jam 45 Menit',
+          status: (a.status === 'late' ? 'late' : 'checked_out') as any,
+          updatedAt: new Date().toISOString()
+        };
+        saveToFirestore('attendance', a.id, updated);
+        return updated;
+      }
+      return a;
+    }));
   };
 
-  const handleSubmitTaskProgress = (taskId: string, notes: string, links: { github?: string; docs?: string }) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'review' as const } : t));
+  const handleSubmitTaskProgress = async (taskId: string, notes: string, links: { github?: string; docs?: string }) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        const updated = { ...t, status: 'review' as const, submissionNotes: notes, submissionLinks: links };
+        saveToFirestore('tasks', taskId, updated);
+        return updated;
+      }
+      return t;
+    }));
   };
 
-  const handleApproveRequest = (requestId: string) => {
-    setApprovalRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'approved' as const } : r));
+  const handleApproveRequest = async (requestId: string) => {
+    setApprovalRequests(prev => prev.map(r => {
+      if (r.id === requestId) {
+        const updated = { ...r, status: 'approved' as const };
+        saveToFirestore('approval_requests', requestId, updated);
+        return updated;
+      }
+      return r;
+    }));
   };
 
-  const handleRejectRequest = (requestId: string) => {
-    setApprovalRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'rejected' as const } : r));
+  const handleRejectRequest = async (requestId: string) => {
+    setApprovalRequests(prev => prev.map(r => {
+      if (r.id === requestId) {
+        const updated = { ...r, status: 'rejected' as const };
+        saveToFirestore('approval_requests', requestId, updated);
+        return updated;
+      }
+      return r;
+    }));
   };
 
-  const handleCreateUser = (newUser: Omit<User, 'id' | 'joinedDate'>) => {
+  const handleCreateUser = async (newUser: Omit<User, 'id' | 'joinedDate'>) => {
     const userObj: User = {
       ...newUser,
       id: `user_${Date.now()}`,
@@ -361,54 +610,356 @@ export default function App() {
       avatar: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300`
     };
     setUsers(prev => [...prev, userObj]);
+    saveToFirestore('users', userObj.id, userObj);
   };
 
-  const handleDeleteUser = (userId: string) => {
+  const handleDeleteUser = async (userId: string) => {
     setUsers(prev => prev.filter(u => u.id !== userId));
+    deleteFromFirestore('users', userId);
   };
 
-  const handleApproveApplicant = (applicantId: string) => {
+  const handleAdvanceApplicantStage = async (applicantId: string, nextStage: SelectionStage, notes?: string) => {
     const applicant = applicants.find(a => a.id === applicantId);
     if (!applicant) return;
 
-    // Approve applicant
-    setApplicants(prev => prev.map(a => a.id === applicantId ? { ...a, status: 'approved' as const } : a));
+    if (nextStage === 5) {
+      const approvedCount = applicants.filter(a => a.status === 'approved' || a.stage === 5).length;
+      const generatedInternId = `SGL-INT-2026-00${approvedCount + 8}`;
 
-    // Create student user account automatically
-    const newStudent: User = {
-      id: `user_${Date.now()}`,
-      name: applicant.fullName,
-      email: applicant.email,
-      role: 'student',
-      studentId: `130121${Math.floor(1000 + Math.random() * 9000)}`,
-      institution: 'Telkom University',
-      specialty: applicant.roleInterest,
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
-      joinedDate: new Date().toISOString().split('T')[0],
-      status: 'active'
-    };
+      const updatedApplicant: ApplicantRecord = { 
+        ...applicant, 
+        status: 'approved', 
+        stage: 5,
+        internId: generatedInternId,
+        stageNotes: notes || 'Diterima Magang Resmi & Terbit ID Magang.' 
+      };
 
-    setUsers(prev => [...prev, newStudent]);
+      setApplicants(prev => prev.map(a => a.id === applicantId ? updatedApplicant : a));
+
+      const newStudent: User = {
+        id: `user_${Date.now()}`,
+        name: applicant.fullName,
+        email: applicant.email,
+        role: 'student',
+        studentId: `130122${Math.floor(1000 + Math.random() * 9000)}`,
+        internId: generatedInternId,
+        institution: applicant.university || 'Telkom University',
+        major: applicant.major || 'Informatika',
+        specialty: applicant.roleInterest,
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+        joinedDate: new Date().toISOString().split('T')[0],
+        status: 'active'
+      };
+
+      setUsers(prev => [...prev, newStudent]);
+
+      try {
+        await setDoc(doc(db, 'applicants', applicantId), JSON.parse(JSON.stringify(updatedApplicant)));
+        await setDoc(doc(db, 'users', newStudent.id), JSON.parse(JSON.stringify(newStudent)));
+      } catch (e: any) {
+        console.warn('Advance applicant stage 5 sync warning:', e?.message);
+      }
+    } else {
+      const updatedApplicant: ApplicantRecord = { 
+        ...applicant, 
+        status: 'in_selection', 
+        stage: nextStage,
+        stageNotes: notes || `Lanjut ke Tahap ${nextStage}.` 
+      };
+
+      setApplicants(prev => prev.map(a => a.id === applicantId ? updatedApplicant : a));
+
+      try {
+        await setDoc(doc(db, 'applicants', applicantId), JSON.parse(JSON.stringify(updatedApplicant)));
+      } catch (e: any) {
+        console.warn('Advance applicant stage sync warning:', e?.message);
+      }
+    }
   };
 
-  const handleRejectApplicant = (applicantId: string) => {
-    setApplicants(prev => prev.map(a => a.id === applicantId ? { ...a, status: 'rejected' as const } : a));
+  const handleApproveApplicant = async (applicantId: string) => {
+    await handleAdvanceApplicantStage(applicantId, 5, 'Diterima Magang Resmi & Terbit ID Magang.');
   };
 
-  const handleAddApplicantFromPublic = (app: { fullName: string; email: string; roleInterest: string; motivation: string; github?: string; instagram?: string }) => {
+  const handleRejectApplicant = async (applicantId: string) => {
+    const applicant = applicants.find(a => a.id === applicantId);
+    if (!applicant) return;
+
+    const updatedApplicant: ApplicantRecord = { ...applicant, status: 'rejected' };
+    setApplicants(prev => prev.map(a => a.id === applicantId ? updatedApplicant : a));
+
+    try {
+      await setDoc(doc(db, 'applicants', applicantId), JSON.parse(JSON.stringify(updatedApplicant)));
+    } catch (e: any) {
+      console.warn('Reject applicant sync warning:', e?.message);
+    }
+  };
+
+  const handleAddApplicantFromPublic = async (app: { fullName: string; email: string; roleInterest: string; motivation: string; github?: string; instagram?: string; phone?: string; university?: string; major?: string }) => {
     const newApplicant: ApplicantRecord = {
       id: `app_${Date.now()}`,
       fullName: app.fullName,
       email: app.email,
+      phone: app.phone,
+      university: app.university,
+      major: app.major,
       roleInterest: app.roleInterest,
       motivation: app.motivation,
+      github: app.github,
+      instagram: app.instagram,
       submittedAt: new Date().toISOString().split('T')[0],
-      status: 'pending'
+      stage: 1,
+      status: 'pending',
+      stageNotes: 'Berkas Pendaftaran Baru Masuk dari Portal Publik.'
     };
 
     setApplicants(prev => [newApplicant, ...prev]);
+
+    try {
+      const ref = doc(db, 'applicants', newApplicant.id);
+      await setDoc(ref, JSON.parse(JSON.stringify(newApplicant)));
+      console.log('Applicant saved to Firebase Firestore:', newApplicant);
+    } catch (err: any) {
+      console.warn('Firestore applicant save note:', err?.message);
+    }
   };
-  
+
+  const handleApproveRegistration = async (pendingReg: PendingRegistration) => {
+    const approvedCount = pendingRegistrations.filter(r => r.status === 'Approved').length + 1;
+    const generatedInternId = `SGL-INT-2026-${String(approvedCount).padStart(3, '0')}`;
+    const token = `act_token_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+    const updated: PendingRegistration = {
+      ...pendingReg,
+      status: 'Approved',
+      internId: generatedInternId,
+      activationToken: token
+    };
+
+    setPendingRegistrations(prev => prev.map(p => p.id === pendingReg.id ? updated : p));
+
+    // Construct active user record for student
+    const newStudentUser: User = {
+      id: `user_act_${Date.now()}`,
+      name: pendingReg.fullName,
+      email: pendingReg.email,
+      role: 'student',
+      title: 'Mahasiswa Magang Riset',
+      studentId: generatedInternId,
+      internId: generatedInternId,
+      institution: pendingReg.university || 'Telkom University',
+      major: pendingReg.studyProgram || 'Informatika',
+      specialty: pendingReg.division || 'IoT Specialist',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+      joinedDate: new Date().toISOString().split('T')[0],
+      status: 'active',
+      isNewStudent: true
+    };
+
+    setUsers(prev => {
+      if (prev.some(u => u.email.toLowerCase() === pendingReg.email.toLowerCase())) {
+        return prev.map(u => u.email.toLowerCase() === pendingReg.email.toLowerCase() ? { ...u, ...newStudentUser, status: 'active' } : u);
+      }
+      return [newStudentUser, ...prev];
+    });
+
+    try {
+      await setDoc(doc(db, 'pending_registrations', pendingReg.id), JSON.parse(JSON.stringify(updated)));
+      await setDoc(doc(db, 'users', newStudentUser.id), JSON.parse(JSON.stringify(newStudentUser)));
+      
+      const notifId = `notif_act_${Date.now()}`;
+      await setDoc(doc(db, 'notifications', notifId), {
+        id: notifId,
+        title: 'Akun Magang Berhasil Diaktifkan! 🎉',
+        message: `Selamat! Pendaftaran magang Anda (${generatedInternId}) telah disetujui. Silakan login ke Portal LMS.`,
+        date: new Date().toISOString(),
+        read: false,
+        type: 'approval',
+        targetEmail: pendingReg.email
+      });
+    } catch (e: any) {
+      console.warn('Firestore approve pending registration notice:', e?.message);
+    }
+  };
+
+  const handleRejectRegistration = async (id: string) => {
+    setPendingRegistrations(prev => prev.map(p => p.id === id ? { ...p, status: 'Rejected' } : p));
+    try {
+      await setDoc(doc(db, 'pending_registrations', id), { status: 'Rejected' }, { merge: true });
+    } catch (e: any) {
+      console.warn('Firestore reject pending registration notice:', e?.message);
+    }
+  };
+
+  // =========================================================================
+  // PUBLIC REALTIME LISTENERS — Active on all pages (news & showcase projects)
+  // =========================================================================
+  useEffect(() => {
+    const unsubProjects = onSnapshot(collection(db, 'projects'), (snapshot) => {
+      if (!snapshot.empty) {
+        const list: ProjectItem[] = [];
+        snapshot.forEach(docSnap => list.push(docSnap.data() as ProjectItem));
+        setProjectsList(list);
+      }
+    }, (err) => console.warn('Projects listener notice:', err));
+
+    const unsubNews = onSnapshot(collection(db, 'news'), (snapshot) => {
+      if (!snapshot.empty) {
+        const oldDocIds = new Set(['hycosmarts-container', 'simona-aquaponics', 'luminet-smart-lighting', 'flocify-biofloc-ai']);
+        const list: NewsItem[] = [];
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data() as NewsItem;
+          if (!oldDocIds.has(data.id)) {
+            list.push(data);
+          }
+        });
+        if (list.length > 0) {
+          setNewsList(list);
+        } else {
+          setNewsList(newsData);
+        }
+      }
+    }, (err) => console.warn('News listener notice:', err));
+
+    return () => {
+      unsubProjects();
+      unsubNews();
+    };
+  }, []);
+
+  // =========================================================================
+  // PRIVATE REALTIME LISTENERS — Only active when user is authenticated
+  // Optimized: listeners subscribe on login, unsubscribe on logout
+  // =========================================================================
+  useEffect(() => {
+    if (!currentUser) return;
+
+    try {
+      const unsubPendingRegs = onSnapshot(collection(db, 'pending_registrations'), (snapshot) => {
+        if (!snapshot.empty) {
+          const list: PendingRegistration[] = [];
+          snapshot.forEach(docSnap => list.push(docSnap.data() as PendingRegistration));
+          setPendingRegistrations(list);
+        }
+      }, (err) => console.warn('Pending registrations listener notice:', err));
+
+      const unsubUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
+        if (!snapshot.empty) {
+          const list: User[] = [];
+          snapshot.forEach(docSnap => {
+            const raw = docSnap.data() as User;
+            list.push(enforceStrictUserRole(raw));
+          });
+          setUsers(list);
+          setCurrentUser(prev => prev ? enforceStrictUserRole(prev) : null);
+        }
+      }, (err) => console.warn('Users listener notice:', err));
+
+      const unsubApplicants = onSnapshot(collection(db, 'applicants'), (snapshot) => {
+        if (!snapshot.empty) {
+          const list: ApplicantRecord[] = [];
+          snapshot.forEach(docSnap => list.push(docSnap.data() as ApplicantRecord));
+          setApplicants(list);
+        }
+      }, (err) => console.warn('Applicants listener notice:', err));
+
+
+
+      const unsubTasks = onSnapshot(collection(db, 'tasks'), (snapshot) => {
+        if (!snapshot.empty) {
+          const list: Task[] = [];
+          snapshot.forEach(docSnap => list.push(docSnap.data() as Task));
+          setTasks(list);
+        }
+      }, (err) => console.warn('Tasks listener notice:', err));
+
+      const unsubAttendance = onSnapshot(collection(db, 'attendance'), (snapshot) => {
+        if (!snapshot.empty) {
+          const list: AttendanceRecord[] = [];
+          snapshot.forEach(docSnap => list.push(docSnap.data() as AttendanceRecord));
+          setAttendance(list);
+        }
+      }, (err) => console.warn('Attendance listener notice:', err));
+
+      const unsubLmsProjects = onSnapshot(collection(db, 'lms_projects'), (snapshot) => {
+        if (!snapshot.empty) {
+          const list: LmsProject[] = [];
+          snapshot.forEach(docSnap => list.push(docSnap.data() as LmsProject));
+          setLmsProjects(list);
+        }
+      }, (err) => console.warn('LMS Projects listener notice:', err));
+
+      const unsubAnnouncements = onSnapshot(collection(db, 'announcements'), (snapshot) => {
+        if (!snapshot.empty) {
+          const list: Announcement[] = [];
+          snapshot.forEach(docSnap => list.push(docSnap.data() as Announcement));
+          setAnnouncements(list);
+        }
+      }, (err) => console.warn('Announcements listener notice:', err));
+
+      const unsubApprovalRequests = onSnapshot(collection(db, 'approval_requests'), (snapshot) => {
+        if (!snapshot.empty) {
+          const list: ApprovalRequest[] = [];
+          snapshot.forEach(docSnap => list.push(docSnap.data() as ApprovalRequest));
+          setApprovalRequests(list);
+        }
+      }, (err) => console.warn('Approval Requests listener notice:', err));
+
+      const unsubNotifications = onSnapshot(collection(db, 'notifications'), (snapshot) => {
+        if (!snapshot.empty) {
+          const list: LmsNotification[] = [];
+          snapshot.forEach(docSnap => list.push(docSnap.data() as LmsNotification));
+          setNotifications(list);
+        }
+      }, (err) => console.warn('Notifications listener notice:', err));
+
+      const unsubSystemLogs = onSnapshot(collection(db, 'system_logs'), (snapshot) => {
+        if (!snapshot.empty) {
+          const list: SystemLog[] = [];
+          snapshot.forEach(docSnap => list.push(docSnap.data() as SystemLog));
+          setSystemLogs(list);
+        }
+      }, (err) => console.warn('System logs listener notice:', err));
+
+      return () => {
+        unsubPendingRegs();
+        unsubUsers();
+        unsubApplicants();
+        unsubTasks();
+        unsubAttendance();
+        unsubLmsProjects();
+        unsubAnnouncements();
+        unsubApprovalRequests();
+        unsubNotifications();
+        unsubSystemLogs();
+      };
+    } catch (e) {
+      console.warn('Firestore listener setup warning:', e);
+    }
+  }, [currentUser?.id]);
+
+  // Auto-sync new newsData to Firestore & clean up old project-news docs
+  useEffect(() => {
+    const syncNewsData = async () => {
+      const oldDocIds = ['hycosmarts-container', 'simona-aquaponics', 'luminet-smart-lighting', 'flocify-biofloc-ai'];
+      for (const oldId of oldDocIds) {
+        try {
+          await deleteDoc(doc(db, 'news', oldId));
+        } catch (e) {
+          // ignore
+        }
+      }
+      for (const item of newsData) {
+        try {
+          await setDoc(doc(db, 'news', item.id), JSON.parse(JSON.stringify(item)));
+        } catch (e) {
+          // ignore
+        }
+      }
+    };
+    syncNewsData();
+  }, []);
+
   // Comments stored in LocalStorage for dynamic participation
   const [commentsMap, setCommentsMap] = useState<Record<string, Comment[]>>({});
   
@@ -488,9 +1039,19 @@ export default function App() {
   };
 
   // Handler for join form submit
-  const handleJoinSubmit = (e: React.FormEvent) => {
+  const handleJoinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!joinForm.name.trim() || !joinForm.email.trim()) return;
+
+    await handleAddApplicantFromPublic({
+      fullName: joinForm.name,
+      email: joinForm.email,
+      roleInterest: joinForm.role,
+      motivation: joinForm.reason || 'Ingin bergabung dan berkontribusi di riset Smart Grow Laboratory.',
+      github: joinForm.github,
+      instagram: joinForm.instagram
+    });
+
     setJoinSubmitted(true);
     setTimeout(() => {
       setJoinForm({
@@ -550,6 +1111,7 @@ export default function App() {
         <LoginView 
           users={users} 
           onLogin={handleLogin} 
+          onRegister={(newUser) => setUsers(prev => [newUser, ...prev])}
           onBack={() => handleNavigate('home')} 
         />
       )}
@@ -569,6 +1131,14 @@ export default function App() {
           language={language}
           onToggleLanguage={handleToggleLanguage}
         >
+          <Suspense fallback={
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-sm font-semibold text-slate-500">Memuat Dashboard...</p>
+              </div>
+            </div>
+          }>
           {currentUser.role === 'director' && (
             <DirectorDashboard
               currentUser={currentUser}
@@ -576,18 +1146,30 @@ export default function App() {
               tasks={tasks}
               attendance={attendance}
               projects={lmsProjects}
+              publicProjects={projectsList}
               announcements={announcements}
               approvalRequests={approvalRequests}
               logs={systemLogs}
               users={users}
+              students={users.filter(u => u.role === 'student')}
               applicants={applicants}
+              pendingRegistrations={pendingRegistrations}
+              onApproveRegistration={handleApproveRegistration}
+              onRejectRegistration={handleRejectRegistration}
               onApproveRequest={handleApproveRequest}
               onRejectRequest={handleRejectRequest}
+              onAdvanceApplicantStage={handleAdvanceApplicantStage}
+              onApproveApplicant={handleApproveApplicant}
+              onRejectApplicant={handleRejectApplicant}
               onCreateAnnouncement={handleCreateAnnouncement}
               onCreateProject={handleCreateLmsProject}
               onUpdateProject={handleUpdateLmsProject}
               onDeleteProject={handleDeleteLmsProject}
               onArchiveProject={handleArchiveLmsProject}
+              onAddPublicProject={handleAddProject}
+              onEditPublicProject={handleEditProject}
+              onDeletePublicProject={handleDeleteProject}
+              onNavigateToShowcase={(projId) => handleNavigate(projId as PageId)}
               darkMode={darkMode}
               language={language}
             />
@@ -600,19 +1182,31 @@ export default function App() {
               tasks={tasks}
               attendance={attendance}
               projects={lmsProjects}
+              publicProjects={projectsList}
               announcements={announcements}
-              students={users.filter(u => u.role === 'student')}
+              applicants={applicants}
+              pendingRegistrations={pendingRegistrations}
+              onApproveRegistration={handleApproveRegistration}
+              onRejectRegistration={handleRejectRegistration}
+              students={users.filter(u => u.role === 'student' && u.status === 'active')}
               onCreateTask={handleCreateTask}
               onUpdateTask={handleUpdateTask}
               onDeleteTask={handleDeleteTask}
               onApproveTask={handleApproveTask}
               onRejectTask={handleRejectTask}
               onRequestRevision={handleRequestRevision}
+              onAdvanceApplicantStage={handleAdvanceApplicantStage}
+              onApproveApplicant={handleApproveApplicant}
+              onRejectApplicant={handleRejectApplicant}
               onCreateAnnouncement={handleCreateAnnouncement}
               onCreateProject={handleCreateLmsProject}
               onUpdateProject={handleUpdateLmsProject}
               onDeleteProject={handleDeleteLmsProject}
               onArchiveProject={handleArchiveLmsProject}
+              onAddPublicProject={handleAddProject}
+              onEditPublicProject={handleEditProject}
+              onDeletePublicProject={handleDeleteProject}
+              onNavigateToShowcase={(projId) => handleNavigate(projId as PageId)}
               darkMode={darkMode}
               language={language}
             />
@@ -639,6 +1233,9 @@ export default function App() {
               activeTab={lmsActiveTab}
               users={users}
               applicants={applicants}
+              pendingRegistrations={pendingRegistrations}
+              onApproveRegistration={handleApproveRegistration}
+              onRejectRegistration={handleRejectRegistration}
               news={newsList}
               projects={projectsList}
               team={teamList}
@@ -646,11 +1243,13 @@ export default function App() {
               attendance={attendance}
               onCreateUser={handleCreateUser}
               onDeleteUser={handleDeleteUser}
+              onAdvanceApplicantStage={handleAdvanceApplicantStage}
               onApproveApplicant={handleApproveApplicant}
               onRejectApplicant={handleRejectApplicant}
               onAddNews={handleAddNews}
               onDeleteNews={handleDeleteNews}
               onAddProject={handleAddProject}
+              onEditProject={handleEditProject}
               onDeleteProject={handleDeleteProject}
               onAddTeamMember={handleAddTeamMember}
               onDeleteTeamMember={handleDeleteTeamMember}
@@ -660,6 +1259,7 @@ export default function App() {
               language={language}
             />
           )}
+          </Suspense>
         </LmsLayout>
       )}
 
@@ -670,152 +1270,85 @@ export default function App() {
         {/* --- PAGE: HOME --- */}
         {currentPage === 'home' && (
           <div className="animate-fade-in">
-            {/* Hero Section */}
-            <section className="relative px-4 pt-40 pb-36 sm:px-6 lg:px-8 text-left overflow-hidden bg-[#020b08] z-10" id="home-hero">
-              {/* Immersive Glowing Cyber-Agriculture Background */}
-              <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                {/* 1. Magical Green Forest Floor Background with Morning Dew & Sunbeams */}
+            {/* Hero Section — Next-Gen Cyber-Agriculture Glassmorphic Hub */}
+            <section className="relative px-4 pt-4 pb-12 sm:pt-6 sm:pb-16 sm:px-6 lg:px-8 text-left overflow-hidden bg-slate-900 z-10" id="home-hero">
+              {/* Immersive Background Layer - 100% Crystal Clear Photo */}
+              <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
+                {/* 1. Background Photo: Harvest Team Background - 100% Sharp & Vivid */}
                 <img 
-                  src="https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=1600&q=80" 
-                  className="absolute inset-0 w-full h-full object-cover opacity-85 scale-100 filter brightness-[0.7] contrast-[1.15] saturate-[1.1]"
-                  alt="Organic plant base"
+                  src="/images/harvest-team-bg.jpg" 
+                  className="absolute inset-0 w-full h-full object-cover opacity-100 filter brightness-100 contrast-100"
+                  alt="Telkom University Smart Grow Laboratory Harvest Team"
                 />
 
-                {/* 2. Soft Elegant Deep Gradient Overlays for Maximum Text Contrast (With zero visible boxes!) */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#010906]/95 via-[#010906]/75 to-transparent hidden md:block" />
-                <div className="absolute inset-0 bg-gradient-to-b from-[#010906]/90 via-[#010906]/85 to-[#010906]/90 block md:hidden" />
-
-                {/* 3. Glowing neon green/yellow bioluminescent bokeh blurs */}
-                <div className="absolute -top-20 left-10 w-[600px] h-[600px] rounded-full bg-emerald-500/25 blur-[150px] animate-pulse" style={{ animationDuration: '8s' }} />
-                <div className="absolute bottom-5 right-10 w-[600px] h-[600px] rounded-full bg-teal-500/20 blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
-                <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-lime-500/15 blur-[130px]" />
-
-                {/* 4. Bottom Fades to white for a smooth integration with the rest of the page */}
-                <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white via-white/80 to-transparent" />
+                {/* 2. Soft Bottom Fade to White for Section Transition */}
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white via-white/40 to-transparent" />
               </div>
 
-              {/* Grid Layout: Split content directly on background without any card borders */}
-              <div className="mx-auto max-w-7xl relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              {/* Main Content Grid — Right Side Text Panel with Deep Frosted Glass Protection */}
+              <div className="mx-auto max-w-7xl relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 
-                {/* Left Column: Direct Heading & Subtext (No card, completely open layout!) */}
-                <div className="lg:col-span-7 flex flex-col items-start text-left space-y-6">
+                {/* Right Side (7 Cols): Headline, Subtext, CTAs & Metrics */}
+                <div className="lg:col-span-7 lg:col-start-6 flex flex-col items-start text-left space-y-5 bg-white/45 backdrop-blur-2xl backdrop-saturate-150 p-6 sm:p-8 rounded-3xl border border-white/60 shadow-2xl">
                   
-                  {/* Glowing Green Tech Pill Tag */}
-                  <div className="inline-flex items-center gap-2.5 rounded-full border border-emerald-500/40 bg-emerald-950/50 backdrop-blur-md px-4.5 py-2 text-xs font-sans font-extrabold tracking-widest text-emerald-400 uppercase shadow-md shadow-emerald-950/50">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_#34d399]"></span>
-                    <span>The Cyber-Physical Farming Hub</span>
+                  {/* Glassmorphic Pill Tag */}
+                  <div className="inline-flex items-center gap-2.5 rounded-full border border-emerald-800/40 bg-white/70 backdrop-blur-xl px-4 py-1.5 text-xs font-sans font-extrabold tracking-widest text-[#0A5247] uppercase shadow-sm">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#058257] animate-pulse shadow-[0_0_12px_#058257]"></span>
+                    <span>SMART GROW LABORATORY • TELKOM UNIVERSITY</span>
                   </div>
 
-                  <h1 className="font-display text-4xl font-black tracking-tight text-white sm:text-6xl lg:text-7xl leading-tight">
-                    Driving Agricultural Progress <br />
-                    Through <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-lime-300 to-cyan-300 drop-shadow-[0_2px_15px_rgba(52,211,153,0.4)]">Technological Innovation</span>
+                  {/* Headline */}
+                  <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-[#0A5247] leading-[1.15] drop-shadow-xs">
+                    Driving Agricultural Progress <br className="hidden sm:inline" />
+                    Through <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#058257] via-teal-700 to-emerald-700">Technological Innovation</span>
                   </h1>
 
-                  <p className="max-w-2xl text-base leading-relaxed text-slate-200 sm:text-lg">
-                    Integrated research and innovation hub focused on developing intelligent agricultural systems, bridging electrical automation with organic physiology.
+                  {/* Description */}
+                  <p className="max-w-2xl text-xs sm:text-sm leading-relaxed text-slate-900 font-sans font-bold">
+                    Integrated research and innovation hub focused on developing intelligent agricultural systems, bridging electrical automation with organic plant physiology.
                   </p>
 
-                  {/* See More button directly rendered */}
-                  <div className="pt-4">
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap items-center gap-4 pt-1">
                     <button
                       onClick={() => handleNavigate('project')}
                       id="btn-see-more-home"
-                      className="group relative inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 px-8 py-4 text-sm font-bold tracking-wider uppercase text-white hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg shadow-emerald-500/35 cursor-pointer border border-emerald-400/25 overflow-hidden"
+                      className="group relative inline-flex items-center gap-2.5 rounded-full bg-[#0A5247] hover:bg-[#073D35] px-7 py-3 text-xs font-extrabold tracking-wider uppercase text-white hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl shadow-emerald-950/20 cursor-pointer border border-emerald-700/30 overflow-hidden"
                     >
-                      <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-lime-400/20 to-teal-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <span className="relative z-10">See More</span>
                       <ArrowUpRight className="h-4 w-4 relative z-10 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </button>
+
+                    <button
+                      onClick={() => handleNavigate('news')}
+                      className="inline-flex items-center gap-2 rounded-full bg-white/80 hover:bg-white backdrop-blur-xl border border-emerald-400 px-6 py-3 text-xs font-extrabold tracking-wider uppercase text-[#0A5247] hover:scale-105 active:scale-95 transition-all duration-300 shadow-sm cursor-pointer"
+                    >
+                      <span>Explore Lab News</span>
+                      <Sparkles className="h-3.5 w-3.5 text-[#058257]" />
+                    </button>
+                  </div>
+
+                  {/* Live Research Metrics Bar */}
+                  <div className="pt-3 grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full border-t border-emerald-900/20 mt-3">
+                    <div className="p-3 rounded-2xl bg-white/60 backdrop-blur-md border border-white/70 shadow-xs">
+                      <div className="text-lg sm:text-xl font-black text-[#0A5247] font-display">99.8%</div>
+                      <div className="text-[9px] uppercase tracking-wider text-slate-800 font-black mt-0.5">Telemetry Uptime</div>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-white/60 backdrop-blur-md border border-white/70 shadow-xs">
+                      <div className="text-lg sm:text-xl font-black text-[#058257] font-display">1,200+</div>
+                      <div className="text-[9px] uppercase tracking-wider text-slate-800 font-black mt-0.5">Plants Monitored</div>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-white/60 backdrop-blur-md border border-white/70 shadow-xs">
+                      <div className="text-lg sm:text-xl font-black text-teal-800 font-display">Scopus Q1</div>
+                      <div className="text-[9px] uppercase tracking-wider text-slate-800 font-black mt-0.5">Publication Hub</div>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-white/60 backdrop-blur-md border border-white/70 shadow-xs">
+                      <div className="text-lg sm:text-xl font-black text-emerald-900 font-display">Kedaireka</div>
+                      <div className="text-[9px] uppercase tracking-wider text-slate-800 font-black mt-0.5">Industry Grant</div>
+                    </div>
                   </div>
 
                 </div>
-
-                {/* Right Column: Stunning Glowing Transparent Tech Earth Globe with Orbiting Sensors (Matching User's Mockup Perfectly!) */}
-                <div className="lg:col-span-5 flex justify-center items-center relative py-8">
-                  <div className="relative w-80 h-80 sm:w-96 sm:h-96 flex items-center justify-center">
-                    
-                    {/* Outer Rotating Dotted Orbital Ring */}
-                    <div className="absolute inset-0 rounded-full border border-dashed border-emerald-500/20 animate-spin" style={{ animationDuration: '40s' }} />
-                    
-                    {/* Secondary Reverse Rotating Dash Orbital Ring */}
-                    <div className="absolute inset-6 rounded-full border border-dashed border-teal-500/30 animate-spin" style={{ animationDuration: '25s', animationDirection: 'reverse' }} />
-                    
-                    {/* Inner Solid Orbital Ring */}
-                    <div className="absolute inset-16 rounded-full border border-emerald-500/10" />
-
-                    {/* Glowing Tech Globe Base (Representing the transparent green earth globe in the mockup) */}
-                    <div className="absolute inset-20 rounded-full bg-gradient-to-tr from-emerald-600/20 via-teal-500/10 to-transparent border border-emerald-400/30 shadow-[0_0_60px_rgba(16,185,129,0.25)] flex items-center justify-center overflow-hidden">
-                      {/* Earth Grid SVG Graphic inside */}
-                      <svg className="w-full h-full opacity-40 text-emerald-400 animate-pulse" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ animationDuration: '4s' }}>
-                        {/* Horizontal latitude lines */}
-                        <path d="M10,50 Q50,30 90,50" stroke="currentColor" strokeWidth="0.5" />
-                        <path d="M10,50 Q50,70 90,50" stroke="currentColor" strokeWidth="0.5" />
-                        <path d="M15,30 Q50,15 85,30" stroke="currentColor" strokeWidth="0.5" />
-                        <path d="M15,70 Q50,85 85,70" stroke="currentColor" strokeWidth="0.5" />
-                        <line x1="10" y1="50" x2="90" y2="50" stroke="currentColor" strokeWidth="0.5" />
-                        
-                        {/* Vertical longitude lines */}
-                        <path d="M50,10 Q30,50 50,90" stroke="currentColor" strokeWidth="0.5" />
-                        <path d="M50,10 Q70,50 50,90" stroke="currentColor" strokeWidth="0.5" />
-                        <path d="M50,10 Q10,50 50,90" stroke="currentColor" strokeWidth="0.5" />
-                        <path d="M50,10 Q90,50 50,90" stroke="currentColor" strokeWidth="0.5" />
-                        <line x1="50" y1="10" x2="50" y2="90" stroke="currentColor" strokeWidth="0.5" />
-                      </svg>
-                      
-                      {/* Holographic Glowing Green Continent Graphic overlay */}
-                      <div className="absolute inset-4 rounded-full bg-emerald-500/5 blur-sm" />
-                    </div>
-
-                    {/* Glowing Core Leaf/Seed Element floating inside the earth */}
-                    <div className="absolute z-10 p-4 rounded-full bg-emerald-950/80 border border-emerald-400/40 shadow-[0_0_30px_rgba(52,211,153,0.4)] text-emerald-400 animate-bounce" style={{ animationDuration: '5s' }}>
-                      <Leaf className="h-8 w-8 text-emerald-400 fill-emerald-400/20" />
-                    </div>
-
-                    {/* Orbiting Sensor Badges with glowing line connections - matches the mockup's circular icons */}
-                    
-                    {/* Badge 1: Wi-Fi/Telemetri (Top Right) */}
-                    <div className="absolute top-4 right-4 flex flex-col items-center animate-pulse" style={{ animationDuration: '3s' }}>
-                      <div className="p-3 rounded-full bg-emerald-950/90 border border-emerald-400/50 text-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.3)]">
-                        <Network className="h-5 w-5" />
-                      </div>
-                      <span className="mt-1.5 text-[9px] font-sans font-bold text-emerald-300 uppercase tracking-widest bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/20">
-                        XBee Mesh
-                      </span>
-                    </div>
-
-                    {/* Badge 2: pH/Acidity (Top Left) */}
-                    <div className="absolute top-12 left-2 flex flex-col items-center animate-pulse" style={{ animationDuration: '4s' }}>
-                      <div className="p-3 rounded-full bg-teal-950/90 border border-teal-400/50 text-teal-400 shadow-[0_0_15px_rgba(34,211,238,0.3)]">
-                        <Activity className="h-5 w-5" />
-                      </div>
-                      <span className="mt-1.5 text-[9px] font-sans font-bold text-teal-300 uppercase tracking-widest bg-teal-950/60 px-2 py-0.5 rounded border border-teal-500/20">
-                        pH Sensor
-                      </span>
-                    </div>
-
-                    {/* Badge 3: Crop Growth (Bottom Right) */}
-                    <div className="absolute bottom-8 right-6 flex flex-col items-center animate-pulse" style={{ animationDuration: '3.5s' }}>
-                      <div className="p-3 rounded-full bg-lime-950/90 border border-lime-400/50 text-lime-400 shadow-[0_0_15px_rgba(163,230,53,0.3)]">
-                        <Sprout className="h-5 w-5" />
-                      </div>
-                      <span className="mt-1.5 text-[9px] font-sans font-bold text-lime-300 uppercase tracking-widest bg-lime-950/60 px-2 py-0.5 rounded border border-lime-500/20">
-                        Sprout Growth
-                      </span>
-                    </div>
-
-                    {/* Badge 4: Automated Dosing Pump (Bottom Left) */}
-                    <div className="absolute bottom-16 left-4 flex flex-col items-center animate-pulse" style={{ animationDuration: '4.5s' }}>
-                      <div className="p-3 rounded-full bg-emerald-950/90 border border-emerald-400/50 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                        <Sliders className="h-5 w-5" />
-                      </div>
-                      <span className="mt-1.5 text-[9px] font-sans font-bold text-emerald-300 uppercase tracking-widest bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/20">
-                        Dosing
-                      </span>
-                    </div>
-
-                  </div>
-                </div>
-
               </div>
             </section>
 
@@ -827,7 +1360,7 @@ export default function App() {
                 <div className="md:col-span-4 group relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-4 shadow-sm hover:shadow-md transition-all duration-300">
                   <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
                     <img 
-                      src="https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=800&q=80" 
+                      src="/images/harvest-team-bg.jpg" 
                       alt="Harvest crop"
                       className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                     />
@@ -897,9 +1430,9 @@ export default function App() {
                   <div className="group relative overflow-hidden rounded-3xl bg-[#0c5a57] p-6 flex flex-col justify-between min-h-[190px] transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-teal-900/10 text-white">
                     <div className="relative h-20 overflow-hidden rounded-xl opacity-80">
                       <img 
-                        src="https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=800&q=80" 
-                        alt="Lettuce"
-                        className="h-full w-full object-cover"
+                        src="/images/harvest-team-bg.jpg" 
+                        alt="Hydroponic Optimization"
+                        className="h-full w-full object-cover object-center"
                       />
                     </div>
                     <div className="mt-3">
@@ -917,95 +1450,153 @@ export default function App() {
               </div>
             </section>
 
-            {/* RESEARCH INTEREST SECTION (Directly matching user image) */}
-            <section className="w-full bg-emerald-950 py-16 px-4 sm:px-6 lg:px-8 my-12 relative overflow-hidden" id="research-interests">
-              <div className="absolute top-0 right-0 h-64 w-64 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
-              <div className="absolute -bottom-20 -left-20 h-80 w-80 bg-black/10 rounded-full blur-3xl pointer-events-none"></div>
+            {/* RESEARCH INTEREST SECTION (High-end dynamic glassmorphic design) */}
+            <section className="w-full bg-slate-950 py-20 px-4 sm:px-6 lg:px-8 my-12 relative overflow-hidden" id="research-interests">
+              {/* Soft ambient background lights */}
+              <div className="absolute top-0 right-0 h-96 w-96 bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+              <div className="absolute -bottom-20 -left-20 h-[500px] w-[500px] bg-teal-600/10 rounded-full blur-[140px] pointer-events-none"></div>
               
-              <div className="mx-auto max-w-7xl">
-                <h2 className="font-display text-4xl sm:text-5xl font-extrabold text-white text-center mb-12 tracking-tight">
-                  Research Interest
-                </h2>
+              <div className="mx-auto max-w-7xl relative z-10">
+                <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/20 text-emerald-400 text-xs font-mono font-bold uppercase tracking-wider">
+                    <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>SMART GROW RESEARCH DOMAINS</span>
+                  </div>
+                  <h2 className="font-display text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
+                    Research Interest
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-sans">
+                    Fokus kepakaran dan kelompok laboratorium riset terpadu dalam memajukan teknologi pertanian cerdas dan sistem siber.
+                  </p>
+                </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {/* Card 1 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-[#0c5a57] p-8 flex flex-col justify-between min-h-[220px] transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl hover:shadow-[#0c5a57]/30 cursor-pointer">
-                    <div>
-                      <Sprout className="h-8 w-8 text-white mb-8" />
+                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
+                    <div className="flex items-start justify-between">
+                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
+                        <Sprout className="h-6 w-6" />
+                      </div>
+                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
                     </div>
-                    <h3 className="font-display text-base sm:text-lg font-bold text-white leading-snug">
-                      Smart Farming & Precision Agriculture
-                    </h3>
+                    <div className="space-y-2 mt-6">
+                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">PRECISION FARMING</span>
+                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
+                        Smart Farming & Precision Agriculture
+                      </h3>
+                    </div>
                   </div>
 
                   {/* Card 2 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-[#0c5a57] p-8 flex flex-col justify-between min-h-[220px] transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl hover:shadow-[#0c5a57]/30 cursor-pointer">
-                    <div>
-                      <Network className="h-8 w-8 text-white mb-8" />
+                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
+                    <div className="flex items-start justify-between">
+                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
+                        <Network className="h-6 w-6" />
+                      </div>
+                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
                     </div>
-                    <h3 className="font-display text-base sm:text-lg font-bold text-white leading-snug">
-                      Internet of Things (IoT) & Wireless Sensor Networks
-                    </h3>
+                    <div className="space-y-2 mt-6">
+                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">IOT PROTOCOLS</span>
+                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
+                        Internet of Things (IoT) & Wireless Sensor Networks
+                      </h3>
+                    </div>
                   </div>
 
                   {/* Card 3 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-[#0c5a57] p-8 flex flex-col justify-between min-h-[220px] transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl hover:shadow-[#0c5a57]/30 cursor-pointer">
-                    <div>
-                      <Brain className="h-8 w-8 text-white mb-8" />
+                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
+                    <div className="flex items-start justify-between">
+                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
+                        <Brain className="h-6 w-6" />
+                      </div>
+                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
                     </div>
-                    <h3 className="font-display text-base sm:text-lg font-bold text-white leading-snug">
-                      Artificial Intelligence & Machine Learning Applications
-                    </h3>
+                    <div className="space-y-2 mt-6">
+                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">DEEP LEARNING</span>
+                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
+                        Artificial Intelligence & Machine Learning Applications
+                      </h3>
+                    </div>
                   </div>
 
                   {/* Card 4 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-[#0c5a57] p-8 flex flex-col justify-between min-h-[220px] transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl hover:shadow-[#0c5a57]/30 cursor-pointer">
-                    <div>
-                      <Shield className="h-8 w-8 text-white mb-8" />
+                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
+                    <div className="flex items-start justify-between">
+                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
+                        <Shield className="h-6 w-6" />
+                      </div>
+                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
                     </div>
-                    <h3 className="font-display text-base sm:text-lg font-bold text-white leading-snug">
-                      Quantum & Information Security
-                    </h3>
+                    <div className="space-y-2 mt-6">
+                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">CYBERSECURITY</span>
+                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
+                        Quantum & Information Security
+                      </h3>
+                    </div>
                   </div>
 
                   {/* Card 5 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-[#0c5a57] p-8 flex flex-col justify-between min-h-[220px] transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl hover:shadow-[#0c5a57]/30 cursor-pointer">
-                    <div>
-                      <Activity className="h-8 w-8 text-white mb-8" />
+                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
+                    <div className="flex items-start justify-between">
+                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
+                        <Activity className="h-6 w-6" />
+                      </div>
+                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
                     </div>
-                    <h3 className="font-display text-base sm:text-lg font-bold text-white leading-snug">
-                      Signal Processing & Compressive Sensing
-                    </h3>
+                    <div className="space-y-2 mt-6">
+                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">DSP TELEMETRY</span>
+                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
+                        Signal Processing & Compressive Sensing
+                      </h3>
+                    </div>
                   </div>
 
                   {/* Card 6 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-[#0c5a57] p-8 flex flex-col justify-between min-h-[220px] transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl hover:shadow-[#0c5a57]/30 cursor-pointer">
-                    <div>
-                      <Heart className="h-8 w-8 text-white mb-8" />
+                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
+                    <div className="flex items-start justify-between">
+                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
+                        <Heart className="h-6 w-6" />
+                      </div>
+                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
                     </div>
-                    <h3 className="font-display text-base sm:text-lg font-bold text-white leading-snug">
-                      Telemedicine & Health Technology
-                    </h3>
+                    <div className="space-y-2 mt-6">
+                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">HEALTH TECH</span>
+                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
+                        Telemedicine & Health Technology
+                      </h3>
+                    </div>
                   </div>
 
                   {/* Card 7 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-[#0c5a57] p-8 flex flex-col justify-between min-h-[220px] transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl hover:shadow-[#0c5a57]/30 cursor-pointer">
-                    <div>
-                      <GitBranch className="h-8 w-8 text-white mb-8" />
+                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
+                    <div className="flex items-start justify-between">
+                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
+                        <GitBranch className="h-6 w-6" />
+                      </div>
+                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
                     </div>
-                    <h3 className="font-display text-base sm:text-lg font-bold text-white leading-snug">
-                      Networking & Software Defined Networks (SDN)
-                    </h3>
+                    <div className="space-y-2 mt-6">
+                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">SDN ARCHITECTURE</span>
+                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
+                        Networking & Software Defined Networks (SDN)
+                      </h3>
+                    </div>
                   </div>
 
                   {/* Card 8 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-[#0c5a57] p-8 flex flex-col justify-between min-h-[220px] transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl hover:shadow-[#0c5a57]/30 cursor-pointer">
-                    <div>
-                      <Leaf className="h-8 w-8 text-white mb-8" />
+                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
+                    <div className="flex items-start justify-between">
+                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
+                        <Leaf className="h-6 w-6" />
+                      </div>
+                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
                     </div>
-                    <h3 className="font-display text-base sm:text-lg font-bold text-white leading-snug">
-                      Green Technology & Sustainable Systems
-                    </h3>
+                    <div className="space-y-2 mt-6">
+                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">SUSTAINABLE TECH</span>
+                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
+                        Green Technology & Sustainable Systems
+                      </h3>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1117,6 +1708,7 @@ export default function App() {
                       setCommentsMap(updatedComments);
                       localStorage.setItem('smart_grow_comments', JSON.stringify(updatedComments));
                     }}
+                    onOpenJoinModal={() => setJoinModalOpen(true)}
                   />
                 );
               })()
@@ -1146,19 +1738,6 @@ export default function App() {
                     </p>
                   </div>
 
-                  {/* Native styled dropdown for sorting by date */}
-                  <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/60 rounded-2xl px-4 py-3 text-xs font-bold text-slate-700 shadow-inner shrink-0 self-start md:self-end">
-                    <Sliders className="h-3.5 w-3.5 text-teal-600" />
-                    <span>Urutkan:</span>
-                    <select
-                      value={projectSort}
-                      onChange={(e) => setProjectSort(e.target.value as 'newest' | 'oldest')}
-                      className="bg-transparent border-none outline-none font-sans font-bold text-teal-600 cursor-pointer focus:ring-0 pr-1"
-                    >
-                      <option value="newest">Projek Terbaru</option>
-                      <option value="oldest">Projek Terlama</option>
-                    </select>
-                  </div>
                 </div>
 
                 {/* Categories Filter Pills */}
@@ -1194,7 +1773,7 @@ export default function App() {
                     .sort((a, b) => {
                       const dateA = new Date(a.date).getTime();
                       const dateB = new Date(b.date).getTime();
-                      return projectSort === 'newest' ? dateB - dateA : dateA - dateB;
+                      return dateB - dateA;
                     });
 
                   if (filtered.length === 0) {
@@ -1512,15 +2091,28 @@ export default function App() {
             {(() => {
               const mentor = teamList.find(m => m.role === 'Mentor');
               if (!mentor) return null;
+              const pilrekUrl = mentor.profileUrl || 'https://pilrek.telkomuniversity.ac.id/indrarini-dyah-irawati/';
               return (
                 <div className="mx-auto max-w-3xl bg-white border border-slate-100 p-6 sm:p-8 rounded-3xl mb-12 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-sm group">
                   
-                  {/* Mentor Graphic Avatar section matching real photo */}
-                  <div className="relative w-44 h-52 shrink-0 rounded-2xl overflow-hidden shadow-md">
-                    <TeamAvatar id={mentor.id} name={mentor.name} className="w-full h-full" />
-                  </div>
+                  {/* Mentor Graphic Avatar section matching real photo - Clickable Link */}
+                  <a 
+                    href={pilrekUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Buka Profil Resmi Prof. Dr. Indrarini Dyah Irawati (Pilrek Telkom University)"
+                    className="relative w-44 h-52 shrink-0 rounded-2xl overflow-hidden shadow-md group/avatar cursor-pointer block border-2 border-transparent hover:border-pink-500 transition-all duration-300"
+                  >
+                    <TeamAvatar id={mentor.id} name={mentor.name} className="w-full h-full group-hover/avatar:scale-105 transition-transform duration-300" />
+                    <div className="absolute inset-0 bg-pink-950/40 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 text-center">
+                      <span className="bg-white/95 text-pink-700 text-[10px] font-extrabold px-3 py-1 rounded-full shadow-lg border border-pink-200 flex items-center gap-1 font-mono">
+                        <span>Buka Profil Resmi</span>
+                        <ExternalLink className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </a>
 
-                  <div className="flex-1 space-y-4 text-left">
+                  <div className="flex-1 space-y-3 text-left">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="rounded bg-pink-50 border border-pink-200 px-2.5 py-0.5 font-sans text-[10px] font-bold text-pink-700 uppercase tracking-wider">
@@ -1528,15 +2120,35 @@ export default function App() {
                         </span>
                         <span className="text-slate-400 font-sans text-[9px] font-bold">SMART GROW LAB MENTOR</span>
                       </div>
-                      <h2 className="font-display text-xl font-bold text-slate-900 group-hover:text-pink-600 transition-colors">
-                        {mentor.name}
-                      </h2>
+                      <a
+                        href={pilrekUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block group/link"
+                      >
+                        <h2 className="font-display text-xl font-bold text-slate-900 group-hover/link:text-pink-600 transition-colors flex items-center gap-2">
+                          <span>{mentor.name}</span>
+                          <ExternalLink className="h-4 w-4 text-pink-500 opacity-70 group-hover/link:opacity-100 group-hover/link:translate-x-0.5 transition-all" />
+                        </h2>
+                      </a>
                       <p className="font-sans text-xs font-bold text-teal-600 mt-1">{mentor.email}</p>
                     </div>
 
                     <p className="text-xs text-slate-600 leading-relaxed font-sans">
                       {mentor.bio}
                     </p>
+
+                    <div className="pt-1">
+                      <a
+                        href={pilrekUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-700 font-sans font-bold text-xs transition-all shadow-2xs group/btn cursor-pointer"
+                      >
+                        <span>Lihat Profil Pilrek Telkom University</span>
+                        <ExternalLink className="h-3.5 w-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+                      </a>
+                    </div>
 
                     {/* Skills badges */}
                     <div className="flex flex-wrap gap-2 pt-1">
@@ -1562,8 +2174,8 @@ export default function App() {
                     {/* Member customized avatar matching uploaded photo features */}
                     <div className="relative aspect-4/3 w-full rounded-2xl overflow-hidden shadow-xs">
                       <TeamAvatar id={member.id} name={member.name} className="w-full h-full" />
-                      <div className="absolute top-3 left-3">
-                        <span className="inline-block rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-700/50 px-3 py-1 font-sans text-[10px] font-bold text-teal-300 uppercase tracking-wider shadow-xs">
+                      <div className="absolute top-2.5 left-2.5 z-10 max-w-[85%]">
+                        <span className="inline-block rounded-full bg-slate-950/85 backdrop-blur-md border border-slate-700/60 px-2.5 py-0.5 font-sans text-[9px] font-bold text-teal-300 uppercase tracking-wider shadow-md truncate">
                           {member.role}
                         </span>
                       </div>
@@ -1675,36 +2287,45 @@ export default function App() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-sans font-bold text-slate-500 uppercase">Nama Lengkap</label>
+                    <label className="text-[10px] font-sans font-bold text-slate-700 uppercase flex items-center justify-between">
+                      <span>Nama Lengkap</span>
+                      <span className="text-emerald-600 font-extrabold text-[9px] lowercase bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">*wajib</span>
+                    </label>
                     <input 
                       type="text" 
                       required
                       placeholder="e.g. Shara Anjelia"
                       value={joinForm.name}
                       onChange={(e) => setJoinForm({...joinForm, name: e.target.value})}
-                      className="bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:bg-white transition-all rounded-xl px-4 py-2.5 text-xs"
+                      className="bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:bg-white transition-all rounded-xl px-4 py-2.5 text-xs font-medium"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-sans font-bold text-slate-500 uppercase">Email Student / General</label>
+                    <label className="text-[10px] font-sans font-bold text-slate-700 uppercase flex items-center justify-between">
+                      <span>Email Student / General</span>
+                      <span className="text-emerald-600 font-extrabold text-[9px] lowercase bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">*wajib</span>
+                    </label>
                     <input 
                       type="email" 
                       required
                       placeholder="e.g. shara@student.telkomuniversity.ac.id"
                       value={joinForm.email}
                       onChange={(e) => setJoinForm({...joinForm, email: e.target.value})}
-                      className="bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:bg-white transition-all rounded-xl px-4 py-2.5 text-xs"
+                      className="bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:bg-white transition-all rounded-xl px-4 py-2.5 text-xs font-medium"
                     />
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-sans font-bold text-slate-500 uppercase">Role Of Interest</label>
+                  <label className="text-[10px] font-sans font-bold text-slate-700 uppercase flex items-center justify-between">
+                    <span>Role Of Interest</span>
+                    <span className="text-emerald-600 font-extrabold text-[9px] lowercase bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">*wajib</span>
+                  </label>
                   <select 
                     value={joinForm.role}
                     onChange={(e) => setJoinForm({...joinForm, role: e.target.value})}
-                    className="bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition-all rounded-xl px-4 py-2.5 text-xs cursor-pointer"
+                    className="bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-teal-500 focus:bg-white transition-all rounded-xl px-4 py-2.5 text-xs cursor-pointer font-medium"
                   >
                     <option value="IoT Specialist">IoT Specialist / Hardware Engineer</option>
                     <option value="UI/UX Designer">UI/UX Designer</option>
@@ -1715,36 +2336,45 @@ export default function App() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-sans font-bold text-slate-500 uppercase">Why do you want to join Smart Grow Laboratory?</label>
+                  <label className="text-[10px] font-sans font-bold text-slate-700 uppercase flex items-center justify-between">
+                    <span>Why do you want to join Smart Grow Laboratory?</span>
+                    <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-100 px-1.5 py-0.5 rounded">opsional</span>
+                  </label>
                   <textarea 
                     rows={3}
                     placeholder="Briefly describe your skillsets, motivation, and which project (HYCOSMARTS, Smart Hydroponics, etc.) inspires you."
                     value={joinForm.reason}
                     onChange={(e) => setJoinForm({...joinForm, reason: e.target.value})}
-                    className="bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:bg-white transition-all rounded-xl p-4 text-xs resize-none"
+                    className="bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:bg-white transition-all rounded-xl p-4 text-xs resize-none font-medium"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-sans font-bold text-slate-500 uppercase">GitHub Profile (Optional)</label>
+                    <label className="text-[10px] font-sans font-bold text-slate-700 uppercase flex items-center justify-between">
+                      <span>GitHub Profile</span>
+                      <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-100 px-1.5 py-0.5 rounded">opsional</span>
+                    </label>
                     <input 
                       type="text" 
                       placeholder="https://github.com/yourusername"
                       value={joinForm.github}
                       onChange={(e) => setJoinForm({...joinForm, github: e.target.value})}
-                      className="bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:bg-white transition-all rounded-xl px-4 py-2.5 text-xs"
+                      className="bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:bg-white transition-all rounded-xl px-4 py-2.5 text-xs font-medium"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-sans font-bold text-slate-500 uppercase">Instagram Handles (Optional)</label>
+                    <label className="text-[10px] font-sans font-bold text-slate-700 uppercase flex items-center justify-between">
+                      <span>Instagram Handles</span>
+                      <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-100 px-1.5 py-0.5 rounded">opsional</span>
+                    </label>
                     <input 
                       type="text" 
                       placeholder="@yourusername"
                       value={joinForm.instagram}
                       onChange={(e) => setJoinForm({...joinForm, instagram: e.target.value})}
-                      className="bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:bg-white transition-all rounded-xl px-4 py-2.5 text-xs"
+                      className="bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:bg-white transition-all rounded-xl px-4 py-2.5 text-xs font-medium"
                     />
                   </div>
                 </div>

@@ -2,104 +2,116 @@ import { NewsItem, ProjectItem, TeamMember } from './types';
 
 export const newsData: NewsItem[] = [
   {
-    id: 'hycosmarts-container',
-    title: 'HYCOSMARTS: Smart Container-Based Intelligent Farming System',
-    category: 'Container Hydroponics',
-    date: 'Juli 2026',
-    image: '/images/hycosmarts/hycosmarts-3.png',
-    excerpt: 'HYCOSMARTS is a smart container-based intelligent farming system designed to manage indoor hydroponic farming automatically, efficiently, and sustainably with pH, TDS, DO, EC, and ultrasonic sensors.',
-    content: `HYCOSMARTS is a smart container-based intelligent farming system designed to manage indoor hydroponic farming automatically, efficiently, and sustainably.
+    id: 'open-recruitment-magang-2026',
+    title: 'Pembukaan Lowongan Magang Riset IoT & Smart Agriculture (Open Recruitment Batch 2026)',
+    tagline: 'Pendaftaran Mahasiswa Magang Riset Smart Grow Laboratory Telkom University',
+    category: 'Lowongan Magang',
+    date: '25 Juli 2026',
+    image: '/images/news/recruitment-2026.png',
+    excerpt: 'Smart Grow Laboratory resmi membuka pendaftaran magang riset untuk mahasiswa Telkom University dan publik untuk divisi Full-stack Web, Hardware & System, IoT Specialist, dan Agronomi.',
+    content: `Smart Grow Laboratory Telkom University secara resmi membuka Pendaftaran Anggota Magang Riset (Open Recruitment Batch 2026).
 
-The system is equipped with various important sensors such as pH, TDS, DO, EC, and ultrasonic sensors to monitor water quality, nutrient availability, and growing conditions in real time. With artificial intelligence support and integration with web-based dashboards and mobile apps, HYCOSMARTS can precisely regulate plant needs and provide early notifications of potential crop failures.
+Program magang ini dirancang untuk memberikan pengalaman praktis dalam riset sistem pertanian cerdas terintegrasi, termasuk pengembangan perangkat keras sensor IoT, transmisi data nirkabel, kontroler mikro, serta portal analitik berbasis web real-time.
 
-In addition to being energy-efficient and self-sufficient, the system is also suitable for implementation in 3T areas (remote, frontier, and outer regions) as an innovative solution to enhance agricultural productivity and food self-sufficiency through technology.
+### Divisi Magang yang Dibuka:
+* **Full-stack Web Developer:** Pengembangan dashboard telemetry, WebSocket real-time, dan manajemen data riset.
+* **Hardware & Systems Engineer:** Desain PCB, integrasi kelistrikan LED grow light, dan mekanik hidroponik.
+* **IoT & Telemetry Specialist:** Kalibrasi sensor pH, EC, TDS, DO, dan protokol LoRaWAN / MQTT.
+* **Firmware Developer:** Pengodean mikrokontroler ESP32, FreeRTOS, dan optimasi komunikasi data mikro.
+* **Agronomist Specialist:** Formulasi hara nutrisi tanaman hidroponik & akuaponik serta uji kualitas panen.
 
-### Key Innovations:
-* **Multi-Sensor Real-Time Telemetry:** pH, TDS, Dissolved Oxygen (DO), Electrical Conductivity (EC), and Ultrasonic water level sensors.
-* **Edge AI & Failure Early Alert System:** Predictive AI models that continuously evaluate growth conditions and alert operators via Web and Mobile Apps before crop failures happen.
-* **Suitable for 3T Regions:** Modular, self-sufficient shipping container architecture designed for remote, frontier, and outer regions.`,
-    readTime: '5 min',
+### Alur Seleksi 5 Tahap:
+1. **Tahap 1:** Seleksi Berkas & Administrasi Pendaftaran.
+2. **Tahap 2:** Tes Teknis & Evaluasi Portofolio.
+3. **Tahap 3:** Wawancara Pembimbing & Asisten Lab.
+4. **Tahap 4:** Verifikasi Akhir & Penetapan Divisi.
+5. **Tahap 5:** Pengumuman Kelulusan, Penerbitan ID Magang Resmi & Aktivasi Akun LMS.
+
+Calon pendaftar dapat langsung mengajukan berkas melalui tombol **JOIN US** pada portal utama Smart Grow Laboratory.`,
+    readTime: '3 min',
     comments: [
       {
-        id: 'c_hyco1',
-        name: 'Dr. Ahmad Rizal',
-        email: 'rizal@telkomuniversity.ac.id',
-        content: 'Inovasi HYCOSMARTS luar biasa! Penggunaan kontainer kargo yang mandiri dan terintegrasi AI sangat berpotensi meningkatkan ketahanan pangan di wilayah 3T.',
-        timestamp: '2026-07-22 14:20'
+        id: 'c_rec1',
+        name: 'Budi Santoso',
+        email: 'budi@student.telkomuniversity.ac.id',
+        content: 'Persyaratan magangnya sangat jelas! Saya sudah mendaftar untuk divisi IoT Specialist.',
+        timestamp: '2026-07-25 10:15'
       }
     ]
   },
   {
-    id: 'simona-aquaponics',
-    title: 'SIMONA: Aquaponics Monitoring System',
-    category: 'Aquaponics IoT',
-    date: 'Juli 2026',
-    image: '/images/simona/simona-control-box-farm.jpg',
-    excerpt: 'SIMONA (Aquaponics Monitoring System) is an integrated smart system designed to support sustainable farming by combining aquaculture and hydroponics with IoT sensors and remote access.',
-    content: `SIMONA (Aquaponics Monitoring System) is an integrated smart system designed to support sustainable farming by combining aquaculture and hydroponics in a mutually beneficial ecosystem.
+    id: 'panen-perdana-hycosmarts-container',
+    title: 'Panen Perdana Sayuran Hidroponik Pakcoy & Kangkung di HYCOSMARTS Container Farm',
+    tagline: 'Keberhasilan Dosing Nutrisi Otomatis & Pemantauan Sensorik Real-Time',
+    category: 'Kegiatan Panen & Riset',
+    date: '22 Juli 2026',
+    image: '/images/simona/simona-crops-close.jpg',
+    excerpt: 'Tim riset Smart Grow Laboratory berhasil merayakan panen perdana sayuran pakcoy dan kangkung hidroponik berkualitas tinggi dari kontainer pintar HYCOSMARTS.',
+    content: `Tim riset Smart Grow Laboratory di bawah bimbingan Prof. Dr. Indrarini Dyah Irawati, S.T., M.T. bersama para mahasiswa magang merayakan keberhasilan panen perdana sayuran Pakcoy dan Kangkung di fasilitas HYCOSMARTS Container Farm.
 
-It utilizes a range of sensors to monitor key environmental parameters such as water level, pH, temperature, and Total Dissolved Solids (TDS), ensuring optimal conditions for both fish and plant growth. Powered by microcontrollers like Arduino or Raspberry Pi, SIMONA automates essential functions and displays real-time data through a user-friendly interface.
+Panen ini merupakan bentuk pembuktian atas keandalan sistem dosis nutrisi otomatis (automated fertigation dosing) dan pemantauan kualitas air terdistribusi menggunakan sensor pH, TDS, Dissolved Oxygen (DO), serta kontrol suhu mikro-klimat indoor.
 
-With IoT connectivity and remote access via a responsive web platform, users can monitor and control the system anytime, anywhere. SIMONA enhances productivity, reduces manual workload, enables early problem detection, and promotes efficient, technology-driven aquaponic farming.
-
-### Key Technological Features:
-* **Multi-Sensor Real-Time Telemetry:** Water level (Ultrasonic), pH, Temperature, and TDS sensors.
-* **Arduino / Raspberry Pi Microcontroller Integration:** Automated actuation for pumps, aerators, and automated feeders.
-* **Blynk & Web Remote Access:** Seamless mobile app connectivity and responsive web dashboard for remote control anywhere.`,
+### Catatan Hasil Panen:
+* **Bobot Rata-rata Tanaman:** Meningkat 28% dibandingkan metode hidroponik manual konvensional.
+* **Efisiensi Penggunaan Air:** Hemat hingga 40% berkat sirkulasi tertutup dan kontrol sensorik presisi.
+* **Kualitas Nutrisi:** Kadar pupuk A/B mix terjaga konstan pada kisaran EC 1200–1400 µS/cm.`,
     readTime: '4 min',
     comments: [
       {
-        id: 'c_simona1',
-        name: 'Budi Santoso',
-        email: 'budi@student.telkomuniversity.ac.id',
-        content: 'Sistem akuaponik SIMONA sangat membantu menjaga kualitas air kolam ikan sekaligus memberikan nutrisi organik pada sayuran pakcoy!',
-        timestamp: '2026-07-23 09:15'
+        id: 'c_panen1',
+        name: 'Dr. Ahmad Rizal',
+        email: 'rizal@telkomuniversity.ac.id',
+        content: 'Selamat atas panen perdananya! Hasil pakcoy terlihat sangat segar dan sehat.',
+        timestamp: '2026-07-22 15:30'
       }
     ]
   },
   {
-    id: 'luminet-smart-lighting',
-    title: 'LUMINET: Smart Street Lighting Management System',
-    category: 'Smart City PJU IoT',
-    date: 'Juli 2026',
-    image: '/images/luminet/luminet-logo.jpg',
-    excerpt: 'LUMINET (Smart Street Lighting Management System) is an Internet of Things (IoT)-based smart system for automatically and efficiently managing public street lighting (PJU).',
-    content: `LUMINET (Smart Street Lighting Management System) is an Internet of Things (IoT)-based smart system for automatically and efficiently managing public street lighting (PJU). The system uses XBee communication for centralized monitoring and control via a web dashboard and mobile app.
+    id: 'workshop-kalibrasi-sensor-iot',
+    title: 'Workshop & Live Demo Kalibrasi Sensor Telemetry Nirkabel ESP32 & LoRaWAN',
+    tagline: 'Pelatihan Instrumentasi Sensor pH, TDS, EC & Telemetry Mesh',
+    category: 'Workshop & Pelatihan',
+    date: '18 Juli 2026',
+    image: '/images/news/workshop-calibration.png',
+    excerpt: 'Asisten laboratorium menyelenggarakan workshop teknis kalibrasi sensor bagi anggota magang baru untuk memastikan akurasi data akuisisi hidroponik.',
+    content: `Asisten laboratorium Smart Grow Laboratory menyelenggarakan Workshop & Live Demo Kalibrasi Sensor Telemetry Nirkabel di Laboratorium Riset Telkom University.
 
-LUMINET supports multi-point control with automation logic based on time, light intensity (LDR), and Correlated Color Temperature (CCT). The system also monitors electrical conditions (power, voltage, current) in real-time and is equipped with GPS for PJU location identification.
+Workshop ini bertujuan memberikan pemahaman praktis kepada seluruh tim riset mengenai prosedur kalibrasi multi-point probe sensor EC/pH, penghitungan offset drift, serta pengiriman paket telemetry berbasis protokol ESP32 LoRaWAN dan MQTT.
 
-Anomaly notifications are automatically sent to expedite issue resolution. With its modular design, LUMINET is suitable for implementation by local governments, industrial zones, and smart city managers to enhance energy efficiency, reduce operational costs, and accelerate on-site repair responses.`,
+### Materi Workshop:
+* Penggunaan larutan penyangga (buffer solution pH 4.01, 6.86, 9.18) untuk kalibrasi instrumen.
+* Penanganan noise sinyal analog dan penggunaan filter digital kalman pada mikrokontroler.
+* Pembuatan dashboard pemantauan telemetry real-time berbasis WebSockets.`,
     readTime: '5 min',
     comments: [
       {
-        id: 'c_luminet1',
+        id: 'c_ws1',
+        name: 'Shella Nadya Putri',
+        email: 'shellanadyaputri@student.telkomuniversity.ac.id',
+        content: 'Materi kalibrasi sensornya sangat bermanfaat untuk penyusunan laporan riset harian.',
+        timestamp: '2026-07-18 16:45'
+      }
+    ]
+  },
+  {
+    id: 'kunjungan-kemitraan-industri-luminet',
+    title: 'Kunjungan Studi Banding & Kolaborasi Riset Smart City PJU IoT LUMINET',
+    tagline: 'Diskusi Pengujian Penerangan Jalan Umum Pintar Berbasis Mesh Network',
+    category: 'Kemitraan Industri',
+    date: '15 Juli 2026',
+    image: '/images/news/industry-luminet.png',
+    excerpt: 'Smart Grow Laboratory menerima kunjungan mitra industri untuk membahas pengujian dan implementasi infrastruktur PJU pintar LUMINET berbasis XBee Mesh.',
+    content: `Smart Grow Laboratory menerima kunjungan resmi delegasi kemitraan industri dan pengelola fasilitas infrastruktur untuk meninjau hasil pengembangan modul penerangan jalan umum pintar (LUMINET).
+
+Dalam pertemuan ini, tim laboratorium mendemonstrasikan sistem pengontrolan multi-node PJU jarak jauh, deteksi kerusakan lampu otomatis melalui penganalisis arus/tegangan, serta pemetaan posisi fisik node penerangan via antarmuka peta GIS dashboard.`,
+    readTime: '4 min',
+    comments: [
+      {
+        id: 'c_lum1',
         name: 'Deni Kurniawan',
         email: 'deni@bandung.go.id',
-        content: 'Sistem LUMINET XBee Mesh terbukti menghemat hingga 45% energi PJU dan sangat membantu pemantauan lokasi node via GIS map!',
-        timestamp: '2026-07-24 08:30'
-      }
-    ]
-  },
-  {
-    id: 'flocify-biofloc-ai',
-    title: 'FLOCIFY: IoT & Deep Learning Biofloc Solution',
-    category: 'Biofloc AI Aquaculture',
-    date: 'Juli 2026',
-    image: '/images/flocify/flocify-biofloc-tank-iso.png',
-    excerpt: 'Flocify is an innovative Internet of Things (IoT) and Deep Learning-based solution designed to optimize fish farming in biofloc systems.',
-    content: `Flocify is an innovative Internet of Things (IoT) and Deep Learning-based solution designed to optimize fish farming in biofloc systems. The platform integrates smart sensing technologies, real-time monitoring, artificial intelligence-driven analytics, and automated control mechanisms to maintain sustainable aquaculture environments.
-
-Through continuous monitoring of critical water quality parameters, including temperature, pH, dissolved oxygen (DO), ammonia concentration, and other relevant environmental indicators, Flocify enables the acquisition of real-time data to support adaptive aquaculture management.
-
-The integration of Deep Learning algorithms facilitates pattern recognition, anomaly detection, and predictive analysis of environmental conditions, thereby enabling early identification of potential risks and supporting evidence-based decision-making.`,
-    readTime: '5 min',
-    comments: [
-      {
-        id: 'c_flocify1',
-        name: 'Hendra Saputra',
-        email: 'hendra@aquaculture.id',
-        content: 'Flocify sangat membantu mencegah lonjakan amonia beracun pada kolam biofloc lele dan nila secara real-time!',
-        timestamp: '2026-07-24 08:50'
+        content: 'Teknologi XBee Mesh LUMINET sangat menjanjikan untuk efisiensi energi kota pintar.',
+        timestamp: '2026-07-15 14:10'
       }
     ]
   }
@@ -332,6 +344,7 @@ export const teamData: TeamMember[] = [
     role: 'Mentor',
     image: 'mentor-indrarini',
     email: 'indrarini@telkomuniversity.ac.id',
+    profileUrl: 'https://pilrek.telkomuniversity.ac.id/indrarini-dyah-irawati/',
     bio: 'Pakar riset sistem telekomunikasi cerdas dan pengolahan sinyal digital. Membimbing Smart Grow Laboratory untuk terus berinovasi dalam memadukan keahlian teknik elektro dengan pemecahan solusi pangan siber.',
     skills: ['IoT Architecture', 'Digital Signal Processing', 'Machine Learning', 'Research Strategy']
   },
@@ -408,48 +421,66 @@ export const teamData: TeamMember[] = [
     skills: ['IoT Sensors', 'Wireless Protocols', 'Telemetry Monitoring', 'Data Analytics']
   },
   {
+    id: 'member-farid',
+    name: 'M. Farid Hasri',
+    role: 'IoT Specialist',
+    image: 'member-farid',
+    email: 'mfaridhasri@student.telkomuniversity.ac.id',
+    bio: 'Menangani kalibrasi sensor nirkabel telemetry, komunikasi data mikro, serta optimalisasi komunikasi antar modul IoT.',
+    skills: ['IoT Sensors', 'Wireless Protocols', 'Telemetry Monitoring', 'Data Analytics']
+  },
+  {
     id: 'member-arimbi',
     name: 'Arimbi Dwi',
-    role: 'Lead Hardware Engineer',
+    role: 'Alumni - Lead Hardware Engineer',
     image: 'member-arimbi',
     email: 'arimbi@student.telkomuniversity.ac.id',
-    bio: 'Merancang algoritma kontrol mekanik, kelistrikan container, serta integrasi motor pneumatik untuk pengaliran nutrisi otomatis.',
-    skills: ['Microcontrollers', 'CAD Modeling', 'Pneumatics', 'Electrical Systems']
+    bio: 'Mengembangkan integrasi arsitektur fisik laboratorium, sistem kelistrikan LED grow light, dan kalibrasi instrumen riset magang sebelumnya.',
+    skills: ['Hardware Design', 'Embedded Systems', 'Power Electronics', 'PCB Layout']
+  },
+  {
+    id: 'member-alfachri',
+    name: 'Muhammad Alfachri Akbar',
+    role: 'Alumni - AI Engineer',
+    image: 'member-alfachri',
+    email: 'alfachriakbar@student.telkomuniversity.ac.id',
+    bio: 'Alumni & Asisten Peneliti di Smart Grow Laboratory Telkom University. Berfokus pada integrasi Computer Vision, Deep Learning, dan pemrosesan data otomatisasi pertanian cerdas di Research Center.',
+    skills: ['Alumni', 'AI & Machine Learning', 'Computer Vision', 'Deep Learning', 'PyTorch / TensorFlow', 'Smart Agriculture']
   },
   {
     id: 'member-daffa',
     name: 'Daffa Zyaa Ulhaq',
-    role: 'Firmware Developer',
+    role: 'Alumni - Firmware Developer',
     image: 'member-daffa',
-    email: 'daffazyaa@student.telkomuniversity.ac.id',
-    bio: 'Menangani protokol data telemetry, sensor kalibrasi nirkabel, dan konfigurasi mesh network berbasis ESP32 dan LoRa.',
-    skills: ['ESP32 Development', 'LoRaWAN', 'Firmware Engineering', 'Python']
+    email: 'daffa@student.telkomuniversity.ac.id',
+    bio: 'Mengembangkan sistem firmware dan protokol transmisi data nirkabel mikrokontroler sensor telemetry riset magang sebelumnya.',
+    skills: ['C/C++', 'ESP32', 'Firmware', 'FreeRTOS', 'IoT Telemetry']
   },
   {
     id: 'member-hannani',
     name: 'Hannani Syadzwana',
-    role: 'Full-stack Developer',
+    role: 'Alumni - Full-stack Developer',
     image: 'member-hannani',
     email: 'hannani@student.telkomuniversity.ac.id',
-    bio: 'Mengembangkan sistem backend serverless, database real-time telemetry, dan portal analitik web untuk tim riset.',
-    skills: ['React / Vite', 'Node.js', 'NoSQL Datastores', 'Cloud Run']
+    bio: 'Mengembangkan antarmuka portal analitik dan visualisasi telemetry laboratorium riset magang sebelumnya.',
+    skills: ['Vue.js', 'Node.js', 'WebSockets', 'Frontend', 'Database']
   },
   {
     id: 'member-elyasa',
     name: 'Elyasa Reva',
-    role: 'UI/UX Designer',
+    role: 'Alumni - UI/UX Designer',
     image: 'member-elyasa',
-    email: 'elyasareva@student.telkomuniversity.ac.id',
-    bio: 'Fokus pada riset pengguna, visualisasi data grafik sensor interaktif, serta perancangan aplikasi seluler pertanian pintar.',
-    skills: ['Figma', 'Interactive Prototyping', 'User Testing', 'Tailwind CSS']
+    email: 'elyasa@student.telkomuniversity.ac.id',
+    bio: 'Merancang antarmuka visual (UI/UX) dan pengalaman pengguna untuk platform riset Smart Grow Laboratory.',
+    skills: ['Figma', 'UI/UX Design', 'User Research', 'Prototyping', 'Design Systems']
   },
   {
     id: 'member-humam',
     name: 'Humam Ibadillah',
-    role: 'Agronomist',
+    role: 'Alumni - Agronomist',
     image: 'member-humam',
     email: 'humam@student.telkomuniversity.ac.id',
-    bio: 'Mengkalibrasi respons fisiologis tanaman terhadap spektrum cahaya LED dan memantau formulasi pupuk organik cair makro.',
-    skills: ['Plant Physiology', 'Nutrient Formulation', 'Bio-filtration', 'Data Analysis']
+    bio: 'Menganalisis kebutuhan hara nutrisi tanaman hidroponik dan kalibrasi parameter larutan riset magang sebelumnya.',
+    skills: ['Agronomy', 'Nutrient Dosage', 'Hydroponic Crops', 'Plant Science']
   }
 ];

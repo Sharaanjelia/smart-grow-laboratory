@@ -79,6 +79,7 @@ export default function LmsLayout({
       case 'director':
         return [
           { id: 'overview', label: isID ? 'Dashboard & KPI' : 'Dashboard & KPI', icon: LayoutDashboard },
+          { id: 'pending_registrations', label: isID ? 'Persetujuan Pendaftaran' : 'Pending Registrations', icon: ShieldCheck },
           { id: 'interns', label: isID ? 'Monitoring Magang' : 'Internship Monitoring', icon: Users },
           { id: 'attendance', label: isID ? 'Presensi Mahasiswa' : 'Student Attendance', icon: Clock },
           { id: 'projects', label: isID ? 'Proyek Riset' : 'Research Projects', icon: FolderKanban },
@@ -89,6 +90,7 @@ export default function LmsLayout({
       case 'assistant':
         return [
           { id: 'overview', label: isID ? 'Dashboard Asisten' : 'Dashboard', icon: LayoutDashboard },
+          { id: 'pending_registrations', label: isID ? 'Persetujuan Pendaftaran' : 'Pending Registrations', icon: ShieldCheck },
           { id: 'students', label: isID ? 'Mahasiswa Magang' : 'Internship Students', icon: Users },
           { id: 'tasks', label: isID ? 'Manajemen Tugas' : 'Task Management', icon: CheckSquare },
           { id: 'attendance', label: isID ? 'Presensi & Kehadiran' : 'Attendance Monitor', icon: Clock },
@@ -99,16 +101,19 @@ export default function LmsLayout({
         ];
       case 'student':
         return [
-          { id: 'overview', label: isID ? 'Dashboard Saya' : 'My Dashboard', icon: LayoutDashboard },
-          { id: 'tasks', label: isID ? 'Tugas Magang Saya' : 'My Tasks', icon: CheckSquare },
-          { id: 'attendance', label: isID ? 'Presensi Check-in' : 'Attendance Check-in', icon: Clock },
-          { id: 'projects', label: isID ? 'Proyek Riset Saya' : 'My Research Projects', icon: FolderKanban },
+          { id: 'overview', label: isID ? 'Dashboard Utama' : 'Dashboard', icon: LayoutDashboard },
+          { id: 'internship', label: isID ? 'Magang Saya' : 'My Internship', icon: GraduationCap },
+          { id: 'attendance', label: isID ? 'Presensi Harian' : 'Attendance', icon: Clock },
+          { id: 'tasks', label: isID ? 'Tugas & Progres' : 'Assigned Tasks & Progress', icon: CheckSquare },
           { id: 'announcements', label: isID ? 'Pengumuman Lab' : 'Announcements', icon: Megaphone },
-          { id: 'profile', label: isID ? 'Profil Saya' : 'My Profile', icon: UserCheck },
+          { id: 'mentor', label: isID ? 'Pembimbing Riset' : 'Mentor', icon: Users },
+          { id: 'profile', label: isID ? 'Profil Saya' : 'Profile', icon: UserCheck },
+          { id: 'settings', label: isID ? 'Pengaturan' : 'Settings', icon: Settings },
         ];
       case 'admin':
         return [
           { id: 'overview', label: isID ? 'Dashboard Admin' : 'Admin Dashboard', icon: LayoutDashboard },
+          { id: 'pending_registrations', label: isID ? 'Persetujuan Pendaftaran' : 'Pending Registrations', icon: ShieldCheck },
           { id: 'users', label: isID ? 'Kelola Pengguna' : 'User Management', icon: Users },
           { id: 'applicants', label: isID ? 'Pendaftaran Magang' : 'Join Submissions', icon: FileText },
           { id: 'content', label: isID ? 'Konten Website' : 'Website Content', icon: Sparkles },
@@ -128,7 +133,7 @@ export default function LmsLayout({
       case 'director':
         return { 
           label: isID ? 'Direktur Lab' : 'Lab Director', 
-          color: darkMode ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700' : 'bg-emerald-50 text-[#2E7D32] border-emerald-200', 
+          color: darkMode ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700' : 'bg-emerald-50 text-[#355E3B] border-emerald-200', 
           icon: GraduationCap 
         };
       case 'assistant':
@@ -140,7 +145,7 @@ export default function LmsLayout({
       case 'student':
         return { 
           label: isID ? 'Mahasiswa Magang' : 'Intern Student', 
-          color: darkMode ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700' : 'bg-emerald-50 text-[#2E7D32] border-emerald-200', 
+          color: darkMode ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700' : 'bg-[#C7D8A8]/30 text-[#355E3B] border-[#C7D8A8]', 
           icon: UserCheck 
         };
       case 'admin':
@@ -156,8 +161,8 @@ export default function LmsLayout({
   const RoleIcon = roleBadge.icon;
 
   return (
-    <div className={`min-h-screen flex font-sans selection:bg-[#2E7D32] selection:text-white transition-colors duration-300 ${
-      darkMode ? 'bg-slate-950 text-slate-100' : 'bg-white text-[#1F2937]'
+    <div className={`min-h-screen flex font-sans selection:bg-[#355E3B] selection:text-white transition-colors duration-300 ${
+      darkMode ? 'bg-slate-950 text-slate-100' : 'bg-[#F6F8F2] text-[#1F2937]'
     }`}>
       
       {/* Mobile Sidebar Overlay */}
@@ -170,13 +175,13 @@ export default function LmsLayout({
 
       {/* ================= SIDEBAR ================= */}
       <aside className={`fixed top-0 bottom-0 left-0 z-50 w-64 border-r flex flex-col justify-between transition-all duration-300 lg:translate-x-0 ${
-        darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-[#1F4E4F] border-[#183E3F] text-white shadow-xl'
+        darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-[#355E3B] border-[#2D5032] text-white shadow-xl'
       } ${
         sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
       }`}>
         
         {/* Brand Header matching main website Logo */}
-        <div className={`p-5 border-b flex items-center justify-between ${darkMode ? 'border-slate-800' : 'border-teal-800/80'}`}>
+        <div className={`p-5 border-b flex items-center justify-between ${darkMode ? 'border-slate-800' : 'border-emerald-800/60'}`}>
           <div className="flex items-center">
             <Logo variant="sidebar" />
           </div>
@@ -191,7 +196,7 @@ export default function LmsLayout({
         {/* Navigation Links */}
         <div className="p-4 flex-grow overflow-y-auto space-y-1">
           <div className={`px-3 py-2 text-[10px] font-mono font-bold tracking-wider uppercase ${
-            darkMode ? 'text-slate-400' : 'text-emerald-200/90'
+            darkMode ? 'text-slate-400' : 'text-[#C7D8A8]'
           }`}>
             {isID ? 'Menu Navigasi Portal' : 'Portal Menu'}
           </div>
@@ -209,7 +214,7 @@ export default function LmsLayout({
                   isActive
                     ? darkMode
                       ? 'bg-emerald-600 text-white shadow-md font-extrabold'
-                      : 'bg-white text-[#1F4E4F] shadow-md font-extrabold'
+                      : 'bg-white text-[#355E3B] shadow-md font-extrabold'
                     : darkMode 
                       ? 'text-slate-300 hover:text-white hover:bg-slate-800' 
                       : 'text-white/85 hover:text-white hover:bg-white/10'
@@ -217,7 +222,7 @@ export default function LmsLayout({
               >
                 <Icon className={`h-4 w-4 shrink-0 ${
                   isActive 
-                    ? darkMode ? 'text-white' : 'text-[#1F4E4F]' 
+                    ? darkMode ? 'text-white' : 'text-[#355E3B]' 
                     : darkMode ? 'text-slate-400' : 'text-white/80'
                 }`} />
                 <span>{item.label}</span>
@@ -395,7 +400,15 @@ export default function LmsLayout({
                 }`}
               >
                 <img 
-                  src={currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100'} 
+                  src={
+                    currentUser.avatar && !currentUser.avatar.includes('unsplash.com')
+                      ? currentUser.avatar
+                      : currentUser.name.toLowerCase().includes('indrarini') ? '/images/team/indrarini.jpg'
+                      : currentUser.name.toLowerCase().includes('azliny') ? '/images/team/azliny.jpg'
+                      : currentUser.name.toLowerCase().includes('shara') ? '/images/team/shara.jpg'
+                      : currentUser.name.toLowerCase().includes('chiko') ? '/images/team/chiko.jpg'
+                      : currentUser.avatar || '/images/team/indrarini.jpg'
+                  } 
                   alt={currentUser.name}
                   className="w-7 h-7 rounded-lg object-cover ring-2 ring-[#2E7D32]"
                 />

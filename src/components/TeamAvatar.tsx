@@ -31,6 +31,18 @@ export default function TeamAvatar({ id, name, className = '' }: TeamAvatarProps
     );
   }
 
+  // Muhammad Alfachri Akbar (Alumni - AI Engineer & Asisten Peneliti) - Real Photo (Maroon blazer)
+  if (id === 'member-alfachri' || id === 'user_assistant_alfachri' || name.toLowerCase().includes('alfachri') || name.toLowerCase().includes('akbar')) {
+    return (
+      <div className={`relative overflow-hidden bg-slate-900 border border-emerald-300/40 shadow-inner flex items-center justify-center ${className}`}>
+        <img src="/images/team/alfachri.jpg?v=5" alt={name} className="w-full h-full object-cover object-top" />
+        <div className="absolute bottom-2 left-2 right-2 bg-emerald-950/85 backdrop-blur-md text-emerald-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-emerald-500/30">
+          ALUMNI • AI ENGINEER
+        </div>
+      </div>
+    );
+  }
+
   // Shara Anjelia (Full-stack Developer) - Real Photo
   if (id === 'member-shara' || name.toLowerCase().includes('shara')) {
     return (
@@ -113,6 +125,18 @@ export default function TeamAvatar({ id, name, className = '' }: TeamAvatarProps
       <div className={`relative overflow-hidden bg-slate-900 border border-blue-900 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/divia-nuralika-namira.jpg" alt={name} className="w-full h-full object-cover object-top" />
         <div className="absolute bottom-2 left-2 right-2 bg-blue-950/85 backdrop-blur-md text-sky-300 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-blue-800">
+          IOT SPECIALIST
+        </div>
+      </div>
+    );
+  }
+
+  // M. Farid Hasri - IoT Specialist (Real Photo - Brown Telkom jacket)
+  if (id === 'member-farid' || id === 'user_student_farid' || name.toLowerCase().includes('farid')) {
+    return (
+      <div className={`relative overflow-hidden bg-slate-900 border border-amber-900/60 shadow-inner flex items-center justify-center ${className}`}>
+        <img src="/images/team/farid.jpg" alt={name} className="w-full h-full object-cover object-[center_20%]" />
+        <div className="absolute bottom-2 left-2 right-2 bg-amber-950/85 backdrop-blur-md text-amber-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-amber-800">
           IOT SPECIALIST
         </div>
       </div>

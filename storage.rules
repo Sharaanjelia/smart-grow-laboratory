@@ -1,0 +1,33 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Avatars: Public read, authenticated upload
+    match /avatars/{fileName} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    
+    // Project Gallery Images: Public read, authenticated upload
+    match /projects/{fileName} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    
+    // Attendance Selfie Photos: Authenticated read & upload only (privacy protected)
+    match /attendance/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+    
+    // General Uploads: Public read, authenticated upload
+    match /uploads/{fileName} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+  }
+}

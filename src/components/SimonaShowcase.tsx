@@ -236,68 +236,33 @@ export default function SimonaShowcase({
             Galeri Dokumentasi & Hardware SIMONA
           </h3>
           <span className="text-xs font-mono font-bold text-slate-400">
-            {activeImageIndex + 1} / {galleryImages.length}
+            {galleryImages.length} Foto Dokumentasi (Klik foto untuk memperbesar)
           </span>
         </div>
 
-        {/* Featured Big Image Display */}
-        <div className="relative aspect-[16/9] w-full rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 shadow-2xl group">
-          <img 
-            src={galleryImages[activeImageIndex].url}
-            alt={galleryImages[activeImageIndex].title}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-          
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent"></div>
-
-          {/* Zoom Modal Trigger */}
-          <button
-            onClick={() => setModalImage(galleryImages[activeImageIndex].url)}
-            className="absolute top-4 right-4 p-3 rounded-full bg-slate-950/70 text-white backdrop-blur-md hover:bg-cyan-600 transition-all border border-white/20 cursor-pointer"
-            title="Perbesar Foto"
-          >
-            <Maximize2 className="w-5 h-5" />
-          </button>
-
-          {/* Next / Previous Controls */}
-          <button
-            onClick={() => setActiveImageIndex(prev => (prev === 0 ? galleryImages.length - 1 : prev - 1))}
-            className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-slate-950/70 text-white backdrop-blur-md hover:bg-cyan-600 transition-all border border-white/20 cursor-pointer"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-
-          <button
-            onClick={() => setActiveImageIndex(prev => (prev === galleryImages.length - 1 ? 0 : prev + 1))}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-slate-950/70 text-white backdrop-blur-md hover:bg-cyan-600 transition-all border border-white/20 cursor-pointer"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-
-          {/* Bottom Caption overlay */}
-          <div className="absolute bottom-6 left-6 right-6 bg-slate-950/80 backdrop-blur-md border border-white/10 p-5 rounded-2xl text-white space-y-1">
-            <h4 className="font-display text-lg font-bold text-cyan-400">
-              {galleryImages[activeImageIndex].title}
-            </h4>
-            <p className="text-xs text-slate-300 font-sans leading-relaxed">
-              {galleryImages[activeImageIndex].caption}
-            </p>
-          </div>
-        </div>
-
-        {/* Thumbnail Selector Grid */}
-        <div className="grid grid-cols-5 gap-3 pt-2">
+        {/* Small Horizontal Thumbnail Cards Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 pt-2">
           {galleryImages.map((img, idx) => (
             <button
               key={idx}
-              onClick={() => setActiveImageIndex(idx)}
-              className={`relative aspect-video rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
-                activeImageIndex === idx 
-                  ? 'border-cyan-500 ring-4 ring-cyan-500/20 scale-105' 
-                  : 'border-slate-200 dark:border-slate-800 opacity-60 hover:opacity-100'
-              }`}
+              onClick={() => setModalImage(img.url)}
+              className="group relative aspect-[4/3] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-900 shadow-md hover:shadow-2xl hover:scale-105 hover:border-cyan-500 transition-all cursor-pointer flex flex-col justify-end p-3 text-left"
             >
-              <img src={img.url} alt={img.title} className="w-full h-full object-cover" />
+              <img 
+                src={img.url} 
+                alt={img.title} 
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent group-hover:from-cyan-950/90 transition-colors"></div>
+              
+              <div className="relative z-10 space-y-0.5">
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-cyan-400">
+                  <Maximize2 className="w-3 h-3 text-cyan-400" /> Lihat Foto
+                </span>
+                <h4 className="font-display text-xs font-bold text-white line-clamp-1 group-hover:text-cyan-300">
+                  {img.title}
+                </h4>
+              </div>
             </button>
           ))}
         </div>
@@ -567,20 +532,37 @@ export default function SimonaShowcase({
         </div>
       </div>
 
-      {/* Image Zoom Modal */}
+      {/* Image Zoom Lightbox Modal */}
       {modalImage && (
         <div 
           className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4"
           onClick={() => setModalImage(null)}
         >
-          <div className="relative max-w-5xl max-h-[90vh] overflow-hidden rounded-3xl border border-white/20">
+          <div 
+            className="relative max-w-4xl w-full overflow-hidden rounded-3xl border border-white/20 bg-slate-900 shadow-2xl space-y-0"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={() => setModalImage(null)}
-              className="absolute top-4 right-4 p-3 rounded-full bg-slate-950/80 text-white hover:bg-red-600 transition-all z-10 cursor-pointer"
+              className="absolute top-4 right-4 p-3 rounded-full bg-slate-950/80 text-white hover:bg-red-600 transition-all z-20 cursor-pointer border border-white/10"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
-            <img src={modalImage} alt="Expanded View" className="w-full h-full object-contain max-h-[85vh]" />
+            
+            <div className="relative aspect-[16/9] w-full bg-slate-950 flex items-center justify-center overflow-hidden">
+              <img src={modalImage} alt="Expanded View" className="w-full h-full object-contain max-h-[75vh]" />
+            </div>
+
+            {(() => {
+              const matched = galleryImages.find(g => g.url === modalImage);
+              if (!matched) return null;
+              return (
+                <div className="p-5 bg-slate-900 text-white border-t border-slate-800 space-y-1">
+                  <h4 className="font-display text-lg font-bold text-cyan-400">{matched.title}</h4>
+                  <p className="text-xs text-slate-300 font-sans leading-relaxed">{matched.caption}</p>
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}

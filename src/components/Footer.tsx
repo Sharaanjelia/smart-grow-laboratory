@@ -27,16 +27,16 @@ export default function Footer({ setCurrentPage }: FooterProps) {
               Office Address
             </h3>
             <a 
-              href="https://www.google.com/maps/search/?api=1&query=Bandung+Techno+Park+Telkom+University"
+              href="https://www.google.com/maps/search/?api=1&query=Jl.+Telekomunikasi+No.1+Sukapura+Dayeuhkolot+Bandung"
               target="_blank"
               rel="noopener noreferrer"
               className="text-slate-400 hover:text-teal-400 transition-colors block text-sm leading-relaxed space-y-1 font-sans cursor-pointer group"
               title="Open location in Google Maps"
             >
-              <p className="group-hover:underline">Bandung Techno Park, Telkom</p>
-              <p className="group-hover:underline">University, Jl. Telekomunikasi,</p>
-              <p className="group-hover:underline">Terusan Buah Batu Kab. Bandung,</p>
-              <p className="group-hover:underline">40257</p>
+              <p className="group-hover:underline">Bandung Techno Park, Telkom University</p>
+              <p className="group-hover:underline">Jl. Telekomunikasi No.1, Sukapura,</p>
+              <p className="group-hover:underline">Kec. Dayeuhkolot, Kab. Bandung,</p>
+              <p className="group-hover:underline">Jawa Barat 40257</p>
             </a>
           </div>
 

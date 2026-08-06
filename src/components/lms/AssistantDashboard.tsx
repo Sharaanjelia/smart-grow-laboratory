@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { db, uploadFileToFirebaseStorage } from '../../firebase';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { 
   User, 
   Task, 
   AttendanceRecord, 
   LmsProject, 
+  ProjectItem,
   Announcement, 
-  TaskStatus 
+  TaskStatus,
+  ApplicantRecord,
+  SelectionStage,
+  PendingRegistration
 } from '../../types';
 import ProfileView from './ProfileView';
 import RevisionDetailModal from './RevisionDetailModal';
@@ -14,6 +20,8 @@ import AttendanceView from './AttendanceView';
 import ReportExportModal from './ReportExportModal';
 import InternshipStudentsView from './InternshipStudentsView';
 import AnnouncementsManager from './AnnouncementsManager';
+import InternshipRecruitmentManager from './InternshipRecruitmentManager';
+import PendingRegistrationsView from './PendingRegistrationsView';
 import { 
   Users, 
   CheckSquare, 
@@ -43,7 +51,8 @@ import {
   ShieldCheck,
   Calendar,
   Filter,
-  Github
+  Github,
+  Upload
 } from 'lucide-react';
 
 interface AssistantDashboardProps {
@@ -54,7 +63,12 @@ interface AssistantDashboardProps {
   tasks: Task[];
   attendance: AttendanceRecord[];
   projects: LmsProject[];
+  publicProjects?: ProjectItem[];
   announcements: Announcement[];
+  applicants?: ApplicantRecord[];
+  pendingRegistrations?: PendingRegistration[];
+  onApproveRegistration?: (reg: PendingRegistration) => void;
+  onRejectRegistration?: (id: string) => void;
   onCreateTask: (task: Omit<Task, 'id' | 'createdAt' | 'status'>) => void;
   onUpdateTask?: (task: Task) => void;
   onDeleteTask?: (taskId: string) => void;
@@ -68,6 +82,13 @@ interface AssistantDashboardProps {
   onUpdateProject?: (project: LmsProject) => void;
   onDeleteProject?: (projectId: string) => void;
   onArchiveProject?: (projectId: string) => void;
+  onAddPublicProject?: (proj: Omit<ProjectItem, 'id'>) => void;
+  onEditPublicProject?: (proj: ProjectItem) => void;
+  onDeletePublicProject?: (id: string) => void;
+  onNavigateToShowcase?: (projId: string) => void;
+  onAdvanceApplicantStage?: (applicantId: string, nextStage: SelectionStage, notes?: string) => void;
+  onApproveApplicant?: (applicantId: string) => void;
+  onRejectApplicant?: (applicantId: string) => void;
   darkMode?: boolean;
   language?: 'id' | 'en';
 }
@@ -80,7 +101,12 @@ export default function AssistantDashboard({
   tasks,
   attendance,
   projects,
+  publicProjects = [],
   announcements,
+  applicants = [],
+  pendingRegistrations = [],
+  onApproveRegistration,
+  onRejectRegistration,
   onCreateTask,
   onUpdateTask,
   onDeleteTask,
@@ -94,18 +120,137 @@ export default function AssistantDashboard({
   onUpdateProject,
   onDeleteProject,
   onArchiveProject,
+  onAddPublicProject,
+  onEditPublicProject,
+  onDeletePublicProject,
+  onNavigateToShowcase,
+  onAdvanceApplicantStage,
+  onApproveApplicant,
+  onRejectApplicant,
   darkMode = false,
   language = 'id'
 }: AssistantDashboardProps) {
   const isID = language === 'id';
-  const students = passedStudents || users.filter(u => u.role === 'student');
+  const students = (passedStudents || users.filter(u => u.role === 'student')).filter(u => u.status === 'active');
 
   // Modal States
   const [createTaskModalOpen, setCreateTaskModalOpen] = useState(false);
   const [selectedTaskForRevision, setSelectedTaskForRevision] = useState<Task | null>(null);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<LmsProject | null>(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+  // Feature-scoped realtime listener for pending registrations
+  const [realtimePendingRegs, setRealtimePendingRegs] = useState<PendingRegistration[]>([]);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, 'pending_registrations'),
+      where('status', '==', 'Pending Approval')
+    );
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const records = snapshot.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        })) as PendingRegistration[];
+        setRealtimePendingRegs(records);
+      } else {
+        setRealtimePendingRegs([]);
+      }
+    }, (err) => {
+      console.warn('Pending registrations feature-scoped listener notice:', err?.message);
+    });
+
+    return () => unsub();
+  }, []);
+
+  const displayPendingRegs = realtimePendingRegs.length > 0 ? realtimePendingRegs : pendingRegistrations;
   const [annModalOpen, setAnnModalOpen] = useState(false);
+
+  const [publicModalOpen, setPublicModalOpen] = useState(false);
+  const [editingPublicItem, setEditingPublicItem] = useState<ProjectItem | null>(null);
+  const [pubTitle, setPubTitle] = useState('');
+  const [pubTagline, setPubTagline] = useState('');
+  const [pubCategory, setPubCategory] = useState('IoT & Hardware');
+  const [pubDesc, setPubDesc] = useState('');
+  const [pubFullDesc, setPubFullDesc] = useState('');
+  const [pubGallery, setPubGallery] = useState<string[]>([]);
+  const MAX_GALLERY = 9;
+
+  const handleAddGalleryFile = async (file: File) => {
+    if (pubGallery.length >= MAX_GALLERY) return;
+    try {
+      const downloadUrl = await uploadFileToFirebaseStorage(file, 'projects');
+      setPubGallery(prev => [...prev, downloadUrl].slice(0, MAX_GALLERY));
+    } catch (err) {
+      console.error('Gallery file upload error:', err);
+    }
+  };
+
+  const handleAddGalleryUrl = (url: string) => {
+    if (!url.trim() || pubGallery.length >= MAX_GALLERY) return;
+    setPubGallery(prev => [...prev, url.trim()].slice(0, MAX_GALLERY));
+  };
+
+  const handleRemoveGalleryItem = (index: number) => {
+    setPubGallery(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleOpenEditPublic = (item: ProjectItem) => {
+    setEditingPublicItem(item);
+    setPubTitle(item.title);
+    setPubTagline(item.tagline || '');
+    setPubCategory(item.category);
+    setPubDesc(item.description);
+    setPubFullDesc(item.fullDescription || item.description);
+    const existingGallery = item.gallery && item.gallery.length > 0 ? item.gallery : (item.image ? [item.image] : []);
+    setPubGallery(existingGallery);
+    setPublicModalOpen(true);
+  };
+
+  const handlePublicSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pubTitle.trim() || !pubDesc.trim()) return;
+
+    const mainImage = pubGallery[0] || '';
+
+    if (editingPublicItem && onEditPublicProject) {
+      onEditPublicProject({
+        ...editingPublicItem,
+        title: pubTitle.trim(),
+        tagline: pubTagline.trim(),
+        category: pubCategory,
+        description: pubDesc.trim(),
+        fullDescription: pubFullDesc.trim() || pubDesc.trim(),
+        image: mainImage || editingPublicItem.image,
+        gallery: pubGallery
+      });
+    } else if (onAddPublicProject) {
+      onAddPublicProject({
+        title: pubTitle.trim(),
+        tagline: pubTagline.trim(),
+        category: pubCategory,
+        date: new Date().toISOString().split('T')[0],
+        image: mainImage,
+        description: pubDesc.trim(),
+        fullDescription: pubFullDesc.trim() || pubDesc.trim(),
+        sensors: [],
+        gallery: pubGallery
+      });
+    }
+    setPublicModalOpen(false);
+    setEditingPublicItem(null);
+    setPubTitle('');
+    setPubTagline('');
+    setPubDesc('');
+    setPubFullDesc('');
+    setPubGallery([]);
+  };
 
   // Form States for Task Creation
   const [taskTitle, setTaskTitle] = useState('');
@@ -172,9 +317,10 @@ export default function AssistantDashboard({
     return true;
   });
 
-  // Calculate Summary metrics
-  const activeStudentsCount = students.length || 5;
-  const presentTodayCount = attendance.filter(a => a.date === '2026-07-22' && a.status === 'present').length || 4;
+  // Calculate Summary metrics dynamically from real state
+  const today = new Date().toISOString().split('T')[0];
+  const activeStudentsCount = students.length;
+  const presentTodayCount = attendance.filter(a => a.date === today || a.status === 'present').length;
   const pendingReviewCount = tasks.filter(t => t.status === 'review').length;
   const upcomingDeadlinesCount = tasks.filter(t => t.status !== 'completed').length;
   const activeProjectsCount = projects.filter(p => p.status === 'in_progress' || p.status === 'planning').length;
@@ -182,6 +328,17 @@ export default function AssistantDashboard({
   return (
     <div className="space-y-6 text-slate-800 dark:text-slate-100">
       
+      {/* ==========================================
+          TAB 0: PENDING REGISTRATIONS APPROVAL
+          ========================================== */}
+      {activeTab === 'pending_registrations' && (
+        <PendingRegistrationsView 
+          registrations={pendingRegistrations}
+          onApprove={onApproveRegistration || (() => {})}
+          onReject={onRejectRegistration || (() => {})}
+        />
+      )}
+
       {/* ==========================================
           TAB 1: OVERVIEW DASHBOARD (RINGKASAN SAJA)
           ========================================== */}
@@ -589,90 +746,354 @@ export default function AssistantDashboard({
           TAB 3: PROYEK RISET IOT (FULL CRUD)
           ========================================== */}
       {activeTab === 'projects' && (
-        <div className="space-y-6 animate-fade-in">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <FolderKanban className="h-6 w-6 text-[#2E7D32]" />
-                <span>Pengelolaan Proyek Riset IoT & Smart Grow</span>
-              </h2>
-              <p className="text-xs text-slate-500">Kelola direktori modul riset, pembimbing, mahasiswa pelaksana, dan progress milestone hardware.</p>
+        <div className="space-y-8 animate-fade-in">
+          
+          {/* 1. PUBLIC WEBSITE R&D PROJECTS (LIVE SYNC TO MAIN SITE) */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-700 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-emerald-600 animate-pulse" />
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                    Proyek Riset Utama Showcase (Tampil di Website Utama)
+                  </h2>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Seluruh perubahan data proyek di bawah ini (Tambah, Edit, Hapus) akan <strong>langsung terupdate secara real-time di website publik Smart Grow Laboratory</strong>.
+                </p>
+              </div>
+
+              <button
+                onClick={() => { setEditingPublicItem(null); setPubTitle(''); setPubTagline(''); setPubDesc(''); setPublicModalOpen(true); }}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold flex items-center gap-2 shadow-md transition-all cursor-pointer shrink-0"
+              >
+                <Plus className="h-4 w-4" />
+                <span>+ Tambah Proyek Riset Publik</span>
+              </button>
             </div>
 
-            <button
-              onClick={() => { setEditingProject(null); setProjectModalOpen(true); }}
-              className="px-5 py-2.5 rounded-xl bg-[#2E7D32] hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-2 shadow-md transition-all cursor-pointer"
-            >
-              <Plus className="h-4 w-4" />
-              <span>+ Tambah Proyek IoT Baru</span>
-            </button>
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {publicProjects.map(proj => (
+                <div key={proj.id} className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col justify-between group">
+                  <div>
+                    <div className="relative h-40 bg-slate-950 overflow-hidden">
+                      <img src={proj.image} alt={proj.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <span className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-slate-950/80 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-bold backdrop-blur-xs">
+                        {proj.category}
+                      </span>
+                    </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((p) => (
-              <div key={p.id} className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden flex flex-col justify-between">
-                <div>
-                  <div className="relative h-44 overflow-hidden bg-slate-900">
-                    <img src={p.coverImage} alt={p.title} className="w-full h-full object-cover opacity-85" />
-                    <span className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-slate-900/80 text-white text-[10px] font-mono font-bold backdrop-blur-xs">
-                      {p.projectNumber}
-                    </span>
-                    <span className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold">
-                      {p.category}
-                    </span>
+                    <div className="p-4 space-y-2 text-xs">
+                      <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm leading-snug">{proj.title}</h3>
+                      <p className="text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">{proj.description}</p>
+                    </div>
                   </div>
 
-                  <div className="p-5 space-y-3">
-                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm leading-snug">{p.title}</h3>
-                    <p className="text-xs text-slate-500 line-clamp-2">{p.description}</p>
+                  <div className="p-3 bg-slate-50 dark:bg-slate-700/30 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs">
+                    {onNavigateToShowcase ? (
+                      <button 
+                        onClick={() => onNavigateToShowcase(proj.id)} 
+                        className="flex items-center gap-1 font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        <span>Pratinjau</span>
+                      </button>
+                    ) : <span></span>}
 
-                    <div className="space-y-1.5 text-xs pt-1">
-                      <div className="flex justify-between text-slate-500 text-[11px]">
-                        <span>Pembimbing Utama:</span>
-                        <span className="font-semibold text-slate-700 dark:text-slate-200">{p.supervisor}</span>
-                      </div>
+                    <div className="flex items-center gap-1">
+                      <button 
+                        onClick={() => handleOpenEditPublic(proj)} 
+                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                        title="Edit Proyek Publik"
+                      >
+                        <Edit3 className="h-3.5 w-3.5" />
+                      </button>
+                      {onDeletePublicProject && (
+                        <button 
+                          onClick={() => onDeletePublicProject(proj.id)} 
+                          className="p-1.5 rounded-lg border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 cursor-pointer"
+                          title="Hapus Proyek"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[10px] font-bold">
-                          <span>Progress Capaian</span>
-                          <span className="text-[#2E7D32]">{p.progressPercent}%</span>
+          {/* 2. TRACKER INTERNAL PROYEK LMS */}
+          <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <FolderKanban className="h-5 w-5 text-[#2E7D32]" />
+                  <span>Progress Task & Internal Proyek LMS</span>
+                </h2>
+                <p className="text-xs text-slate-500">Kelola direktori modul riset, pembimbing, mahasiswa pelaksana, dan progress milestone hardware.</p>
+              </div>
+
+              <button
+                onClick={() => { setEditingProject(null); setProjectModalOpen(true); }}
+                className="px-5 py-2.5 rounded-xl bg-[#2E7D32] hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-2 shadow-md transition-all cursor-pointer"
+              >
+                <Plus className="h-4 w-4" />
+                <span>+ Modul Proyek Internal</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {projects.map((p) => (
+                <div key={p.id} className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden flex flex-col justify-between">
+                  <div>
+                    <div className="relative h-44 overflow-hidden bg-slate-900">
+                      <img src={p.coverImage} alt={p.title} className="w-full h-full object-cover opacity-85" />
+                      <span className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-slate-900/80 text-white text-[10px] font-mono font-bold backdrop-blur-xs">
+                        {p.projectNumber}
+                      </span>
+                      <span className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold">
+                        {p.category}
+                      </span>
+                    </div>
+
+                    <div className="p-5 space-y-3">
+                      <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm leading-snug">{p.title}</h3>
+                      <p className="text-xs text-slate-500 line-clamp-2">{p.description}</p>
+
+                      <div className="space-y-1.5 text-xs pt-1">
+                        <div className="flex justify-between text-slate-500 text-[11px]">
+                          <span>Pembimbing Utama:</span>
+                          <span className="font-semibold text-slate-700 dark:text-slate-200">{p.supervisor}</span>
                         </div>
-                        <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
-                          <div className="h-full bg-emerald-600 rounded-full" style={{ width: `${p.progressPercent}%` }} />
+
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-[10px] font-bold">
+                            <span>Progress Capaian</span>
+                            <span className="text-[#2E7D32]">{p.progressPercent}%</span>
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                            <div className="h-full bg-emerald-600 rounded-full" style={{ width: `${p.progressPercent}%` }} />
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="p-4 bg-slate-50 dark:bg-slate-700/30 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs">
-                  {p.githubUrl && (
-                    <a href={p.githubUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 font-bold text-slate-700 hover:text-emerald-600">
-                      <Github className="h-3.5 w-3.5" />
-                      <span>GitHub</span>
-                    </a>
-                  )}
+                  <div className="p-4 bg-slate-50 dark:bg-slate-700/30 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs">
+                    {p.githubUrl && (
+                      <a href={p.githubUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 font-bold text-slate-700 hover:text-emerald-600">
+                        <Github className="h-3.5 w-3.5" />
+                        <span>GitHub</span>
+                      </a>
+                    )}
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => { setEditingProject(p); setProjectModalOpen(true); }}
-                      className="p-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border hover:bg-slate-100"
-                    >
-                      <Edit3 className="h-3.5 w-3.5" />
-                    </button>
-                    {onDeleteProject && (
+                    <div className="flex items-center gap-2">
                       <button
-                        onClick={() => onDeleteProject(p.id)}
-                        className="p-1.5 rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
+                        onClick={() => { setEditingProject(p); setProjectModalOpen(true); }}
+                        className="p-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border hover:bg-slate-100"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Edit3 className="h-3.5 w-3.5" />
                       </button>
+                      {onDeleteProject && (
+                        <button
+                          onClick={() => onDeleteProject(p.id)}
+                          className="p-1.5 rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* PUBLIC PROJECT MODAL FOR ASSISTANT */}
+      {publicModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+          <div className="w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white font-display">
+                  {editingPublicItem ? '✏️ Edit Proyek Riset Publik' : '＋ Tambah Proyek Riset Publik Baru'}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Data ini akan tampil di halaman Proyek website utama</p>
+              </div>
+              <button onClick={() => setPublicModalOpen(false)} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Body — scrollable */}
+            <div className="overflow-y-auto max-h-[70vh] px-6 py-4">
+              <form id="pub-form-asst" onSubmit={handlePublicSubmit} className="space-y-4 text-xs">
+
+                {/* GALLERY FOTO PROYEK — max 9 foto */}
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    🖼️ Gallery Foto Proyek <span className="text-slate-400 font-normal">({pubGallery.length}/{MAX_GALLERY})</span>
+                    {pubGallery.length === 0 && <span className="text-rose-500 ml-1">*</span>}
+                  </label>
+                  <p className="text-[11px] text-slate-400 mb-2">Foto pertama menjadi gambar cover utama. Maksimal {MAX_GALLERY} foto.</p>
+
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    {pubGallery.map((img, idx) => (
+                      <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 group bg-slate-100 dark:bg-slate-800">
+                        <img src={img} alt={`foto-${idx + 1}`} className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).src = ''; }} />
+                        {idx === 0 && (
+                          <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[9px] font-bold shadow">COVER</span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveGalleryItem(idx)}
+                          className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow hover:bg-red-600"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+
+                    {pubGallery.length < MAX_GALLERY && (
+                      <label className="aspect-square rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-colors">
+                        <Upload className="h-5 w-5 text-slate-400" />
+                        <span className="text-[10px] text-slate-400 font-bold">Tambah</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={e => {
+                            const files = e.target.files;
+                            if (files) {
+                              Array.from(files).slice(0, MAX_GALLERY - pubGallery.length).forEach((f: File) => handleAddGalleryFile(f));
+                            }
+                            e.target.value = '';
+                          }}
+                        />
+                      </label>
                     )}
                   </div>
+
+                  {pubGallery.length < MAX_GALLERY && (
+                    <div className="flex items-center gap-2">
+                      <input
+                        id="asst-url-input"
+                        type="text"
+                        placeholder="Paste URL gambar lalu klik +"
+                        className="flex-1 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-emerald-500 text-xs"
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const input = e.target as HTMLInputElement;
+                            handleAddGalleryUrl(input.value);
+                            input.value = '';
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const input = document.getElementById('asst-url-input') as HTMLInputElement;
+                          if (input) { handleAddGalleryUrl(input.value); input.value = ''; }
+                        }}
+                        className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs cursor-pointer transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-              </div>
-            ))}
+                {/* JUDUL */}
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">📌 Judul Proyek <span className="text-rose-500">*</span></label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. SIMONA Aquaponics Monitoring System"
+                    value={pubTitle}
+                    onChange={e => setPubTitle(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                {/* TAGLINE */}
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">✨ Tagline Ringkas</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Real-Time Telemetry Aquaponics & Water Quality"
+                    value={pubTagline}
+                    onChange={e => setPubTagline(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                {/* KATEGORI */}
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">🏷️ Kategori</label>
+                  <select
+                    value={pubCategory}
+                    onChange={e => setPubCategory(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="IoT & Hardware">IoT & Hardware</option>
+                    <option value="Hydroponics">Hydroponics</option>
+                    <option value="Aquaponics">Aquaponics</option>
+                    <option value="Smart City PJU">Smart City PJU</option>
+                    <option value="Biofloc AI Aquaculture">Biofloc AI Aquaculture</option>
+                    <option value="Computer Vision AI">Computer Vision AI</option>
+                    <option value="Web & Dashboard">Web & Dashboard</option>
+                  </select>
+                </div>
+
+                {/* DESKRIPSI SINGKAT */}
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">📝 Deskripsi Singkat (tampil di kartu) <span className="text-rose-500">*</span></label>
+                  <textarea
+                    rows={2}
+                    required
+                    placeholder="Deskripsi singkat yang tampil di kartu proyek halaman utama..."
+                    value={pubDesc}
+                    onChange={e => setPubDesc(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-emerald-500 resize-none"
+                  />
+                </div>
+
+                {/* DESKRIPSI LENGKAP */}
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">📄 Deskripsi Lengkap (tampil di halaman detail proyek)</label>
+                  <textarea
+                    rows={4}
+                    placeholder="Tuliskan spesifikasi teknis lengkap, metodologi, tujuan riset, dan hasil yang diharapkan..."
+                    value={pubFullDesc}
+                    onChange={e => setPubFullDesc(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-emerald-500 resize-none"
+                  />
+                  <p className="text-slate-400 mt-1">Kosongkan untuk menyamakan dengan deskripsi singkat.</p>
+                </div>
+
+              </form>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 pb-5 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="submit"
+                form="pub-form-asst"
+                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider shadow-md cursor-pointer transition-colors"
+              >
+                {editingPublicItem ? '💾 Simpan Perubahan Proyek' : '🌐 Terbitkan ke Website Utama'}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -688,6 +1109,27 @@ export default function AssistantDashboard({
           projects={projects}
           darkMode={darkMode}
         />
+      )}
+
+      {/* ==========================================
+          TAB: APPLICANTS RECRUITMENT 5-STAGE MANAGER
+          ========================================== */}
+      {activeTab === 'applicants' && (
+        <div className="animate-fade-in">
+          <InternshipRecruitmentManager
+            applicants={applicants}
+            onAdvanceStage={(id, nextStage, notes) => {
+              if (onAdvanceApplicantStage) {
+                onAdvanceApplicantStage(id, nextStage, notes);
+              } else if (nextStage === 5 && onApproveApplicant) {
+                onApproveApplicant(id);
+              }
+            }}
+            onApproveApplicant={(id) => onApproveApplicant && onApproveApplicant(id)}
+            onRejectApplicant={(id) => onRejectApplicant && onRejectApplicant(id)}
+            darkMode={darkMode}
+          />
+        </div>
       )}
 
       {/* ==========================================

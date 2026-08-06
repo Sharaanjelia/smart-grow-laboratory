@@ -3,12 +3,14 @@ import {
   User, 
   UserRole, 
   ApplicantRecord, 
+  SelectionStage,
   NewsItem, 
   ProjectItem, 
   TeamMember, 
   SystemLog,
   AttendanceRecord
 } from '../../types';
+import InternshipRecruitmentManager from './InternshipRecruitmentManager';
 import { 
   ShieldCheck, 
   Users, 
@@ -51,11 +53,16 @@ import {
   Zap
 } from 'lucide-react';
 import TeamAvatar from '../TeamAvatar';
+import PendingRegistrationsView from './PendingRegistrationsView';
+import { PendingRegistration } from '../../types';
 
 interface AdminDashboardProps {
   activeTab: string;
   users: User[];
   applicants: ApplicantRecord[];
+  pendingRegistrations?: PendingRegistration[];
+  onApproveRegistration?: (reg: PendingRegistration) => void;
+  onRejectRegistration?: (id: string) => void;
   news: NewsItem[];
   projects: ProjectItem[];
   team: TeamMember[];
@@ -65,9 +72,11 @@ interface AdminDashboardProps {
   onDeleteUser: (userId: string) => void;
   onApproveApplicant: (applicantId: string) => void;
   onRejectApplicant: (applicantId: string) => void;
+  onAdvanceApplicantStage?: (applicantId: string, nextStage: SelectionStage, notes?: string) => void;
   onAddNews?: (news: Omit<NewsItem, 'id'>) => void;
   onDeleteNews?: (id: string) => void;
   onAddProject?: (project: Omit<ProjectItem, 'id'>) => void;
+  onEditProject?: (project: ProjectItem) => void;
   onDeleteProject?: (id: string) => void;
   onAddTeamMember?: (member: Omit<TeamMember, 'id'>) => void;
   onDeleteTeamMember?: (id: string) => void;
@@ -81,6 +90,9 @@ export default function AdminDashboard({
   activeTab,
   users,
   applicants,
+  pendingRegistrations = [],
+  onApproveRegistration,
+  onRejectRegistration,
   news,
   projects,
   team,
@@ -90,9 +102,11 @@ export default function AdminDashboard({
   onDeleteUser,
   onApproveApplicant,
   onRejectApplicant,
+  onAdvanceApplicantStage,
   onAddNews,
   onDeleteNews,
   onAddProject,
+  onEditProject,
   onDeleteProject,
   onAddTeamMember,
   onDeleteTeamMember,
@@ -103,6 +117,7 @@ export default function AdminDashboard({
   const [createUserOpen, setCreateUserOpen] = useState(false);
   const [createNewsOpen, setCreateNewsOpen] = useState(false);
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<ProjectItem | null>(null);
   const [createTeamOpen, setCreateTeamOpen] = useState(false);
   
   // Create User Form State
@@ -137,7 +152,7 @@ export default function AdminDashboard({
   const [projTitle, setProjTitle] = useState('');
   const [projTagline, setProjTagline] = useState('');
   const [projCategory, setProjCategory] = useState<string>('IoT & Hardware');
-  const [projDate, setProjDate] = useState('2026-07-22');
+  const [projDate, setProjDate] = useState(new Date().toISOString().split('T')[0]);
   const [projImage, setProjImage] = useState('https://images.unsplash.com/photo-1585336261026-8f5786372969?auto=format&fit=crop&w=800&q=80');
   const [projDesc, setProjDesc] = useState('');
 
@@ -191,10 +206,34 @@ export default function AdminDashboard({
     showToast('Artikel berita publikasi baru berhasil diterbitkan!');
   };
 
+  const handleOpenEditProject = (proj: ProjectItem) => {
+    setEditingProject(proj);
+    setProjTitle(proj.title);
+    setProjTagline(proj.tagline || '');
+    setProjCategory(proj.category);
+    setProjDate(proj.date || new Date().toISOString().split('T')[0]);
+    setProjDesc(proj.description);
+    setProjImage(proj.image);
+    setCreateProjectOpen(true);
+  };
+
   const handleCreateProjectSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!projTitle || !projDesc) return;
-    if (onAddProject) {
+    
+    if (editingProject && onEditProject) {
+      onEditProject({
+        ...editingProject,
+        title: projTitle,
+        tagline: projTagline || 'Innovation Project',
+        category: projCategory,
+        date: projDate,
+        image: projImage,
+        description: projDesc,
+        fullDescription: projDesc
+      });
+      showToast('Projek R&D berhasil diperbarui!');
+    } else if (onAddProject) {
       onAddProject({
         title: projTitle,
         tagline: projTagline || 'Innovation Project',
@@ -206,12 +245,13 @@ export default function AdminDashboard({
         sensors: [],
         gallery: [projImage]
       });
+      showToast('Projek R&D publikasi baru berhasil ditambahkan!');
     }
+    setEditingProject(null);
     setCreateProjectOpen(false);
     setProjTitle('');
     setProjTagline('');
     setProjDesc('');
-    showToast('Projek R&D publikasi baru berhasil ditambahkan!');
   };
 
   const handleRfidScan = () => {
@@ -244,6 +284,14 @@ export default function AdminDashboard({
 
   return (
     <div className="space-y-8 font-sans animate-fade-in relative">
+      
+      {activeTab === 'pending_registrations' && (
+        <PendingRegistrationsView 
+          registrations={pendingRegistrations}
+          onApprove={onApproveRegistration || (() => {})}
+          onReject={onRejectRegistration || (() => {})}
+        />
+      )}
       
       {/* Toast Notification */}
       {toastMessage && (
@@ -743,14 +791,24 @@ export default function AdminDashboard({
                     <h4 className="font-bold text-slate-900 text-xs">{proj.title}</h4>
                     <p className="text-[11px] text-slate-500 line-clamp-2">{proj.description}</p>
                   </div>
-                  {onDeleteProject && (
+                  <div className="flex items-center gap-1">
                     <button 
-                      onClick={() => onDeleteProject(proj.id)} 
-                      className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                      onClick={() => handleOpenEditProject(proj)} 
+                      className="p-1.5 text-teal-600 hover:bg-teal-50 rounded-lg cursor-pointer"
+                      title="Edit Projek R&D"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Edit3 className="h-4 w-4" />
                     </button>
-                  )}
+                    {onDeleteProject && (
+                      <button 
+                        onClick={() => onDeleteProject(proj.id)} 
+                        className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                        title="Hapus Projek"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -911,51 +969,22 @@ export default function AdminDashboard({
       )}
 
       {/* ========================================================================= */}
-      {/* 5. TAB: APPLICANT SUBMISSIONS                                             */}
+      {/* 5. TAB: APPLICANT SUBMISSIONS (5-STAGE SELECTION RECRUITMENT MANAGER)     */}
       {/* ========================================================================= */}
       {activeTab === 'applicants' && (
-        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 space-y-6 shadow-xs animate-fade-in">
-          <div className="border-b border-slate-100 pb-4">
-            <h2 className="text-xl font-bold text-slate-900 font-display">Pendaftaran Anggota Baru (Public Join Submissions) ({pendingApplicants.length})</h2>
-            <p className="text-xs text-slate-500">Berkas pendaftaran masuk dari form publik "Join Us" situs Smart Grow Laboratory.</p>
-          </div>
-
-          <div className="space-y-4">
-            {pendingApplicants.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-8">Tidak ada berkas pendaftaran baru yang menunggu persetujuan.</p>
-            ) : (
-              pendingApplicants.map(app => (
-                <div key={app.id} className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-bold text-sm text-slate-900">{app.fullName}</h3>
-                      <p className="text-xs font-mono text-emerald-700">{app.email} • Track Interest: <strong className="text-slate-900">{app.roleInterest}</strong></p>
-                    </div>
-                    <span className="text-[10px] font-mono font-bold text-slate-400">{app.submittedAt}</span>
-                  </div>
-
-                  <p className="text-xs text-slate-600 leading-relaxed bg-white p-3 rounded-xl border border-slate-200">
-                    "{app.motivation}"
-                  </p>
-
-                  <div className="flex justify-end gap-2 pt-2">
-                    <button
-                      onClick={() => onRejectApplicant(app.id)}
-                      className="px-3 py-1.5 rounded-xl bg-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-300 cursor-pointer"
-                    >
-                      Tolak Berkasa
-                    </button>
-                    <button
-                      onClick={() => onApproveApplicant(app.id)}
-                      className="px-4 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-sm cursor-pointer"
-                    >
-                      Setujui & Buat Akun Otomatis
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+        <div className="animate-fade-in">
+          <InternshipRecruitmentManager
+            applicants={applicants}
+            onAdvanceStage={(id, nextStage, notes) => {
+              if (onAdvanceApplicantStage) {
+                onAdvanceApplicantStage(id, nextStage, notes);
+              } else if (nextStage === 5) {
+                onApproveApplicant(id);
+              }
+            }}
+            onApproveApplicant={onApproveApplicant}
+            onRejectApplicant={onRejectApplicant}
+          />
         </div>
       )}
 

@@ -49,6 +49,7 @@ export interface TeamMember {
   email: string;
   instagram?: string;
   github?: string;
+  profileUrl?: string;
   bio: string;
   skills: string[];
 }
@@ -65,6 +66,7 @@ export interface User {
   avatar?: string;
   title?: string;
   studentId?: string; // NIM
+  internId?: string; // ID Magang e.g. SGL-INT-2026-001
   institution?: string; // Universitas
   major?: string; // Program Studi
   semester?: string; // Semester
@@ -72,7 +74,7 @@ export interface User {
   phone?: string;
   address?: string;
   specialty?: string;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'alumni';
   joinedDate: string;
   startDate?: string;
   endDate?: string;
@@ -97,6 +99,29 @@ export interface User {
   kpiData?: { overallProgress: number; attendanceScore: number; taskCompletionRate: number; researchContribution: number; reviewScore: number };
   activityHistory?: { id: string; action: string; date: string; details: string }[];
   loginHistory?: { id: string; ip: string; device: string; date: string }[];
+  isNewStudent?: boolean;
+  totalHibah?: string;
+  hibahSubtitle?: string;
+  totalPaper?: string;
+  paperSubtitle?: string;
+  totalPaten?: string;
+  patenSubtitle?: string;
+  totalMahasiswaOverride?: string;
+  mahasiswaSubtitle?: string;
+}
+
+export interface PendingRegistration {
+  id: string;
+  fullName: string;
+  university: string;
+  studyProgram: string;
+  division: string;
+  email: string;
+  password?: string;
+  registrationTime: string;
+  status: 'Pending Approval' | 'Approved' | 'Rejected';
+  internId?: string;
+  activationToken?: string;
 }
 
 export type TaskStatus = 'not_started' | 'in_progress' | 'review' | 'revision' | 'completed';
@@ -148,20 +173,39 @@ export interface Task {
 export interface AttendanceRecord {
   id: string;
   studentId: string;
+  internshipId?: string;
   studentName: string;
+  division?: string;
+  mentor?: string;
   date: string; // YYYY-MM-DD
   checkInTime?: string;
   checkOutTime?: string;
   duration?: string; // Durasi e.g. "7 Jam 30 Menit"
   workDuration?: string;
-  status: 'present' | 'late' | 'leave' | 'sick' | 'absent';
+  status: 'present' | 'late' | 'leave' | 'sick' | 'absent' | 'working' | 'checked_out';
   notes?: string; // Keterangan
+  dailyNotes?: string;
   location?: string; // Lokasi e.g. "Lab Smart Grow Telkom Univ"
-  ipAddress?: string; // IP Address
-  device?: string; // Device e.g. "Chrome Mac OS"
-  checkInPhoto?: string; // Photo Check In
-  checkOutPhoto?: string; // Photo Check Out
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  gpsAccuracy?: number;
+  locationRadius?: number;
+  ipAddress?: string;
+  device?: string;
+  deviceName?: string;
+  browser?: string;
+  operatingSystem?: string;
+  checkInPhoto?: string;
+  checkOutPhoto?: string;
   photoUrl?: string;
+  photoFileName?: string;
+  photoSize?: string;
+  photoResolution?: string;
+  firebaseStorageUrl?: string;
+  gdriveBackupStatus?: 'synced' | 'pending' | 'failed';
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface LmsProject {
@@ -223,15 +267,23 @@ export interface LmsNotification {
   type: 'task' | 'approval' | 'attendance' | 'announcement';
 }
 
+export type SelectionStage = 1 | 2 | 3 | 4 | 5;
+
 export interface ApplicantRecord {
   id: string;
   fullName: string;
   email: string;
+  phone?: string;
+  university?: string;
+  major?: string;
   roleInterest: string;
   motivation: string;
   github?: string;
   instagram?: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'in_selection' | 'approved' | 'rejected';
+  stage: SelectionStage; // 1: Seleksi Berkas, 2: Tes Teknis, 3: Wawancara, 4: Pengumuman, 5: Diterima & ID Magang
+  stageNotes?: string;
+  internId?: string;
   submittedAt: string;
 }
 

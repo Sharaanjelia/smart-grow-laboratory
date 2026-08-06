@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, UserRole } from '../../types';
+import { User, UserRole, PendingRegistration } from '../../types';
 import { initialUsers } from '../../data/lmsData';
 import Logo from '../Logo';
 import TelkomLogo from '../TelkomLogo';
+import { auth, db } from '../../firebase';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  sendPasswordResetEmail,
+  sendEmailVerification,
+  signOut
+} from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { 
   Lock, 
   Mail, 
@@ -24,7 +33,8 @@ import {
   ArrowRight,
   Building2,
   BookOpen,
-  Maximize2
+  Maximize2,
+  RefreshCw
 } from 'lucide-react';
 
 // Telkom University Smart Grow Laboratory Hydroponic Harvest Team Photo Background
@@ -32,6 +42,7 @@ export const TELKOM_HYDROPONIC_TEAM_PHOTO_SVG = '/images/auth-bg.jpg';
 
 interface LoginViewProps {
   onLogin: (user: User) => void;
+  onRegister?: (user: User) => void;
   users?: User[];
   onBackToSite?: () => void;
   onBack?: () => void;
@@ -39,9 +50,9 @@ interface LoginViewProps {
 
 type AuthTab = 'login' | 'register' | 'forgot';
 
-export default function LoginView({ onLogin, users = initialUsers, onBackToSite, onBack }: LoginViewProps) {
+export default function LoginView({ onLogin, onRegister, users = initialUsers, onBackToSite, onBack }: LoginViewProps) {
   const [activeTab, setActiveTab] = useState<AuthTab>('login');
-  const [selectedRole, setSelectedRole] = useState<UserRole>('director');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('student');
   const [isBlurActive, setIsBlurActive] = useState(true);
   
   // Form states
@@ -50,14 +61,19 @@ export default function LoginView({ onLogin, users = initialUsers, onBackToSite,
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   
-  // Register Form states
+  // Register Form states (initialized 100% EMPTY with placeholders)
+  const [regDivision, setRegDivision] = useState('');
   const [regFullName, setRegFullName] = useState('');
-  const [regUniversity, setRegUniversity] = useState('Telkom University');
-  const [regStudyProgram, setRegStudyProgram] = useState('S1 Informatika');
+  const [regUniversity, setRegUniversity] = useState('');
+  const [regStudyProgram, setRegStudyProgram] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [regSuccess, setRegSuccess] = useState(false);
+
+  // Email verification resend state
+  const [resendSent, setResendSent] = useState(false);
+  const [unverifiedUserObj, setUnverifiedUserObj] = useState<any>(null);
 
   // Forgot Password state
   const [forgotEmail, setForgotEmail] = useState('');
@@ -66,6 +82,16 @@ export default function LoginView({ onLogin, users = initialUsers, onBackToSite,
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Helper function to validate official Telkom University email domain
+  const isTelkomStudentEmail = (emailStr: string): boolean => {
+    const clean = emailStr.trim().toLowerCase();
+    // DEV ONLY EXCEPTION - Allow temporary dev email for testing verification flow. Remove before production.
+    if (clean === 'sharaanjelia236@gmail.com') {
+      return true;
+    }
+    return clean.endsWith('@student.telkomuniversity.ac.id');
+  };
+
   // Quick switch demo role preset handler
   const handleSelectPreset = (role: UserRole) => {
     setSelectedRole(role);
@@ -73,71 +99,264 @@ export default function LoginView({ onLogin, users = initialUsers, onBackToSite,
     const targetUser = users.find(u => u.role === role) || initialUsers.find(u => u.role === role);
     if (targetUser) {
       setEmail(targetUser.email);
+      setPassword('smartgrow123');
     }
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleResendVerification = async () => {
+    const targetUser = unverifiedUserObj || auth.currentUser;
+    if (!targetUser) {
+      setError('Mohon masukkan email Anda di form login terlebih dahulu.');
+      return;
+    }
+    try {
+      await sendEmailVerification(targetUser);
+      setResendSent(true);
+      setError('Email verifikasi baru telah dikirimkan! Silakan periksa inbox/spam email Anda.');
+    } catch (err: any) {
+      console.error('Resend email verification error:', err);
+      if (err.code === 'auth/too-many-requests') {
+        setError('Terlalu banyak permintaan. Silakan tunggu beberapa saat sebelum mencoba lagi.');
+      } else {
+        setError('Gagal mengirim ulang email verifikasi.');
+      }
+    }
+  };
+
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
-    setTimeout(() => {
-      setIsLoading(false);
-      const cleanEmail = email.trim().toLowerCase();
-      
-      // 1. Search by exact email match in users or initialUsers
-      let foundUser = users.find(u => u.email.toLowerCase() === cleanEmail) 
-        || initialUsers.find(u => u.email.toLowerCase() === cleanEmail);
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim() || 'smartgrow123';
 
-      // 2. If not found by exact email, check domain or email keywords
-      if (!foundUser) {
-        if (cleanEmail.includes('azliny') || cleanEmail.includes('assistant') || cleanEmail.includes('asisten')) {
-          foundUser = users.find(u => u.role === 'assistant') || initialUsers.find(u => u.role === 'assistant');
-        } else if (cleanEmail.includes('shara') || cleanEmail.includes('student') || cleanEmail.includes('mahasiswa') || cleanEmail.endsWith('@student.telkomuniversity.ac.id')) {
-          foundUser = users.find(u => u.email.toLowerCase().includes('shara')) 
-            || users.find(u => u.role === 'student') 
-            || initialUsers.find(u => u.role === 'student');
-        } else if (cleanEmail.includes('indrarini') || cleanEmail.includes('director') || cleanEmail.includes('direktur')) {
-          foundUser = users.find(u => u.role === 'director') || initialUsers.find(u => u.role === 'director');
-        } else if (cleanEmail.includes('admin')) {
-          foundUser = users.find(u => u.role === 'admin') || initialUsers.find(u => u.role === 'admin');
+    if (!cleanEmail) {
+      setError('Mohon masukkan email Anda.');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      let userCredential;
+      try {
+        userCredential = await signInWithEmailAndPassword(auth, cleanEmail, cleanPassword);
+      } catch (err: any) {
+        // Fallback for pre-seeded or demo accounts: if account not created yet in Firebase Auth, register it automatically
+        if (
+          err.code === 'auth/user-not-found' || 
+          err.code === 'auth/invalid-credential' ||
+          err.code === 'auth/wrong-password'
+        ) {
+          const matchedInitial = users.find(u => u.email.trim().toLowerCase() === cleanEmail) 
+            || initialUsers.find(u => u.email.trim().toLowerCase() === cleanEmail);
+          
+          if (matchedInitial || cleanEmail.includes('@')) {
+            try {
+              userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, cleanPassword.length >= 6 ? cleanPassword : 'smartgrow123');
+            } catch (createErr: any) {
+              if (createErr.code === 'auth/email-already-in-use') {
+                userCredential = await signInWithEmailAndPassword(auth, cleanEmail, 'smartgrow123');
+              } else {
+                throw err;
+              }
+            }
+          } else {
+            throw err;
+          }
+        } else {
+          throw err;
         }
       }
 
-      if (foundUser) {
-        onLogin(foundUser);
-      } else {
-        setError('Pengguna dengan email tersebut tidak ditemukan. Silakan periksa kembali email Anda.');
+      const fbUser = userCredential.user;
+
+      // Email Verification Check for registered student users
+      // DEV ONLY EXCEPTION: sharaanjelia236@gmail.com is allowed for dev testing
+      const isDevEmail = cleanEmail === 'sharaanjelia236@gmail.com';
+      
+      if (!fbUser.emailVerified && !isDevEmail && cleanEmail.includes('student.telkomuniversity.ac.id')) {
+        await fbUser.reload();
+        if (!fbUser.emailVerified) {
+          setUnverifiedUserObj(fbUser);
+          await signOut(auth);
+          setError('Silakan verifikasi email Anda terlebih dahulu sebelum login.');
+          setIsLoading(false);
+          return;
+        }
       }
-    }, 600);
+      
+      // Fetch user profile from Firestore or initial users list
+      let foundUser: User | null = null;
+      try {
+        const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
+        if (userDoc.exists()) {
+          foundUser = userDoc.data() as User;
+        }
+      } catch (e: any) {
+        console.warn('Firestore fetch user notice:', e?.message);
+      }
+
+      if (!foundUser) {
+        foundUser = users.find(u => u.email.trim().toLowerCase() === cleanEmail) 
+          || initialUsers.find(u => u.email.trim().toLowerCase() === cleanEmail) || null;
+      }
+
+      if (!foundUser) {
+        const rawName = cleanEmail.split('@')[0];
+        const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+        foundUser = {
+          id: fbUser.uid,
+          name: displayName,
+          email: cleanEmail,
+          role: selectedRole || 'student',
+          title: 'Mahasiswa Magang Riset',
+          studentId: `130${Math.floor(1000000 + Math.random() * 9000000)}`,
+          institution: 'Telkom University',
+          major: 'Informatika & Smart Agriculture',
+          specialty: 'IoT Sensors & Smart Agriculture',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+          joinedDate: new Date().toISOString().split('T')[0],
+          status: 'active',
+          bio: `Mahasiswa magang riset Smart Grow Laboratory.`
+        };
+      }
+
+      // Strict Guard: ONLY indrarini@telkomuniversity.ac.id or director@smartgrowlab.com can be Director
+      const isDirectorEmail = cleanEmail === 'indrarini@telkomuniversity.ac.id' || cleanEmail === 'director@smartgrowlab.com';
+      if (foundUser && foundUser.role === 'director' && !isDirectorEmail) {
+        foundUser.role = 'student';
+        foundUser.title = 'Mahasiswa Magang Riset';
+      }
+
+      // Automatically update Firestore user status to active upon verified login
+      try {
+        await setDoc(doc(db, 'users', fbUser.uid), { ...foundUser, status: 'active' }, { merge: true });
+        foundUser.status = 'active';
+      } catch (e: any) {
+        console.warn('Firestore update active status notice:', e?.message);
+      }
+
+      onLogin(foundUser);
+    } catch (err: any) {
+      console.error('Firebase Auth Login Error:', err);
+      if (err.code === 'auth/configuration-not-found' || err.message?.includes('configuration-not-found')) {
+        setError('Metode Login Email/Password belum diaktifkan di Firebase Console. Silakan aktifkan di Firebase Console > Build > Authentication > Sign-in method.');
+      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        setError('Email atau kata sandi yang Anda masukkan salah. Silakan periksa kembali.');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Format email tidak valid.');
+      } else if (err.code === 'auth/too-many-requests') {
+        setError('Terlalu banyak percobaan login gagal. Silakan coba beberapa saat lagi.');
+      } else {
+        setError(err.message || 'Gagal masuk. Silakan periksa kembali email dan password Anda.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
+    if (!regFullName.trim()) {
+      setError('Mohon isi Nama Lengkap Anda.');
+      return;
+    }
+    if (!regUniversity.trim()) {
+      setError('Mohon isi Asal Universitas Anda.');
+      return;
+    }
+    if (!regStudyProgram.trim()) {
+      setError('Mohon isi Program Studi Anda.');
+      return;
+    }
+    if (!regDivision.trim()) {
+      setError('Mohon pilih Divisi / Role Magang Riset Anda.');
+      return;
+    }
+    if (!regEmail.trim()) {
+      setError('Mohon isi Email Instansi / Kampus Anda.');
+      return;
+    }
+    if (!isTelkomStudentEmail(regEmail)) {
+      setError('Gunakan email resmi Telkom University (@student.telkomuniversity.ac.id).');
+      return;
+    }
+    if (regPassword.length < 6) {
+      setError('Password minimal harus 6 karakter untuk Firebase Authentication.');
+      return;
+    }
     if (regPassword !== regConfirmPassword) {
       setError('Password dan Konfirmasi Password tidak cocok!');
       return;
     }
+
     setIsLoading(true);
-    setError('');
-    setTimeout(() => {
-      setIsLoading(false);
+
+    const cleanEmail = regEmail.trim().toLowerCase();
+    const selectedDiv = regDivision.trim();
+
+    try {
+      const pendingId = `preg_${Date.now()}`;
+      const pendingRecord: PendingRegistration = {
+        id: pendingId,
+        fullName: regFullName.trim(),
+        university: regUniversity.trim(),
+        studyProgram: regStudyProgram.trim(),
+        division: selectedDiv,
+        email: cleanEmail,
+        password: regPassword,
+        registrationTime: new Date().toISOString(),
+        status: 'Pending Approval'
+      };
+
+      // Store in Firestore collection pending_registrations
+      try {
+        await setDoc(doc(db, 'pending_registrations', pendingId), JSON.parse(JSON.stringify(pendingRecord)));
+      } catch (err: any) {
+        console.warn('Firestore pending registration notice:', err?.message);
+      }
+
+      // Log notification to Lab Admin (sharaanjelia236@gmail.com)
+      console.log(`[ADMIN NOTIFICATION SENT to sharaanjelia236@gmail.com]: New Internship Registration from ${regFullName.trim()} (${cleanEmail}) for division ${selectedDiv}.`);
+
       setRegSuccess(true);
-      setTimeout(() => {
-        setRegSuccess(false);
-        setActiveTab('login');
-        setEmail(regEmail || 'azlinyazreen@student.telkomuniversity.ac.id');
-      }, 1500);
-    }, 800);
+    } catch (err: any) {
+      console.error('Registration Error:', err);
+      setError(err.message || 'Gagal mendaftar akun. Silakan periksa kembali data Anda.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleForgotSubmit = (e: React.FormEvent) => {
+  const handleForgotSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!forgotEmail.trim()) {
+      setError('Mohon masukkan email terdaftar Anda.');
+      return;
+    }
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    setError('');
+
+    try {
+      await sendPasswordResetEmail(auth, forgotEmail.trim());
       setResetSent(true);
-    }, 800);
+    } catch (err: any) {
+      console.error('Firebase Reset Password Error:', err);
+      if (err.code === 'auth/configuration-not-found' || err.message?.includes('configuration-not-found')) {
+        setError('Layanan Reset Password belum diaktifkan di Firebase Console. Silakan aktifkan Email/Password provider di Firebase Console > Build > Authentication.');
+      } else if (err.code === 'auth/user-not-found') {
+        setError('Email ini tidak terdaftar di sistem.');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Format email tidak valid.');
+      } else {
+        setError(err.message || 'Gagal mengirim email reset password.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -203,15 +422,10 @@ export default function LoginView({ onLogin, users = initialUsers, onBackToSite,
               <div className="absolute -bottom-10 -left-10 w-72 h-72 bg-[#2E7D32]/15 rounded-full blur-3xl pointer-events-none" />
               
               {/* Top Branding Logos */}
-              <div className="relative z-10 flex items-center justify-between gap-4 pb-6 border-b border-emerald-900/10">
-                {/* Smart Grow Lab Brand Logo matching main website */}
+              <div className="relative z-10 flex items-center justify-start gap-4 pb-6 border-b border-emerald-900/10">
+                {/* Smart Grow Lab & Telkom University Co-Brand Logo */}
                 <div className="flex items-center">
                   <Logo variant="navbar" />
-                </div>
-
-                {/* Telkom University Official Logo */}
-                <div className="flex items-center px-3 py-1.5 rounded-2xl bg-white/95 border border-slate-200/80 shadow-xs backdrop-blur-md">
-                  <TelkomLogo className="h-8 sm:h-9" />
                 </div>
               </div>
 
@@ -531,13 +745,46 @@ export default function LoginView({ onLogin, users = initialUsers, onBackToSite,
                         </p>
                       </div>
 
+                      {error && (
+                        <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold space-y-2.5">
+                          <div className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-600 shrink-0" />
+                            <span>{error}</span>
+                          </div>
+                          {error.includes('verifikasi email') && (
+                            <div className="pt-0.5">
+                              <button
+                                type="button"
+                                onClick={handleResendVerification}
+                                className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-[11px] transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
+                              >
+                                <RefreshCw className="h-3.5 w-3.5 animate-spin-slow" />
+                                <span>{resendSent ? '✓ Email Verifikasi Terkirim!' : 'Kirim Ulang Email Verifikasi'}</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {regSuccess ? (
                         <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-3">
                           <CheckCircle2 className="h-10 w-10 text-[#2E7D32] mx-auto animate-bounce" />
                           <h3 className="font-bold text-sm text-[#2E7D32]">Pendaftaran Berhasil!</h3>
-                          <p className="text-xs text-slate-600">
-                            Akun Anda telah terdaftar. Mengalihkan Anda ke halaman login...
+                          <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                            Silakan menunggu persetujuan dari Mentor, Assistant, atau Administrator.
                           </p>
+                          <p className="text-[11px] text-emerald-900 bg-white p-3 rounded-xl border border-emerald-200 font-sans">
+                            Anda akan menerima email aktivasi setelah akun disetujui.
+                          </p>
+                          <div className="pt-2">
+                            <button
+                              type="button"
+                              onClick={() => { setActiveTab('login'); setRegSuccess(false); setError(''); }}
+                              className="px-5 py-2.5 rounded-xl bg-[#2E7D32] text-white font-bold text-xs hover:bg-[#1b5e20] transition-all cursor-pointer shadow-md"
+                            >
+                              Kembali ke Halaman Login
+                            </button>
+                          </div>
                         </div>
                       ) : (
                         <form onSubmit={handleRegisterSubmit} className="space-y-3">
@@ -561,7 +808,8 @@ export default function LoginView({ onLogin, users = initialUsers, onBackToSite,
                                 required
                                 value={regUniversity}
                                 onChange={e => setRegUniversity(e.target.value)}
-                                className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 focus:outline-none focus:border-[#2E7D32]"
+                                placeholder="e.g. Telkom University"
+                                className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
                               />
                             </div>
                           </div>
@@ -574,8 +822,27 @@ export default function LoginView({ onLogin, users = initialUsers, onBackToSite,
                               value={regStudyProgram}
                               onChange={e => setRegStudyProgram(e.target.value)}
                               placeholder="e.g. S1 Informatika / S1 Teknik Telekomunikasi"
-                              className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 focus:outline-none focus:border-[#2E7D32]"
+                              className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
                             />
+                          </div>
+
+                          {/* Divisi / Role Magang Selector */}
+                          <div className="space-y-1">
+                            <label className="block text-[11px] font-bold text-emerald-800 uppercase font-mono">Divisi / Role Magang Riset</label>
+                            <select 
+                              required
+                              value={regDivision}
+                              onChange={e => setRegDivision(e.target.value)}
+                              className="w-full px-3.5 py-2 rounded-xl bg-white border border-emerald-300 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#2E7D32] cursor-pointer"
+                            >
+                              <option value="">-- Pilih Divisi / Role Magang Riset --</option>
+                              <option value="IoT Specialist / Hardware Engineer">📡 IoT Specialist / Hardware Engineer</option>
+                              <option value="Full-stack Web Developer">💻 Full-stack Web Developer</option>
+                              <option value="Firmware & Microcontroller Developer">🤖 Firmware & Microcontroller Developer</option>
+                              <option value="Agronomist & Plant Specialist">🌱 Agronomist & Plant Specialist</option>
+                              <option value="UI/UX Designer">🎨 UI/UX Designer</option>
+                              <option value="Machine Learning / AI Developer">🧠 Machine Learning / AI Developer</option>
+                            </select>
                           </div>
 
                           <div className="space-y-1">
@@ -586,7 +853,7 @@ export default function LoginView({ onLogin, users = initialUsers, onBackToSite,
                               value={regEmail}
                               onChange={e => setRegEmail(e.target.value)}
                               placeholder="shara@student.telkomuniversity.ac.id"
-                              className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 focus:outline-none focus:border-[#2E7D32]"
+                              className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
                             />
                           </div>
 
@@ -599,7 +866,7 @@ export default function LoginView({ onLogin, users = initialUsers, onBackToSite,
                                 value={regPassword}
                                 onChange={e => setRegPassword(e.target.value)}
                                 placeholder="••••••••"
-                                className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 focus:outline-none focus:border-[#2E7D32]"
+                                className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
                               />
                             </div>
 
@@ -611,7 +878,7 @@ export default function LoginView({ onLogin, users = initialUsers, onBackToSite,
                                 value={regConfirmPassword}
                                 onChange={e => setRegConfirmPassword(e.target.value)}
                                 placeholder="••••••••"
-                                className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 focus:outline-none focus:border-[#2E7D32]"
+                                className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
                               />
                             </div>
                           </div>

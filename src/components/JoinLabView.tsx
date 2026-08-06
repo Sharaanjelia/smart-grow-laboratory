@@ -399,9 +399,12 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
 
                     {/* Full Name field */}
                     <div className="space-y-1.5">
-                      <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-400 uppercase flex items-center gap-1.5 px-0.5">
-                        <User className="h-3.5 w-3.5 text-emerald-400" />
-                        <span>Full Name</span>
+                      <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-300 uppercase flex items-center justify-between px-0.5">
+                        <span className="flex items-center gap-1.5">
+                          <User className="h-3.5 w-3.5 text-emerald-400" />
+                          <span>Full Name</span>
+                        </span>
+                        <span className="text-emerald-400 font-extrabold text-[9px] lowercase bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-500/30">*wajib</span>
                       </label>
                       <div className="relative">
                         <input 
@@ -422,9 +425,12 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
 
                     {/* Email field */}
                     <div className="space-y-1.5">
-                      <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-400 uppercase flex items-center gap-1.5 px-0.5">
-                        <Mail className="h-3.5 w-3.5 text-emerald-400" />
-                        <span>Student / General Email</span>
+                      <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-300 uppercase flex items-center justify-between px-0.5">
+                        <span className="flex items-center gap-1.5">
+                          <Mail className="h-3.5 w-3.5 text-emerald-400" />
+                          <span>Student / General Email</span>
+                        </span>
+                        <span className="text-emerald-400 font-extrabold text-[9px] lowercase bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-500/30">*wajib</span>
                       </label>
                       <div className="relative">
                         <input 
@@ -445,9 +451,12 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
 
                     {/* Role field */}
                     <div className="space-y-1.5">
-                      <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-400 uppercase flex items-center gap-1.5 px-0.5">
-                        <Briefcase className="h-3.5 w-3.5 text-emerald-400" />
-                        <span>Role of Interest</span>
+                      <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-300 uppercase flex items-center justify-between px-0.5">
+                        <span className="flex items-center gap-1.5">
+                          <Briefcase className="h-3.5 w-3.5 text-emerald-400" />
+                          <span>Role of Interest</span>
+                        </span>
+                        <span className="text-emerald-400 font-extrabold text-[9px] lowercase bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-500/30">*wajib</span>
                       </label>
                       <div className="relative">
                         <select
@@ -469,13 +478,15 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
 
                     {/* Motivation field */}
                     <div className="space-y-1.5">
-                      <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-400 uppercase flex items-center gap-1.5 px-0.5">
-                        <Heart className="h-3.5 w-3.5 text-emerald-400" />
-                        <span>Motivation Statement</span>
+                      <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-400 uppercase flex items-center justify-between px-0.5">
+                        <span className="flex items-center gap-1.5">
+                          <Heart className="h-3.5 w-3.5 text-emerald-400" />
+                          <span>Motivation Statement</span>
+                        </span>
+                        <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-800 px-1.5 py-0.5 rounded">opsional</span>
                       </label>
                       <div className="relative">
                         <textarea
-                          required
                           rows={3}
                           placeholder="Briefly describe your skillsets and why you want to collaborate on smart agricultural solutions."
                           value={motivation}
@@ -493,9 +504,12 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                     {/* Github & Instagram field group */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-400 uppercase flex items-center gap-1.5 px-0.5">
-                          <Github className="h-3.5 w-3.5 text-slate-400" />
-                          <span>Github Account</span>
+                        <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-400 uppercase flex items-center justify-between px-0.5">
+                          <span className="flex items-center gap-1.5">
+                            <Github className="h-3.5 w-3.5 text-slate-400" />
+                            <span>Github Account</span>
+                          </span>
+                          <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-800 px-1.5 py-0.5 rounded">opsional</span>
                         </label>
                         <input 
                           type="url"
@@ -507,9 +521,12 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-400 uppercase flex items-center gap-1.5 px-0.5">
-                          <Instagram className="h-3.5 w-3.5 text-slate-400" />
-                          <span>Instagram Account</span>
+                        <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-400 uppercase flex items-center justify-between px-0.5">
+                          <span className="flex items-center gap-1.5">
+                            <Instagram className="h-3.5 w-3.5 text-slate-400" />
+                            <span>Instagram Account</span>
+                          </span>
+                          <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-800 px-1.5 py-0.5 rounded">opsional</span>
                         </label>
                         <input 
                           type="text"
