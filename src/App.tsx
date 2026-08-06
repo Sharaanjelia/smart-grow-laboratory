@@ -101,6 +101,7 @@ export default function App() {
   // LABORATORY MANAGEMENT SYSTEM (LMS) STATE
   // ==========================================
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState<boolean>(true);
   const [lmsActiveTab, setLmsActiveTab] = useState<string>('overview');
 
   // Global LMS Theme & Language State
@@ -217,6 +218,9 @@ export default function App() {
   };
 
   useEffect(() => {
+    // Clear any stale localStorage session — Firebase auth is the single source of truth
+    try { localStorage.removeItem('smartgrow_session_user'); } catch (_) {}
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const cleanEmail = (firebaseUser.email || '').toLowerCase();
@@ -231,6 +235,7 @@ export default function App() {
             if (docs[0].status === 'Pending Approval' || docs[0].status === 'Rejected') {
               await signOut(auth);
               setCurrentUser(null);
+              setAuthLoading(false);
               return;
             }
           }
@@ -254,28 +259,39 @@ export default function App() {
             initialUsers.find(u => u.email.toLowerCase() === cleanEmail) || null;
         }
 
-        // 3. Block auto-login if account is not active or not approved
-        if (!matchedUser || (matchedUser.status && matchedUser.status !== 'active')) {
+        // 3. Block auto-login ONLY if status is explicitly set and NOT 'active'
+        // (Users from initialUsers may not have status field — those are valid demo accounts)
+        if (!matchedUser) {
+          // No matching user profile found — block login
           await signOut(auth);
           setCurrentUser(null);
+          setAuthLoading(false);
           return;
         }
 
-        if (matchedUser) {
-          // Strictly enforce that non-director emails cannot be director
-          matchedUser = enforceStrictUserRole(matchedUser);
-
-          // Sync active status in Firestore for valid approved users
-          try {
-            await setDoc(doc(db, 'users', firebaseUser.uid), { role: matchedUser.role, status: 'active' }, { merge: true });
-          } catch (e: any) {
-            console.warn('Sync active status on auth change notice:', e?.message);
-          }
-          
-          setCurrentUser(matchedUser);
+        if (matchedUser.status && matchedUser.status !== 'active') {
+          // Explicitly inactive/pending/rejected account — block login
+          await signOut(auth);
+          setCurrentUser(null);
+          setAuthLoading(false);
+          return;
         }
+
+        // Strictly enforce that non-director emails cannot be director
+        matchedUser = enforceStrictUserRole(matchedUser);
+
+        // Sync active status in Firestore for valid approved users
+        try {
+          await setDoc(doc(db, 'users', firebaseUser.uid), { role: matchedUser.role, status: 'active' }, { merge: true });
+        } catch (e: any) {
+          console.warn('Sync active status on auth change notice:', e?.message);
+        }
+
+        setCurrentUser(matchedUser);
+        setAuthLoading(false);
       } else {
         setCurrentUser(null);
+        setAuthLoading(false);
         if (currentPage === 'dashboard') {
           setCurrentPage('login');
         }
@@ -1130,7 +1146,7 @@ export default function App() {
           currentPage={currentPage} 
           setCurrentPage={handleNavigate} 
           onOpenJoin={() => handleNavigate('join')}
-          isLoggedIn={!!currentUser}
+          isLoggedIn={!authLoading && !!currentUser}
           currentUserRole={currentUser?.role}
           onOpenLogin={() => handleNavigate('login')}
         />
