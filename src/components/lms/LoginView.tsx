@@ -149,10 +149,10 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
         console.warn('Check pending registration notice:', e?.message);
       }
 
-      // Block login if account is pending approval
+      // Block login if account is pending approval in pending_registrations
       if (pendingReg && pendingReg.status === 'Pending Approval') {
         await signOut(auth);
-        setError('Akun Anda masih menunggu persetujuan Mentor/Admin/Assistant. Silakan tunggu hingga proses verifikasi selesai.');
+        setError('Akun Anda masih menunggu persetujuan Pembina / Mentor / Admin Laboratorium. Silakan tunggu hingga proses verifikasi selesai.');
         setIsLoading(false);
         return;
       }
@@ -160,7 +160,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
       // Block login if account is rejected
       if (pendingReg && pendingReg.status === 'Rejected') {
         await signOut(auth);
-        setError('Pendaftaran akun Anda tidak disetujui. Silakan hubungi Pembina / Admin Laboratorium.');
+        setError('Pendaftaran akun Anda tidak disetujui oleh Pembina Laboratorium.');
         setIsLoading(false);
         return;
       }
@@ -250,12 +250,23 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
       }
 
       if (!foundUser) {
-        throw new Error('Profil pengguna tidak ditemukan.');
+        if (pendingReg && pendingReg.status !== 'Approved') {
+          await signOut(auth);
+          setError('Akun Anda belum diaktifkan oleh Pembina / Mentor / Admin Laboratorium. Silakan tunggu hingga proses verifikasi selesai.');
+          setIsLoading(false);
+          return;
+        }
+        throw new Error('Akun Anda belum terdaftar atau belum disetujui oleh Pembina Laboratorium.');
       }
 
-      if (foundUser.status === 'inactive') {
+      // Strict Status Check: Must be 'active'
+      if (foundUser.status && foundUser.status !== 'active') {
         await signOut(auth);
-        setError('Akun Anda saat ini dinonaktifkan. Silakan hubungi Pembina Laboratorium.');
+        if (foundUser.status === 'pending' || foundUser.status === 'Pending Approval') {
+          setError('Akun Anda belum diaktifkan oleh Pembina / Mentor / Admin Laboratorium. Silakan tunggu hingga proses verifikasi selesai.');
+        } else {
+          setError('Akun Anda saat ini dinonaktifkan. Silakan hubungi Pembina Laboratorium.');
+        }
         setIsLoading(false);
         return;
       }
@@ -382,26 +393,45 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
 
   const handleForgotSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
     if (!forgotEmail.trim()) {
       setError('Mohon masukkan email terdaftar Anda.');
       return;
     }
+    const cleanForgotEmail = forgotEmail.trim().toLowerCase();
+
     setIsLoading(true);
-    setError('');
 
     try {
-      await sendPasswordResetEmail(auth, forgotEmail.trim());
+      // Check if account is still pending approval
+      try {
+        const qPending = query(collection(db, 'pending_registrations'), where('email', '==', cleanForgotEmail));
+        const snapPending = await getDocs(qPending);
+        if (!snapPending.empty) {
+          const docData = snapPending.docs[0].data() as PendingRegistration;
+          if (docData.status === 'Pending Approval') {
+            setError('Akun Anda masih dalam antrean persetujuan. Fitur Lupa Password hanya dapat digunakan setelah akun disetujui.');
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch (e: any) {
+        console.warn('Forgot password pending check notice:', e?.message);
+      }
+
+      await sendPasswordResetEmail(auth, cleanForgotEmail);
       setResetSent(true);
     } catch (err: any) {
       console.error('Firebase Reset Password Error:', err);
       if (err.code === 'auth/configuration-not-found' || err.message?.includes('configuration-not-found')) {
-        setError('Layanan Reset Password belum diaktifkan di Firebase Console. Silakan aktifkan Email/Password provider di Firebase Console > Build > Authentication.');
+        setError('Layanan Reset Password belum diaktifkan di Firebase Console.');
       } else if (err.code === 'auth/user-not-found') {
-        setError('Email ini tidak terdaftar di sistem.');
+        setError('Email ini belum terdaftar di sistem Smart Grow Laboratory.');
       } else if (err.code === 'auth/invalid-email') {
         setError('Format email tidak valid.');
       } else {
-        setError(err.message || 'Gagal mengirim email reset password.');
+        setError(err.message || 'Gagal mengirim email reset password. Silakan periksa kembali email Anda.');
       }
     } finally {
       setIsLoading(false);
