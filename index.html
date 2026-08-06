@@ -3,7 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>Smart Grow Laboratory</title>
+    <script>
+      window.addEventListener('error', function(e) {
+        if (e.message && (e.message.indexOf('Failed to fetch dynamically imported module') > -1 || e.message.indexOf('Loading chunk') > -1)) {
+          var k = 'smartgrow_chunk_reload';
+          var l = localStorage.getItem(k);
+          if (!l || Date.now() - parseInt(l) > 10000) {
+            localStorage.setItem(k, Date.now().toString());
+            window.location.reload(true);
+          }
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
