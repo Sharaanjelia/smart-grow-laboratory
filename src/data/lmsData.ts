@@ -51,7 +51,7 @@ export const initialUsers: User[] = [
   {
     id: 'user_assistant',
     name: 'Azliny Azreen',
-    email: 'azlinyazreen@student.telkomuniversity.ac.id',
+    email: 'azliny@telkomuniversity.ac.id',
     role: 'assistant',
     title: 'Asisten Laboratorium Utama & Koordinator Magang',
     studentId: '1301210042',
@@ -330,7 +330,7 @@ export const initialUsers: User[] = [
   {
     id: 'user_admin',
     name: 'Administrator Portal Lab',
-    email: 'admin@smartgrowlab.id',
+    email: 'admin@smartgrowlab.com',
     role: 'admin',
     title: 'Administrator Sistem & Infrastruktur IT',
     studentId: 'ADM-2021-001',

@@ -353,7 +353,7 @@ export const teamData: TeamMember[] = [
     name: 'Azliny Azreen',
     role: 'Asisten Utama Laboratorium',
     image: 'member-azliny',
-    email: 'azlinyazreen@student.telkomuniversity.ac.id',
+    email: 'azliny@telkomuniversity.ac.id',
     bio: 'Asisten Utama Prof. Dr. Indrarini Dyah Irawati dalam mengoordinasikan tim riset, tata kelola proyek laboratorium Smart Grow, serta pengawasan operasional IoT.',
     skills: ['Lab Management', 'Research Coordination', 'Embedded Systems', 'IoT Architecture', 'Smart Agriculture']
   },
