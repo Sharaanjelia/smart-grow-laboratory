@@ -54,10 +54,13 @@ import {
 } from 'lucide-react';
 import TeamAvatar from '../TeamAvatar';
 import PendingRegistrationsView from './PendingRegistrationsView';
+import ProfileView from './ProfileView';
 import { PendingRegistration } from '../../types';
 
 interface AdminDashboardProps {
   activeTab: string;
+  currentUser?: User;
+  onUpdateProfile?: (user: User) => void;
   users: User[];
   applicants: ApplicantRecord[];
   pendingRegistrations?: PendingRegistration[];
@@ -88,6 +91,8 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({
   activeTab,
+  currentUser,
+  onUpdateProfile,
   users,
   applicants,
   pendingRegistrations = [],
@@ -111,7 +116,8 @@ export default function AdminDashboard({
   onAddTeamMember,
   onDeleteTeamMember,
   onCheckInStudent,
-  onCheckOutStudent
+  onCheckOutStudent,
+  darkMode = false
 }: AdminDashboardProps) {
   // Modal states
   const [createUserOpen, setCreateUserOpen] = useState(false);
@@ -291,6 +297,10 @@ export default function AdminDashboard({
           onApprove={onApproveRegistration || (() => {})}
           onReject={onRejectRegistration || (() => {})}
         />
+      )}
+
+      {activeTab === 'profile' && currentUser && (
+        <ProfileView currentUser={currentUser} onUpdateProfile={onUpdateProfile} darkMode={darkMode} />
       )}
       
       {/* Toast Notification */}

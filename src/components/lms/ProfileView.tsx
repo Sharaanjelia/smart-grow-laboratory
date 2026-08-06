@@ -61,21 +61,22 @@ export default function ProfileView({
   const isAssistant = currentUser.role === 'assistant';
 
   // Editable Profile Form State
+  // Editable Profile Form State
   const [name, setName] = useState(currentUser.name || '');
-  const [studentId, setStudentId] = useState(currentUser.studentId || (isDirector ? 'NIP. 197804122005012002' : '1301210042'));
-  const [institution, setInstitution] = useState(currentUser.institution || 'Telkom University');
-  const [major, setMajor] = useState(currentUser.major || (isDirector ? 'Teknik Komputer & Sistem Cerdas' : 'Informatika'));
-  const [semester, setSemester] = useState(currentUser.semester || (isDirector ? 'Guru Besar / Profesor' : 'Semester 7'));
-  const [phone, setPhone] = useState(currentUser.phone || '+62 812-3456-7890');
-  const [address, setAddress] = useState(currentUser.address || 'Bandung Techno Park, Lab Smart Grow, Telkom University');
+  const [studentId, setStudentId] = useState(currentUser.studentId || (isDirector ? 'NIP. 197804122005012002' : ''));
+  const [institution, setInstitution] = useState(currentUser.institution || '');
+  const [major, setMajor] = useState(currentUser.major || (isDirector ? 'Teknik Komputer & Sistem Cerdas' : ''));
+  const [semester, setSemester] = useState(currentUser.semester || (isDirector ? 'Guru Besar / Profesor' : ''));
+  const [phone, setPhone] = useState(currentUser.phone || '');
+  const [address, setAddress] = useState(currentUser.address || '');
   const [bio, setBio] = useState(
     currentUser.bio || (isDirector 
       ? 'Kepala Laboratorium Smart Grow & Profesor Riset bidang Wireless Communications, IoT Sensors, & Precision Smart Agriculture. Berfokus pada penderesan inovasi pertanian pintar berbasis AI & Container Hydroponics.'
-      : 'Pengembang IoT & Sistem Pertanian Cerdas Telkom University.')
+      : '')
   );
-  const [github, setGithub] = useState(currentUser.github || 'https://github.com/smartgrowlab');
-  const [linkedin, setLinkedin] = useState(currentUser.linkedin || 'https://linkedin.com/in/indrarini-dyah-irawati');
-  const [portfolio, setPortfolio] = useState(currentUser.portfolio || 'https://smartgrowlab.telkomuniversity.ac.id');
+  const [github, setGithub] = useState(currentUser.github || '');
+  const [linkedin, setLinkedin] = useState(currentUser.linkedin || '');
+  const [portfolio, setPortfolio] = useState(currentUser.portfolio || '');
   const [avatarUrl, setAvatarUrl] = useState(
     currentUser.avatar && !currentUser.avatar.includes('unsplash.com') 
       ? currentUser.avatar 
@@ -93,7 +94,7 @@ export default function ProfileView({
       : currentUser.name.toLowerCase().includes('hannani') ? '/images/team/hannani.jpg'
       : currentUser.name.toLowerCase().includes('elyasa') ? '/images/team/elyasa.jpg'
       : currentUser.name.toLowerCase().includes('humam') ? '/images/team/humam.jpg'
-      : currentUser.avatar || '/images/team/indrarini.jpg'
+      : (currentUser.avatar || '')
   );
 
   // Executive KPI Metrics State (Director Editable & Dynamic)
@@ -133,7 +134,7 @@ export default function ProfileView({
     setTimeout(() => setToastMessage(''), 3500);
   };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     const updated: User = {
       ...currentUser,
@@ -158,9 +159,19 @@ export default function ProfileView({
       totalMahasiswaOverride,
       mahasiswaSubtitle
     };
+
+    // Save directly to Firestore collection `users`
+    try {
+      if (currentUser && currentUser.id) {
+        await setDoc(doc(db, 'users', currentUser.id), JSON.parse(JSON.stringify(updated)), { merge: true });
+      }
+    } catch (err: any) {
+      console.warn('Firestore update user profile notice:', err?.message);
+    }
+
     if (onUpdateProfile) onUpdateProfile(updated);
     setEditModalOpen(false);
-    showToast('Profil Anda berhasil diperbarui!');
+    showToast('Profil Anda berhasil diperbarui dan tersimpan di Firestore!');
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {

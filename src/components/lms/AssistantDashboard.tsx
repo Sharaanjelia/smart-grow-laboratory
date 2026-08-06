@@ -89,6 +89,7 @@ interface AssistantDashboardProps {
   onAdvanceApplicantStage?: (applicantId: string, nextStage: SelectionStage, notes?: string) => void;
   onApproveApplicant?: (applicantId: string) => void;
   onRejectApplicant?: (applicantId: string) => void;
+  onUpdateProfile?: (user: User) => void;
   darkMode?: boolean;
   language?: 'id' | 'en';
 }
@@ -127,6 +128,7 @@ export default function AssistantDashboard({
   onAdvanceApplicantStage,
   onApproveApplicant,
   onRejectApplicant,
+  onUpdateProfile,
   darkMode = false,
   language = 'id'
 }: AssistantDashboardProps) {
@@ -1165,7 +1167,7 @@ export default function AssistantDashboard({
           TAB 6: MY PROFILE
           ========================================== */}
       {activeTab === 'profile' && currentUser && (
-        <ProfileView currentUser={currentUser} darkMode={darkMode} />
+        <ProfileView currentUser={currentUser} onUpdateProfile={onUpdateProfile} darkMode={darkMode} />
       )}
 
       {/* MODAL: TASK CREATION */}

@@ -53,7 +53,7 @@ const StudentDashboard = React.lazy(() => import('./components/lms/StudentDashbo
 const AdminDashboard = React.lazy(() => import('./components/lms/AdminDashboard'));
 import { FirebaseSeederModal } from './components/FirebaseSeederModal';
 import { auth, db, uploadAttendancePhotoToStorage, backupPhotoToGoogleDrive } from './firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { collection, onSnapshot, doc, setDoc, deleteDoc, getDoc, getDocs, query, where, limit, orderBy } from 'firebase/firestore';
 import { Database } from 'lucide-react';
 import { 
@@ -725,9 +725,21 @@ export default function App() {
     }
   };
 
+  const handleUpdateUser = async (updatedUser: User) => {
+    setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
+    if (currentUser?.id === updatedUser.id) {
+      setCurrentUser(updatedUser);
+    }
+    try {
+      await setDoc(doc(db, 'users', updatedUser.id), JSON.parse(JSON.stringify(updatedUser)), { merge: true });
+    } catch (e: any) {
+      console.warn('Firestore update user notice:', e?.message);
+    }
+  };
+
   const handleApproveRegistration = async (pendingReg: PendingRegistration) => {
     const approvedCount = pendingRegistrations.filter(r => r.status === 'Approved').length + 1;
-    const generatedInternId = `SGL-INT-2026-${String(approvedCount).padStart(3, '0')}`;
+    const generatedInternId = pendingReg.internId || `SGL-INT-2026-${String(approvedCount).padStart(3, '0')}`;
     const token = `act_token_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
     const updated: PendingRegistration = {
@@ -739,19 +751,26 @@ export default function App() {
 
     setPendingRegistrations(prev => prev.map(p => p.id === pendingReg.id ? updated : p));
 
-    // Construct active user record for student
+    // Construct active user record for student with NO DUMMY FIELDS (Requirement #6 & #9)
     const newStudentUser: User = {
-      id: `user_act_${Date.now()}`,
+      id: pendingReg.id || `user_act_${Date.now()}`,
       name: pendingReg.fullName,
       email: pendingReg.email,
       role: 'student',
       title: 'Mahasiswa Magang Riset',
-      studentId: generatedInternId,
+      studentId: '', // NIM empty per Req #6 & #9
       internId: generatedInternId,
-      institution: pendingReg.university || 'Telkom University',
-      major: pendingReg.studyProgram || 'Informatika',
-      specialty: pendingReg.division || 'IoT Specialist',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+      institution: pendingReg.university || '',
+      major: pendingReg.studyProgram || '',
+      specialty: pendingReg.division || '',
+      phone: '',
+      address: '',
+      avatar: '',
+      bio: '',
+      github: '',
+      linkedin: '',
+      portfolio: '',
+      skillsList: [],
       joinedDate: new Date().toISOString().split('T')[0],
       status: 'active',
       isNewStudent: true
@@ -766,8 +785,15 @@ export default function App() {
 
     try {
       await setDoc(doc(db, 'pending_registrations', pendingReg.id), JSON.parse(JSON.stringify(updated)));
-      await setDoc(doc(db, 'users', newStudentUser.id), JSON.parse(JSON.stringify(newStudentUser)));
-      
+      await setDoc(doc(db, 'users', newStudentUser.id), JSON.parse(JSON.stringify(newStudentUser)), { merge: true });
+
+      // Trigger Firebase Auth password reset email for account activation / login notification (Requirement #3)
+      try {
+        await sendPasswordResetEmail(auth, pendingReg.email);
+      } catch (authEmailErr: any) {
+        console.warn('Firebase Auth send password reset email notice:', authEmailErr?.message);
+      }
+
       const notifId = `notif_act_${Date.now()}`;
       await setDoc(doc(db, 'notifications', notifId), {
         id: notifId,
@@ -1171,6 +1197,7 @@ export default function App() {
               onEditPublicProject={handleEditProject}
               onDeletePublicProject={handleDeleteProject}
               onNavigateToShowcase={(projId) => handleNavigate(projId as PageId)}
+              onUpdateProfile={handleUpdateUser}
               darkMode={darkMode}
               language={language}
             />
@@ -1208,6 +1235,7 @@ export default function App() {
               onEditPublicProject={handleEditProject}
               onDeletePublicProject={handleDeleteProject}
               onNavigateToShowcase={(projId) => handleNavigate(projId as PageId)}
+              onUpdateProfile={handleUpdateUser}
               darkMode={darkMode}
               language={language}
             />
@@ -1224,6 +1252,7 @@ export default function App() {
               onCheckIn={handleCheckIn}
               onCheckOut={handleCheckOut}
               onSubmitTaskProgress={handleSubmitTaskProgress}
+              onUpdateUser={handleUpdateUser}
               darkMode={darkMode}
               language={language}
             />
@@ -1232,6 +1261,7 @@ export default function App() {
           {currentUser.role === 'admin' && (
             <AdminDashboard
               activeTab={lmsActiveTab}
+              currentUser={currentUser}
               users={users}
               applicants={applicants}
               pendingRegistrations={pendingRegistrations}
@@ -1256,6 +1286,7 @@ export default function App() {
               onDeleteTeamMember={handleDeleteTeamMember}
               onCheckInStudent={handleCheckIn}
               onCheckOutStudent={handleCheckOut}
+              onUpdateProfile={handleUpdateUser}
               darkMode={darkMode}
               language={language}
             />

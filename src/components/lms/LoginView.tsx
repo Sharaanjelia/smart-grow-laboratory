@@ -83,13 +83,9 @@ export default function LoginView({ onLogin, onRegister, users = initialUsers, o
   const [isLoading, setIsLoading] = useState(false);
 
   // Helper function to validate official Telkom University email domain
-  const isTelkomStudentEmail = (emailStr: string): boolean => {
+  const isValidEmail = (emailStr: string): boolean => {
     const clean = emailStr.trim().toLowerCase();
-    // DEV ONLY EXCEPTION - Allow temporary dev email for testing verification flow. Remove before production.
-    if (clean === 'sharaanjelia236@gmail.com') {
-      return true;
-    }
-    return clean.endsWith('@student.telkomuniversity.ac.id');
+    return clean.includes('@') && clean.includes('.') && clean.length > 5;
   };
 
   // Quick switch demo role preset handler
@@ -138,11 +134,41 @@ export default function LoginView({ onLogin, onRegister, users = initialUsers, o
     }
 
     try {
+      // 1. CHECK PENDING REGISTRATIONS IN FIRESTORE FIRST (Requirement #4: Pending Login Guard)
+      let pendingReg: PendingRegistration | null = null;
+      try {
+        const qPending = query(collection(db, 'pending_registrations'), where('email', '==', cleanEmail));
+        const snapPending = await getDocs(qPending);
+        if (!snapPending.empty) {
+          const docs = snapPending.docs.map(d => d.data() as PendingRegistration);
+          docs.sort((a, b) => new Date(b.registrationTime || 0).getTime() - new Date(a.registrationTime || 0).getTime());
+          pendingReg = docs[0];
+        }
+      } catch (e: any) {
+        console.warn('Check pending registration notice:', e?.message);
+      }
+
+      // Block login if account is pending approval
+      if (pendingReg && pendingReg.status === 'Pending Approval') {
+        await signOut(auth);
+        setError('Akun Anda masih menunggu persetujuan Mentor/Admin/Assistant. Silakan tunggu hingga proses verifikasi selesai.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Block login if account is rejected
+      if (pendingReg && pendingReg.status === 'Rejected') {
+        await signOut(auth);
+        setError('Pendaftaran akun Anda tidak disetujui. Silakan hubungi Pembina / Admin Laboratorium.');
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Perform Firebase Auth Login
       let userCredential;
       try {
         userCredential = await signInWithEmailAndPassword(auth, cleanEmail, cleanPassword);
       } catch (err: any) {
-        // Fallback for pre-seeded or demo accounts: if account not created yet in Firebase Auth, register it automatically
         if (
           err.code === 'auth/user-not-found' || 
           err.code === 'auth/invalid-credential' ||
@@ -151,7 +177,7 @@ export default function LoginView({ onLogin, onRegister, users = initialUsers, o
           const matchedInitial = users.find(u => u.email.trim().toLowerCase() === cleanEmail) 
             || initialUsers.find(u => u.email.trim().toLowerCase() === cleanEmail);
           
-          if (matchedInitial || cleanEmail.includes('@')) {
+          if (matchedInitial) {
             try {
               userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, cleanPassword.length >= 6 ? cleanPassword : 'smartgrow123');
             } catch (createErr: any) {
@@ -171,27 +197,18 @@ export default function LoginView({ onLogin, onRegister, users = initialUsers, o
 
       const fbUser = userCredential.user;
 
-      // Email Verification Check for registered student users
-      // DEV ONLY EXCEPTION: sharaanjelia236@gmail.com is allowed for dev testing
-      const isDevEmail = cleanEmail === 'sharaanjelia236@gmail.com';
-      
-      if (!fbUser.emailVerified && !isDevEmail && cleanEmail.includes('student.telkomuniversity.ac.id')) {
-        await fbUser.reload();
-        if (!fbUser.emailVerified) {
-          setUnverifiedUserObj(fbUser);
-          await signOut(auth);
-          setError('Silakan verifikasi email Anda terlebih dahulu sebelum login.');
-          setIsLoading(false);
-          return;
-        }
-      }
-      
-      // Fetch user profile from Firestore or initial users list
+      // 3. Fetch user profile from Firestore or state
       let foundUser: User | null = null;
       try {
         const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
         if (userDoc.exists()) {
           foundUser = userDoc.data() as User;
+        } else {
+          const qUser = query(collection(db, 'users'), where('email', '==', cleanEmail));
+          const snapUser = await getDocs(qUser);
+          if (!snapUser.empty) {
+            foundUser = snapUser.docs[0].data() as User;
+          }
         }
       } catch (e: any) {
         console.warn('Firestore fetch user notice:', e?.message);
@@ -202,27 +219,47 @@ export default function LoginView({ onLogin, onRegister, users = initialUsers, o
           || initialUsers.find(u => u.email.trim().toLowerCase() === cleanEmail) || null;
       }
 
-      if (!foundUser) {
-        const rawName = cleanEmail.split('@')[0];
-        const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+      // If user approved from pending registration but user doc not yet created in Firestore
+      if (!foundUser && pendingReg && pendingReg.status === 'Approved') {
+        const generatedInternId = pendingReg.internId || 'SGL-INT-2026-001';
         foundUser = {
           id: fbUser.uid,
-          name: displayName,
+          name: pendingReg.fullName,
           email: cleanEmail,
-          role: selectedRole || 'student',
+          role: 'student',
           title: 'Mahasiswa Magang Riset',
-          studentId: `130${Math.floor(1000000 + Math.random() * 9000000)}`,
-          institution: 'Telkom University',
-          major: 'Informatika & Smart Agriculture',
-          specialty: 'IoT Sensors & Smart Agriculture',
-          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+          studentId: '', // NIM empty per Req #6 & #9
+          internId: generatedInternId,
+          institution: pendingReg.university || '',
+          major: pendingReg.studyProgram || '',
+          specialty: pendingReg.division || '',
+          phone: '',
+          address: '',
+          avatar: '',
+          bio: '',
+          github: '',
+          linkedin: '',
+          portfolio: '',
+          skillsList: [],
           joinedDate: new Date().toISOString().split('T')[0],
           status: 'active',
-          bio: `Mahasiswa magang riset Smart Grow Laboratory.`
+          isNewStudent: true
         };
+        await setDoc(doc(db, 'users', fbUser.uid), JSON.parse(JSON.stringify(foundUser)), { merge: true });
       }
 
-      // Strict Guard: ONLY indrarini@telkomuniversity.ac.id or director@smartgrowlab.com can be Director
+      if (!foundUser) {
+        throw new Error('Profil pengguna tidak ditemukan.');
+      }
+
+      if (foundUser.status === 'inactive') {
+        await signOut(auth);
+        setError('Akun Anda saat ini dinonaktifkan. Silakan hubungi Pembina Laboratorium.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Director Email Guard
       const isDirectorEmail = cleanEmail === 'indrarini@telkomuniversity.ac.id' || cleanEmail === 'director@smartgrowlab.com';
       if (foundUser && foundUser.role === 'director' && !isDirectorEmail) {
         foundUser.role = 'student';
@@ -277,11 +314,11 @@ export default function LoginView({ onLogin, onRegister, users = initialUsers, o
       return;
     }
     if (!regEmail.trim()) {
-      setError('Mohon isi Email Instansi / Kampus Anda.');
+      setError('Mohon isi Email Anda.');
       return;
     }
-    if (!isTelkomStudentEmail(regEmail)) {
-      setError('Gunakan email resmi Telkom University (@student.telkomuniversity.ac.id).');
+    if (!isValidEmail(regEmail)) {
+      setError('Format email tidak valid. Masukkan email yang benar.');
       return;
     }
     if (regPassword.length < 6) {
@@ -312,15 +349,18 @@ export default function LoginView({ onLogin, onRegister, users = initialUsers, o
         status: 'Pending Approval'
       };
 
-      // Store in Firestore collection pending_registrations
+      // Create Firebase Auth user so credentials exist, but sign out immediately
       try {
-        await setDoc(doc(db, 'pending_registrations', pendingId), JSON.parse(JSON.stringify(pendingRecord)));
-      } catch (err: any) {
-        console.warn('Firestore pending registration notice:', err?.message);
+        await createUserWithEmailAndPassword(auth, cleanEmail, regPassword);
+        await signOut(auth);
+      } catch (authErr: any) {
+        if (authErr.code !== 'auth/email-already-in-use') {
+          console.warn('Firebase Auth create user notice:', authErr?.message);
+        }
       }
 
-      // Log notification to Lab Admin (sharaanjelia236@gmail.com)
-      console.log(`[ADMIN NOTIFICATION SENT to sharaanjelia236@gmail.com]: New Internship Registration from ${regFullName.trim()} (${cleanEmail}) for division ${selectedDiv}.`);
+      // Store in Firestore collection pending_registrations
+      await setDoc(doc(db, 'pending_registrations', pendingId), JSON.parse(JSON.stringify(pendingRecord)));
 
       setRegSuccess(true);
     } catch (err: any) {

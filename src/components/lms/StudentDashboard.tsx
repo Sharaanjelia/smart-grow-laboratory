@@ -74,6 +74,7 @@ interface StudentDashboardProps {
     notes: string, 
     links: { github?: string; docs?: string; fileUrl?: string }
   ) => void;
+  onUpdateUser?: (user: User) => void;
   darkMode?: boolean;
   language?: 'id' | 'en';
 }
@@ -88,9 +89,28 @@ export default function StudentDashboard({
   onCheckIn,
   onCheckOut,
   onSubmitTaskProgress,
+  onUpdateUser,
   darkMode = false,
   language = 'id'
 }: StudentDashboardProps) {
+
+  const isProfileComplete = (user: User): boolean => {
+    if (!user) return false;
+    const cleanId = (user.studentId || '').trim();
+    const cleanPhone = (user.phone || '').trim();
+    const cleanAddress = (user.address || '').trim();
+    const cleanBio = (user.bio || '').trim();
+    const cleanAvatar = (user.avatar || '').trim();
+    return Boolean(cleanId && cleanPhone && cleanAddress && cleanBio && cleanAvatar);
+  };
+
+  const profileComplete = isProfileComplete(currentUser);
+
+  // Render Profile View if profile tab is active
+  if (activeTab === 'profile') {
+    return <ProfileView currentUser={currentUser} onUpdateProfile={onUpdateUser} darkMode={darkMode} />;
+  }
+
   const myTasks = tasks.filter(t => 
     t.assignedStudentId === currentUser.id || 
     (currentUser.name && t.assignedStudentName?.toLowerCase() === currentUser.name.toLowerCase())
@@ -414,7 +434,26 @@ export default function StudentDashboard({
                 <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 text-[#355E3B] text-xs font-mono font-bold uppercase">
                   <span>{isNewStudent ? 'Akun Mahasiswa Magang Baru ✨' : 'Sesi Magang Aktif ⚡'}</span>
                 </span>
+                {!profileComplete && (
+                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/80 border border-amber-300 text-amber-900 dark:text-amber-200 text-xs font-mono font-bold uppercase animate-pulse">
+                    <span>⚠️ Profil: Belum Lengkap</span>
+                  </span>
+                )}
               </div>
+
+              {!profileComplete && (
+                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-900 dark:text-amber-200 backdrop-blur-md">
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-xs font-display flex items-center gap-2">
+                      <span>Status Profil: Belum Lengkap</span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 font-mono">Action Required</span>
+                    </h4>
+                    <p className="text-[11px] text-slate-700 dark:text-slate-300">
+                      Silakan melengkapi data diri Anda (NIM, Phone, Alamat, Foto Profil, Bio) melalui tab **Profile**.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <span className="text-xs font-mono font-extrabold uppercase tracking-widest text-[#6F8E59] dark:text-emerald-400 block">
@@ -424,7 +463,7 @@ export default function StudentDashboard({
                   {currentUser.name}
                 </h1>
                 <p className="text-sm sm:text-base text-[#355E3B] font-medium max-w-2xl leading-relaxed">
-                  {currentUser.title || 'Full-stack & IoT Research Intern'} • NIM: <span className="font-mono font-bold text-[#355E3B] dark:text-emerald-400">{currentUser.studentId || 'NIM Belum Diset'}</span> ({currentUser.institution || 'Telkom University'})
+                  {currentUser.title || 'Full-stack & IoT Research Intern'} • NIM: <span className="font-mono font-bold text-[#355E3B] dark:text-emerald-400">{currentUser.studentId || 'Belum Diisi'}</span> ({currentUser.institution || 'Telkom University'})
                 </p>
               </div>
 
