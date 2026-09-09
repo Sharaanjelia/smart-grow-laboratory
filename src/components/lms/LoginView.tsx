@@ -10,7 +10,8 @@ import {
   createUserWithEmailAndPassword, 
   sendPasswordResetEmail,
   sendEmailVerification,
-  signOut
+  signOut,
+  updatePassword
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { 
@@ -184,13 +185,17 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
               userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, cleanPassword.length >= 6 ? cleanPassword : 'smartgrow123');
             } catch (createErr: any) {
               if (createErr.code === 'auth/email-already-in-use') {
-                // Akun sudah ada di Firebase Auth — coba berbagai password
-                const passwordsToTry = ['smartgrow123', cleanPassword, 'SmartGrow123', 'smartgrow2026'];
+                // Akun sudah ada di Firebase Auth — coba berbagai password fallback
+                const passwordsToTry = ['smartgrow123', '12345678', cleanPassword, 'SmartGrow123', '123456', 'smartgrow2026'];
                 let loginSuccess = false;
                 for (const pwd of passwordsToTry) {
                   try {
                     userCredential = await signInWithEmailAndPassword(auth, cleanEmail, pwd);
                     loginSuccess = true;
+                    // Sinkronkan password ke smartgrow123 jika berhasil login dengan fallback
+                    if (pwd !== 'smartgrow123' && userCredential.user) {
+                      updatePassword(userCredential.user, 'smartgrow123').catch(() => {});
+                    }
                     break;
                   } catch (_) {
                     // coba password berikutnya
