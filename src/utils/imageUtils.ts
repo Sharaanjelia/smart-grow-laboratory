@@ -14,7 +14,7 @@ export function resolveImageUrl(url?: string, fallback = '/images/harvest-team-b
   // or https://drive.google.com/open?id=1KmNGEPsohEH3huD8aXpSSnE_9ZcXnmrY
   const driveMatch = clean.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
   if (driveMatch && driveMatch[1]) {
-    return `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w1200`;
+    return `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
   }
 
   return clean;

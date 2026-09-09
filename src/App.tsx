@@ -1544,6 +1544,7 @@ export default function App() {
                         <img
                           src={resolveImageUrl(proj.image)}
                           alt={proj.title}
+                          referrerPolicy="no-referrer"
                           className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg';
@@ -1943,6 +1944,7 @@ export default function App() {
                               <img
                                 src={resolveImageUrl(project.image)}
                                 alt={project.title}
+                                referrerPolicy="no-referrer"
                                 className={`h-full w-full transition-transform duration-700 group-hover:scale-105 ${
                                   (project.image || '').includes('logo') 
                                     ? 'object-contain p-6 bg-slate-950' 
@@ -2100,6 +2102,7 @@ export default function App() {
                           <img 
                             src={resolveImageUrl(project.gallery?.[activeGalleryIndex] || project.image)} 
                             alt={`${project.title} slide`}
+                            referrerPolicy="no-referrer"
                             className="w-full h-full object-cover transition-all duration-700"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg';
@@ -2137,6 +2140,7 @@ export default function App() {
                                   <img 
                                     src={resolveImageUrl(thumb)} 
                                     alt="Thumbnail" 
+                                    referrerPolicy="no-referrer"
                                     className="w-full h-full object-cover rounded-[1.1rem]" 
                                     onError={(e) => {
                                       (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg';
