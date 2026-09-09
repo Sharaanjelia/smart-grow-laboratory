@@ -20,7 +20,62 @@ export const auth = getAuth(app);
 export const storage = getStorage(app);
 
 /**
+ * Compresses an image file in-browser using HTML5 Canvas to prevent exceeding Firestore 1MB document limit.
+ * Downscales dimensions to max 1280px and applies 0.75 JPEG compression (~60KB - 150KB).
+ */
+export async function compressImageFile(file: File, maxDimension = 1280, quality = 0.75): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxDimension || height > maxDimension) {
+        if (width > height) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
+        } else {
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+      resolve(compressedDataUrl);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    };
+    img.src = url;
+  });
+}
+
+/**
  * Uploads a local File object to Firebase Storage and returns its public HTTPS download URL.
+ * Automatically falls back to client-compressed DataURL if Firebase Storage bucket is not enabled.
  */
 export async function uploadFileToFirebaseStorage(file: File, folder: string = 'uploads'): Promise<string> {
   try {
@@ -31,12 +86,16 @@ export async function uploadFileToFirebaseStorage(file: File, folder: string = '
     const downloadUrl = await getDownloadURL(storageRef);
     return downloadUrl;
   } catch (err: any) {
-    console.warn('Firebase Storage upload notice (falling back to DataURL if offline):', err?.message);
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.readAsDataURL(file);
-    });
+    console.warn('Firebase Storage upload notice (compressing & falling back to optimized DataURL):', err?.message);
+    try {
+      return await compressImageFile(file, 1280, 0.75);
+    } catch (_) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
+    }
   }
 }
 

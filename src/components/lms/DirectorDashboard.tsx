@@ -163,15 +163,19 @@ export default function DirectorDashboard({
   const [pubDesc, setPubDesc] = useState('');
   const [pubFullDesc, setPubFullDesc] = useState('');
   const [pubGallery, setPubGallery] = useState<string[]>([]);
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
   const MAX_GALLERY = 9;
 
   const handleAddGalleryFile = async (file: File) => {
     if (pubGallery.length >= MAX_GALLERY) return;
+    setIsUploadingGallery(true);
     try {
       const downloadUrl = await uploadFileToFirebaseStorage(file, 'projects');
       setPubGallery(prev => [...prev, downloadUrl].slice(0, MAX_GALLERY));
     } catch (err) {
       console.error('Gallery file upload error:', err);
+    } finally {
+      setIsUploadingGallery(false);
     }
   };
 
@@ -821,18 +825,43 @@ export default function DirectorDashboard({
 
                     {/* Add photo slot */}
                     {pubGallery.length < MAX_GALLERY && (
-                      <label className="aspect-square rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-colors">
-                        <Upload className="h-5 w-5 text-slate-400" />
-                        <span className="text-[10px] text-slate-400 font-bold">Tambah</span>
+                      <label className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-colors ${
+                        isUploadingGallery 
+                          ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 cursor-wait' 
+                          : 'border-slate-300 dark:border-slate-600 cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20'
+                      }`}>
+                        {isUploadingGallery ? (
+                          <>
+                            <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                            <span className="text-[9px] text-emerald-600 font-bold text-center px-1">Mengompres...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-5 w-5 text-slate-400" />
+                            <span className="text-[10px] text-slate-400 font-bold">Tambah</span>
+                          </>
+                        )}
                         <input
                           type="file"
                           accept="image/*"
                           multiple
+                          disabled={isUploadingGallery}
                           className="hidden"
-                          onChange={e => {
+                          onChange={async (e) => {
                             const files = e.target.files;
-                            if (files) {
-                              Array.from(files).slice(0, MAX_GALLERY - pubGallery.length).forEach((f: File) => handleAddGalleryFile(f));
+                            if (files && files.length > 0) {
+                              setIsUploadingGallery(true);
+                              const remaining = MAX_GALLERY - pubGallery.length;
+                              const toUpload = Array.from(files).slice(0, remaining);
+                              for (const f of toUpload) {
+                                try {
+                                  const downloadUrl = await uploadFileToFirebaseStorage(f, 'projects');
+                                  setPubGallery(prev => [...prev, downloadUrl].slice(0, MAX_GALLERY));
+                                } catch (err) {
+                                  console.error('Gallery file upload error:', err);
+                                }
+                              }
+                              setIsUploadingGallery(false);
                             }
                             e.target.value = '';
                           }}
