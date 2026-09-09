@@ -53,6 +53,7 @@ const StudentDashboard = React.lazy(() => import('./components/lms/StudentDashbo
 const AdminDashboard = React.lazy(() => import('./components/lms/AdminDashboard'));
 import { FirebaseSeederModal } from './components/FirebaseSeederModal';
 import { auth, db, uploadAttendancePhotoToStorage, backupPhotoToGoogleDrive } from './firebase';
+import { resolveImageUrl } from './utils/imageUtils';
 import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { collection, onSnapshot, doc, setDoc, deleteDoc, getDoc, getDocs, query, where, limit, orderBy } from 'firebase/firestore';
 import { Database } from 'lucide-react';
@@ -1502,6 +1503,78 @@ export default function App() {
               </div>
             </section>
 
+            {/* FEATURED RESEARCH PROJECTS SECTION — Dynamically synced from Firestore */}
+            <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10" id="home-featured-projects">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono font-bold uppercase tracking-wider mb-2">
+                    <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>LATEST INNOVATIONS & RESEARCH</span>
+                  </div>
+                  <h2 className="font-display text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                    Proyek Riset & Inovasi Unggulan
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1 font-sans">
+                    Pengembangan teknologi terpadu laboratorium Smart Grow yang sedang dan telah diimplementasikan.
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleNavigate('project')}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0A5247] hover:bg-[#073D35] text-white text-xs font-bold transition-all duration-300 hover:scale-105 active:scale-95 shadow-md shadow-emerald-950/20 cursor-pointer self-start sm:self-auto"
+                >
+                  <span>Lihat Semua Proyek ({projectsList.length})</span>
+                  <ArrowUpRight className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Dynamic Projects Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {projectsList.slice(0, 3).map((proj) => (
+                  <div
+                    key={proj.id}
+                    onClick={() => {
+                      setSelectedProjectId(proj.id);
+                      handleNavigate('project');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="group cursor-pointer bg-white border border-slate-100 p-5 rounded-3xl transition-all duration-300 hover:shadow-xl hover:border-emerald-500/30 hover:scale-[1.01] flex flex-col justify-between shadow-xs"
+                  >
+                    <div className="space-y-4">
+                      <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-950">
+                        <img
+                          src={resolveImageUrl(proj.image)}
+                          alt={proj.title}
+                          className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 via-transparent to-transparent" />
+                        <span className="absolute top-3 left-3 rounded-full bg-white/95 backdrop-blur-md border border-slate-100 px-3 py-1 text-[10px] font-sans font-bold tracking-wider text-teal-800 uppercase shadow-xs">
+                          {proj.category}
+                        </span>
+                      </div>
+                      <div>
+                        <h3 className="font-display text-lg font-black text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-1">
+                          {proj.title}
+                        </h3>
+                        <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
+                          {proj.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-700 group-hover:underline">
+                      <span>Buka Detail Proyek</span>
+                      <div className="h-7 w-7 rounded-full bg-emerald-50 group-hover:bg-emerald-100 flex items-center justify-center text-emerald-700 transition-all">
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
             {/* RESEARCH INTEREST SECTION (High-end dynamic glassmorphic design) */}
             <section className="w-full bg-slate-950 py-20 px-4 sm:px-6 lg:px-8 my-12 relative overflow-hidden" id="research-interests">
               {/* Soft ambient background lights */}
@@ -1868,13 +1941,16 @@ export default function App() {
                             {/* Card Media Preview */}
                             <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-950">
                               <img
-                                src={project.image}
+                                src={resolveImageUrl(project.image)}
                                 alt={project.title}
                                 className={`h-full w-full transition-transform duration-700 group-hover:scale-105 ${
-                                  project.image.includes('logo') 
+                                  (project.image || '').includes('logo') 
                                     ? 'object-contain p-6 bg-slate-950' 
                                     : 'object-cover object-center'
                                 }`}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg';
+                                }}
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent" />
                               
@@ -2022,9 +2098,12 @@ export default function App() {
                         {/* Main Image View */}
                         <div className="relative aspect-[16/10] overflow-hidden rounded-[2.5rem] border border-slate-100 bg-slate-50 shadow-lg">
                           <img 
-                            src={project.gallery[activeGalleryIndex] || project.image} 
+                            src={resolveImageUrl(project.gallery?.[activeGalleryIndex] || project.image)} 
                             alt={`${project.title} slide`}
                             className="w-full h-full object-cover transition-all duration-700"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg';
+                            }}
                           />
                           
                           {/* Warm Cream Floating Metadata Banner (Matching User's Uploaded Mockup Exactly) */}
@@ -2035,7 +2114,7 @@ export default function App() {
                             <div className="flex items-center gap-1.5 font-sans font-bold text-sm text-[#5c544d]">
                               <span>0{activeGalleryIndex + 1}</span>
                               <span className="text-[#a89d91]">/</span>
-                              <span className="text-[#8c8175]">0{project.gallery.length}</span>
+                              <span className="text-[#8c8175]">0{(project.gallery || []).length || 1}</span>
                             </div>
                           </div>
                         </div>
@@ -2055,7 +2134,14 @@ export default function App() {
                                       : 'border-transparent hover:scale-[1.02] opacity-80 hover:opacity-100 hover:shadow-md'
                                   }`}
                                 >
-                                  <img src={thumb} alt="Thumbnail" className="w-full h-full object-cover rounded-[1.1rem]" />
+                                  <img 
+                                    src={resolveImageUrl(thumb)} 
+                                    alt="Thumbnail" 
+                                    className="w-full h-full object-cover rounded-[1.1rem]" 
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg';
+                                    }}
+                                  />
                                 </button>
                               );
                             })}

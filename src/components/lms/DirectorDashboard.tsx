@@ -22,6 +22,7 @@ import ReportExportModal from './ReportExportModal';
 import StudentAcademicProfileModal from './StudentAcademicProfileModal';
 import InternshipRecruitmentManager from './InternshipRecruitmentManager';
 import PendingRegistrationsView from './PendingRegistrationsView';
+import { resolveImageUrl } from '../../utils/imageUtils';
 import { 
   Users, 
   FolderKanban, 
@@ -181,7 +182,8 @@ export default function DirectorDashboard({
 
   const handleAddGalleryUrl = (url: string) => {
     if (!url.trim() || pubGallery.length >= MAX_GALLERY) return;
-    setPubGallery(prev => [...prev, url.trim()].slice(0, MAX_GALLERY));
+    const resolved = resolveImageUrl(url.trim());
+    setPubGallery(prev => [...prev, resolved].slice(0, MAX_GALLERY));
   };
 
   const handleRemoveGalleryItem = (index: number) => {
@@ -809,7 +811,7 @@ export default function DirectorDashboard({
                   <div className="grid grid-cols-3 gap-2 mb-3">
                     {pubGallery.map((img, idx) => (
                       <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 group bg-slate-100 dark:bg-slate-800">
-                        <img src={img} alt={`foto-${idx + 1}`} className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).src = ''; }} />
+                        <img src={resolveImageUrl(img)} alt={`foto-${idx + 1}`} className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg'; }} />
                         {idx === 0 && (
                           <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[9px] font-bold shadow">COVER</span>
                         )}
