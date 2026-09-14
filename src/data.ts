@@ -114,36 +114,6 @@ Dalam pertemuan ini, tim laboratorium mendemonstrasikan sistem pengontrolan mult
         timestamp: '2026-07-15 14:10'
       }
     ]
-  },
-  {
-    id: 'peluncuran-mops-smart-waste-bandung',
-    title: 'Peluncuran MOPS: Sistem Monitoring & Operasional Persampahan Kota Bandung Berbasis IoT',
-    tagline: 'Solusi Cerdas Pengendalian Luberan Sampah TPS & Rute Logistik Truk Sampah Terpadu',
-    category: 'Smart City & Waste Management',
-    date: '14 September 2026',
-    image: '/images/mops/mops-hardware-installation.png',
-    excerpt: 'Smart Grow Laboratory bersama mitra kota cerdas meluncurkan platform MOPS, sistem monitoring volume sampah TPS real-time dengan sensor ToF, kamera CCTV cerdas, dan portal publik terintegrasi.',
-    content: `Tim Smart Grow Laboratory resmi memperkenalkan MOPS (Sistem Monitoring & Operasional Persampahan Kota Bandung).
-
-MOPS dirancang untuk mengatasi persoalan penumpukan sampah di berbagai Tempat Pembuangan Sementara (TPS) Kota Bandung dengan memadukan sensor jarak Time-of-Flight (TOF400F), kamera IP outdoor TP-Link VIGI C340, dan kontroler edge computing.
-
-### Fitur Utama Platform MOPS:
-* **Monitoring Real-Time:** Deteksi ketinggian timbunan sampah TPS dengan akurasi tinggi dan visual CCTV real-time.
-* **Smart Alert & Dispatching:** Notifikasi otomatis saat volume TPS mencapai ambang kritis (85%+) untuk penjemputan armada truk terdekat.
-* **Portal Publik & Edukasi Warga:** Warga Kota Bandung dapat memantau kondisi TPS sekitar, mengajukan laporan luberan sampah, dan membaca artikel edukasi pemilahan sampah.
-* **Dashboard Berbasis Peran:** Mendukung Super Admin, Supervisor Kecamatan, dan Operator Lapangan untuk tata kelola operasional yang terintegrasi.
-
-Platform ini dapat diakses secara langsung oleh publik dan dinas melalui tautan resmi https://mops-5f51b.web.app/`,
-    readTime: '4 min',
-    comments: [
-      {
-        id: 'c_mops_news1',
-        name: 'Dinas Lingkungan Hidup Kota Bandung',
-        email: 'dlh@bandung.go.id',
-        content: 'Platform MOPS sangat krusial dalam mempercepat respon penjemputan sampah sebelum terjadi tumpukan luber di TPS perkotaan.',
-        timestamp: '2026-09-14 09:30'
-      }
-    ]
   }
 ];
 

@@ -1037,8 +1037,12 @@ export default function App() {
         });
       }
       newsMap.delete('smart-tbn-goes-to-sumba');
+      newsMap.delete('peluncuran-mops-smart-waste-bandung');
       setNewsList(Array.from(newsMap.values()));
     }, (err) => console.warn('News listener notice:', err));
+
+    // Remove MOPS news from Firestore to guarantee it is only in projects
+    deleteDoc(doc(db, 'news', 'peluncuran-mops-smart-waste-bandung')).catch(() => {});
 
     return () => {
       unsubProjects();
