@@ -2043,38 +2043,9 @@ export default function App() {
 
                 </div>
 
-                {/* Categories Filter Pills */}
-                <div className="flex flex-wrap gap-2 mb-10 pb-4 border-b border-slate-100">
-                  {[
-                    { label: 'Semua Projek', value: 'All' },
-                    { label: "SAPA Jam'iyyah", value: 'Smart Community' },
-                    { label: 'IoT & Telemetri', value: 'IoT' },
-                    { label: 'Smart Waste', value: 'Waste' },
-                    { label: 'Hidroponik', value: 'Hydroponics' },
-                    { label: 'Akuaponik', value: 'Aquaponics' },
-                    { label: 'Smart Container', value: 'Container-based' }
-                  ].map((cat) => {
-                    const isActive = projectCategory === cat.value;
-                    return (
-                      <button
-                        key={cat.value}
-                        onClick={() => setProjectCategory(cat.value)}
-                        className={`px-5 py-2.5 rounded-full text-xs font-bold font-sans tracking-wide border transition-all duration-300 cursor-pointer hover:scale-105 active:scale-95 ${
-                          isActive
-                            ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-transparent shadow-md shadow-teal-600/20'
-                            : 'bg-white border-slate-200 text-slate-600 hover:border-slate-400 hover:text-slate-900'
-                        }`}
-                      >
-                        {cat.label}
-                      </button>
-                    );
-                  })}
-                </div>
-
                 {/* Projects Grid */}
                 {(() => {
                   const filtered = [...projectsList]
-                    .filter(p => projectCategory === 'All' || (p.category || '').toLowerCase().includes((projectCategory || '').toLowerCase()))
                     .sort((a, b) => {
                       const dateA = new Date(a.date).getTime();
                       const dateB = new Date(b.date).getTime();
