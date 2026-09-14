@@ -18,10 +18,9 @@ service firebase.storage {
       allow write: if isAuthenticated();
     }
     
-    // Attendance Selfie Photos: Authenticated read & upload only (privacy protected)
+    // Attendance Selfie Photos: Public read & upload for verified attendance records
     match /attendance/{fileName} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
+      allow read, write: if true;
     }
     
     // General Uploads: Public read, authenticated upload

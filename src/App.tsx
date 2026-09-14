@@ -48,6 +48,7 @@ import SmartTbnShowcase from './components/SmartTbnShowcase';
 import HtciShowcase from './components/HtciShowcase';
 import SmartWaterShowcase from './components/SmartWaterShowcase';
 import MopsShowcase from './components/MopsShowcase';
+import SapaJamiyyahShowcase from './components/SapaJamiyyahShowcase';
 
 import LoginView from './components/lms/LoginView';
 import LmsLayout from './components/lms/LmsLayout';
@@ -1019,6 +1020,10 @@ export default function App() {
     const mopsProject = projectsData.find(p => p.id === 'mops');
     if (mopsProject) {
       setDoc(doc(db, 'projects', 'mops'), JSON.parse(JSON.stringify(mopsProject)), { merge: true }).catch(() => {});
+    }
+    const sapaJamiyyahProject = projectsData.find(p => p.id === 'sapa-jamiyyah');
+    if (sapaJamiyyahProject) {
+      setDoc(doc(db, 'projects', 'sapa-jamiyyah'), JSON.parse(JSON.stringify(sapaJamiyyahProject)), { merge: true }).catch(() => {});
     }
 
     // 2. News listener: Merge Firestore docs with built-in newsData
@@ -2042,6 +2047,7 @@ export default function App() {
                 <div className="flex flex-wrap gap-2 mb-10 pb-4 border-b border-slate-100">
                   {[
                     { label: 'Semua Projek', value: 'All' },
+                    { label: "SAPA Jam'iyyah", value: 'Smart Community' },
                     { label: 'IoT & Telemetri', value: 'IoT' },
                     { label: 'Smart Waste', value: 'Waste' },
                     { label: 'Hidroponik', value: 'Hydroponics' },
@@ -2119,7 +2125,7 @@ export default function App() {
                                 alt={project.title}
                                 referrerPolicy="no-referrer"
                                 className={`h-full w-full transition-transform duration-700 group-hover:scale-105 ${
-                                  (project.image || '').includes('logo') || (project.image || '').includes('poster') || (project.image || '').includes('brochure') || (project.image || '').includes('mops') || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water' || project.id === 'mops'
+                                  (project.image || '').includes('logo') || (project.image || '').includes('poster') || (project.image || '').includes('brochure') || (project.image || '').includes('mops') || (project.image || '').includes('sapa-jamiyyah') || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water' || project.id === 'mops' || project.id === 'sapa-jamiyyah'
                                     ? 'object-contain p-2 bg-slate-950' 
                                     : 'object-cover object-center'
                                 }`}
@@ -2137,9 +2143,9 @@ export default function App() {
                               </div>
 
                               {/* Direct Website / App Badge if liveUrl exists */}
-                              {(project.liveUrl || project.id === 'mops' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
+                              {(project.liveUrl || project.id === 'mops' || project.id === 'sapa-jamiyyah' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
                                 <a
-                                  href={project.liveUrl || (project.id === 'mops' ? 'https://mops-5f51b.web.app/' : project.id === 'smart-tbn' ? 'https://smarttrash.devtbn.tech/' : project.id === 'smart-water' ? 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing' : 'https://htci.netlify.app/')}
+                                  href={project.liveUrl || (project.id === 'sapa-jamiyyah' ? 'https://www.sapajamiyyah.com/' : project.id === 'mops' ? 'https://mops-5f51b.web.app/' : project.id === 'smart-tbn' ? 'https://smarttrash.devtbn.tech/' : project.id === 'smart-water' ? 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing' : 'https://htci.netlify.app/')}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   onClick={(e) => e.stopPropagation()}
@@ -2178,9 +2184,9 @@ export default function App() {
                               Lihat Spesifikasi & Diagnostik
                             </span>
                             <div className="flex items-center gap-2">
-                              {(project.liveUrl || project.id === 'mops' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
+                              {(project.liveUrl || project.id === 'mops' || project.id === 'sapa-jamiyyah' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
                                 <a
-                                  href={project.liveUrl || (project.id === 'mops' ? 'https://mops-5f51b.web.app/' : project.id === 'smart-tbn' ? 'https://smarttrash.devtbn.tech/' : project.id === 'smart-water' ? 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing' : 'https://htci.netlify.app/')}
+                                  href={project.liveUrl || (project.id === 'sapa-jamiyyah' ? 'https://www.sapajamiyyah.com/' : project.id === 'mops' ? 'https://mops-5f51b.web.app/' : project.id === 'smart-tbn' ? 'https://smarttrash.devtbn.tech/' : project.id === 'smart-water' ? 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing' : 'https://htci.netlify.app/')}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   onClick={(e) => e.stopPropagation()}
@@ -2310,6 +2316,23 @@ export default function App() {
                 ) {
                   return (
                     <MopsShowcase
+                      item={project}
+                      onBack={() => {
+                        setSelectedProjectId(null);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
+                  );
+                }
+
+                if (
+                  project.id === 'sapa-jamiyyah' || 
+                  project.id?.includes('sapa-jamiyyah') || 
+                  project.title?.toLowerCase().includes('sapa jam') ||
+                  project.title?.toLowerCase().includes("jam'iyyah")
+                ) {
+                  return (
+                    <SapaJamiyyahShowcase
                       item={project}
                       onBack={() => {
                         setSelectedProjectId(null);

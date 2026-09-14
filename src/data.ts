@@ -518,6 +518,55 @@ export const projectsData: ProjectItem[] = [
         description: 'Kalkulasi massa sampah di bak TPS untuk optimasi dispatching dan kapasitas bak truk sampah DLH.'
       }
     ]
+  },
+  {
+    id: 'sapa-jamiyyah',
+    title: "SAPA Jam'iyyah SMPI Al Azhar 36 Bandung",
+    tagline: "Media Komunikasi Resmi Orang Tua & Sekolah — Aspirasi, Donasi, Catatan, Berita & Angket Transparan",
+    category: "Smart Community & EdTech",
+    description: "Platform digital resmi Jam'iyyah SMPI Al Azhar 36 Bandung untuk memfasilitasi komunikasi dua arah antara orang tua murid dan pihak sekolah melalui kanal aspirasi terstruktur, penggalangan donasi & infaq transparan, dokumentasi catatan rapat, warta berita sekolah, serta angket partisipatif.",
+    fullDescription: "SAPA Jam'iyyah SMPI Al Azhar 36 Bandung (sapajamiyyah.com) merupakan platform web interaktif yang dikembangkan sebagai media komunikasi resmi dan jembatan kolaborasi antara Pengurus Jam'iyyah (komite orang tua murid), pihak manajemen sekolah SMPI Al Azhar 36 Bandung, serta seluruh wali murid.\n\nPlatform ini dirancang dengan prinsip keterbukaan, akuntabilitas, dan partisipasi aktif guna mendukung ekosistem pendidikan berkarakter Islam dan bertaraf unggul. Melalui SAPA Jam'iyyah, setiap pemangku kepentingan dapat mengakses informasi dan layanan kunci tanpa sekat birokrasi yang kaku.\n\nEkosistem Utama SAPA Jam'iyyah:\n1. Aspirasi Terpadu: Kanal penyampaian aspirasi, kritik konstruktif, dan usulan program sekolah dengan nomor tiket pelacakan progres tindak lanjut dari pengurus Jam'iyyah dan pimpinan sekolah.\n2. Donasi & Infaq Berkelanjutan: Sistem penggalangan dana sosial dan infaq kegiatan kesiswaan dengan pelaporan perolehan dana secara real-time, transparan, serta dapat diaudit bersama.\n3. Catatan Rapat & Kebijakan: Arsip resmi notulensi musyawarah, program kerja tahunan, serta transparansi laporan pertanggungjawaban Jam'iyyah 2024–2026.\n4. Warta Berita & Agenda: Informasi terkini seputar prestasi santri/siswa, event akbar sekolah, seminar parenting, dan agenda akademik terpadu.\n5. Angket & Polling Kebijakan: Sarana survei cepat digital untuk menjaring suara dan preferensi orang tua terhadap kebijakan sekolah dan inisiatif Jam'iyyah.\n\nDidukung tata kelola peran multi-level (Admin Jam'iyyah, Pengurus Bidang, Manajemen Sekolah, dan Wali Murid) dengan integrasi keamanan modern untuk mewujudkan sinergi harmonis antara sekolah dan keluarga.",
+    image: '/images/sapa-jamiyyah/sapa-jamiyyah-hero.png',
+    gallery: [
+      '/images/sapa-jamiyyah/sapa-jamiyyah-hero.png',
+      '/images/sapa-jamiyyah/sapa-jamiyyah-poster.png'
+    ],
+    date: '2026-09-14',
+    liveUrl: 'https://www.sapajamiyyah.com/',
+    sensors: [
+      {
+        name: 'Tingkat Resolusi Aspirasi Orang Tua',
+        value: 94.8,
+        unit: '%',
+        minSafe: 80,
+        maxSafe: 100,
+        description: 'Persentase aspirasi dan masukan orang tua yang berhasil ditindaklanjuti dan diselesaikan oleh pengurus.'
+      },
+      {
+        name: 'Transparansi Penyaluran Donasi',
+        value: 100,
+        unit: '%',
+        minSafe: 95,
+        maxSafe: 100,
+        description: 'Tingkat akuntabilitas dan pencatatan audit digital penyaluran dana infaq serta donasi program unggulan.'
+      },
+      {
+        name: 'Partisipasi Angket & Polling Wali',
+        value: 88.5,
+        unit: '%',
+        minSafe: 70,
+        maxSafe: 100,
+        description: 'Persentase keterlibatan aktif orang tua murid dalam pengisian angket kebijakan dan evaluasi berkala.'
+      },
+      {
+        name: 'Waktu Rata-rata Respon Komunikasi',
+        value: 1.8,
+        unit: 'Jam',
+        minSafe: 0.5,
+        maxSafe: 6.0,
+        description: 'Kecepatan rata-rata respon tanggapan pengurus terhadap aduan atau pertanyaan yang diajukan wali murid.'
+      }
+    ]
   }
 ];
 
