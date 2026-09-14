@@ -12,6 +12,7 @@ import {
   X,
   Printer
 } from 'lucide-react';
+import { getTodayDateJakarta } from '../../utils/dateUtils';
 
 interface ReportExportModalProps {
   darkMode?: boolean;
@@ -21,7 +22,7 @@ export default function ReportExportModal({ darkMode = false }: ReportExportModa
   const [selectedReportType, setSelectedReportType] = useState<'harvest' | 'attendance' | 'task' | 'research'>('harvest');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [dateStart, setDateStart] = useState('2026-07-01');
-  const [dateEnd, setDateEnd] = useState('2026-07-22');
+  const [dateEnd, setDateEnd] = useState(getTodayDateJakarta());
 
   const reportTypes = [
     { id: 'harvest', name: 'Laporan Hasil Panen Hydroponic', icon: Sprout, desc: 'Rekapitulasi total bobot panen (kg), kualitas grade, dan rak produksi' },

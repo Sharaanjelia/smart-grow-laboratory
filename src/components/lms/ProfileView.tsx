@@ -178,11 +178,11 @@ export default function ProfileView({
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPassword || newPassword.length < 6) {
-      alert('Kata sandi baru minimal harus 6 karakter untuk Firebase Authentication.');
+      showToast('Kata sandi baru minimal harus 6 karakter untuk Firebase Authentication.');
       return;
     }
     if (newPassword !== confirmPassword) {
-      alert('Kata sandi baru dan konfirmasi tidak cocok!');
+      showToast('Kata sandi baru dan konfirmasi tidak cocok!');
       return;
     }
 
@@ -197,7 +197,7 @@ export default function ProfileView({
       showToast('Kata sandi berhasil diperbarui via Firebase Authentication!');
     } catch (err: any) {
       console.error('Update password error:', err);
-      alert(err?.message || 'Gagal memperbarui kata sandi. Silakan login kembali dan coba lagi.');
+      showToast(err?.message || 'Gagal memperbarui kata sandi. Silakan login kembali dan coba lagi.');
     }
   };
 

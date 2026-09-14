@@ -22,6 +22,7 @@ import InternshipStudentsView from './InternshipStudentsView';
 import AnnouncementsManager from './AnnouncementsManager';
 import InternshipRecruitmentManager from './InternshipRecruitmentManager';
 import PendingRegistrationsView from './PendingRegistrationsView';
+import { getTodayDateJakarta } from '../../utils/dateUtils';
 import { 
   Users, 
   CheckSquare, 
@@ -320,9 +321,9 @@ export default function AssistantDashboard({
   });
 
   // Calculate Summary metrics dynamically from real state
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayDateJakarta();
   const activeStudentsCount = students.length;
-  const presentTodayCount = attendance.filter(a => a.date === today || a.status === 'present').length;
+  const presentTodayCount = attendance.filter(a => a.date === today && (a.status === 'present' || a.status === 'late')).length;
   const pendingReviewCount = tasks.filter(t => t.status === 'review').length;
   const upcomingDeadlinesCount = tasks.filter(t => t.status !== 'completed').length;
   const activeProjectsCount = projects.filter(p => p.status === 'in_progress' || p.status === 'planning').length;

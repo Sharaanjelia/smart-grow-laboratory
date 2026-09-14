@@ -5,6 +5,9 @@ import LuminetShowcase from './LuminetShowcase';
 import HycosmartsShowcase from './HycosmartsShowcase';
 import SimonaShowcase from './SimonaShowcase';
 import FlocifyShowcase from './FlocifyShowcase';
+import SmartTbnShowcase from './SmartTbnShowcase';
+import HtciShowcase from './HtciShowcase';
+import MopsShowcase from './MopsShowcase';
 import RecruitmentNewsShowcase from './RecruitmentNewsShowcase';
 import StandardNewsArticleView from './StandardNewsArticleView';
 
@@ -40,6 +43,54 @@ export default function NewsDetailView({ item, comments, onBack, onAddComment, o
     return (
       <FlocifyShowcase 
         item={item} 
+        comments={comments} 
+        onBack={onBack} 
+        onAddComment={onAddComment} 
+      />
+    );
+  }
+
+  // Smart TBN Sumba article ➔ dedicated Smart TBN showcase!
+  if (item.id === 'smart-tbn-goes-to-sumba' || item.id === 'smart-tbn' || item.id?.includes('tbn')) {
+    return (
+      <SmartTbnShowcase 
+        item={item as any} 
+        comments={comments} 
+        onBack={onBack} 
+        onAddComment={onAddComment} 
+      />
+    );
+  }
+
+  // HTCI Hydrothermal article ➔ dedicated HTCI showcase!
+  if (
+    item.id === 'proj_1788926059725' || 
+    item.id === 'htci' || 
+    item.id?.includes('htci') || 
+    (item.title || '').toLowerCase().includes('hydrothermal') || 
+    (item.title || '').toLowerCase().includes('htci')
+  ) {
+    return (
+      <HtciShowcase 
+        item={item as any} 
+        comments={comments} 
+        onBack={onBack} 
+        onAddComment={onAddComment} 
+      />
+    );
+  }
+
+  // MOPS Kota Bandung article ➔ dedicated MOPS showcase!
+  if (
+    item.id === 'mops' || 
+    item.id === 'peluncuran-mops-smart-waste-bandung' ||
+    item.id?.includes('mops') ||
+    (item.title || '').toLowerCase().includes('mops') ||
+    (item.title || '').toLowerCase().includes('persampahan kota bandung')
+  ) {
+    return (
+      <MopsShowcase 
+        item={item as any} 
         comments={comments} 
         onBack={onBack} 
         onAddComment={onAddComment} 

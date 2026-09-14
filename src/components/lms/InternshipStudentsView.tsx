@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User, Task, AttendanceRecord, LmsProject } from '../../types';
+import { getTodayDateJakarta } from '../../utils/dateUtils';
 import StudentAcademicProfileModal from './StudentAcademicProfileModal';
 import { 
   Users, 
@@ -145,7 +146,8 @@ export default function InternshipStudentsView({
                 const reviewTgs = stTasks.filter(t => t.status === 'review').length || 1;
                 
                 // Attendance today
-                const attToday = attendance.find(a => (a.studentId === st.id || a.studentName === st.name) && a.date === '2026-07-22');
+                const todayStr = getTodayDateJakarta();
+                const attToday = attendance.find(a => (a.studentId === st.id || a.studentName === st.name) && a.date === todayStr);
                 
                 // Nearest deadline
                 const activeTasks = stTasks.filter(t => t.status !== 'completed');

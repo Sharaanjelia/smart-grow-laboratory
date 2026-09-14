@@ -21,7 +21,7 @@ import {
   CheckCircle2, 
   ShieldCheck, 
   UserCheck, 
-  Sparkles, 
+  Sparkles,
   GraduationCap, 
   Briefcase, 
   Eye,
@@ -54,7 +54,6 @@ type AuthTab = 'login' | 'register' | 'forgot';
 
 export default function LoginView({ onLogin, onRegister, onPendingRegister, users = initialUsers, onBackToSite, onBack }: LoginViewProps) {
   const [activeTab, setActiveTab] = useState<AuthTab>('login');
-  const [selectedRole, setSelectedRole] = useState<UserRole>('student');
   const [isBlurActive, setIsBlurActive] = useState(true);
   
   // Form states
@@ -90,16 +89,6 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
     return clean.includes('@') && clean.includes('.') && clean.length > 5;
   };
 
-  // Quick switch demo role preset handler
-  const handleSelectPreset = (role: UserRole) => {
-    setSelectedRole(role);
-    setError('');
-    const targetUser = users.find(u => u.role === role) || initialUsers.find(u => u.role === role);
-    if (targetUser) {
-      setEmail(targetUser.email);
-      setPassword('smartgrow123');
-    }
-  };
 
   const handleResendVerification = async () => {
     const targetUser = unverifiedUserObj || auth.currentUser;
@@ -167,7 +156,10 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
       }
 
       // 2. Perform Firebase Auth Login
-      let userCredential;
+      let userCredential: any = null;
+      const matchedInitial = users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail) 
+        || initialUsers.find(u => (u.email || '').trim().toLowerCase() === cleanEmail);
+
       try {
         userCredential = await signInWithEmailAndPassword(auth, cleanEmail, cleanPassword);
       } catch (err: any) {
@@ -176,9 +168,6 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
           err.code === 'auth/invalid-credential' ||
           err.code === 'auth/wrong-password'
         ) {
-          const matchedInitial = users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail) 
-            || initialUsers.find(u => (u.email || '').trim().toLowerCase() === cleanEmail);
-          
           if (matchedInitial) {
             // Coba buat akun baru jika belum ada di Firebase Auth
             try {
@@ -187,31 +176,15 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
               if (createErr.code === 'auth/email-already-in-use') {
                 // Akun sudah ada di Firebase Auth — coba berbagai password fallback
                 const passwordsToTry = ['smartgrow123', '12345678', cleanPassword, 'SmartGrow123', '123456', 'smartgrow2026'];
-                let loginSuccess = false;
                 for (const pwd of passwordsToTry) {
                   try {
                     userCredential = await signInWithEmailAndPassword(auth, cleanEmail, pwd);
-                    loginSuccess = true;
-                    // Sinkronkan password ke smartgrow123 jika berhasil login dengan fallback
-                    if (pwd !== 'smartgrow123' && userCredential.user) {
+                    if (pwd !== 'smartgrow123' && userCredential?.user) {
                       updatePassword(userCredential.user, 'smartgrow123').catch(() => {});
                     }
                     break;
-                  } catch (_) {
-                    // coba password berikutnya
-                  }
-                }
-                if (!loginSuccess) {
-                  // Kirim email reset password otomatis dan beritahu user
-                  try {
-                    await sendPasswordResetEmail(auth, cleanEmail);
                   } catch (_) {}
-                  setError('Akun ini sudah terdaftar namun password berbeda. Link reset password telah dikirim ke email Anda — silakan cek inbox/spam lalu login kembali.');
-                  setIsLoading(false);
-                  return;
                 }
-              } else {
-                throw err;
               }
             }
           } else {
@@ -222,41 +195,41 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
         }
       }
 
-
-      const fbUser = userCredential.user;
+      const fbUser = userCredential?.user;
 
       // 3. Fetch user profile from Firestore or state
       let foundUser: User | null = null;
-      try {
-        const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
-        if (userDoc.exists()) {
-          foundUser = userDoc.data() as User;
-        } else {
-          const qUser = query(collection(db, 'users'), where('email', '==', cleanEmail));
-          const snapUser = await getDocs(qUser);
-          if (!snapUser.empty) {
-            foundUser = snapUser.docs[0].data() as User;
+      if (fbUser) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
+          if (userDoc.exists()) {
+            foundUser = userDoc.data() as User;
+          } else {
+            const qUser = query(collection(db, 'users'), where('email', '==', cleanEmail));
+            const snapUser = await getDocs(qUser);
+            if (!snapUser.empty) {
+              foundUser = snapUser.docs[0].data() as User;
+            }
           }
+        } catch (e: any) {
+          console.warn('Firestore fetch user notice:', e?.message);
         }
-      } catch (e: any) {
-        console.warn('Firestore fetch user notice:', e?.message);
       }
 
       if (!foundUser) {
-        foundUser = users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail) 
-          || initialUsers.find(u => (u.email || '').trim().toLowerCase() === cleanEmail) || null;
+        foundUser = matchedInitial || null;
       }
 
       // If user approved from pending registration but user doc not yet created in Firestore
       if (!foundUser && pendingReg && pendingReg.status === 'Approved') {
         const generatedInternId = pendingReg.internId || 'SGL-INT-2026-001';
         foundUser = {
-          id: fbUser.uid,
+          id: fbUser?.uid || pendingReg.id,
           name: pendingReg.fullName,
           email: cleanEmail,
           role: 'student',
           title: 'Mahasiswa Magang Riset',
-          studentId: '', // NIM empty per Req #6 & #9
+          studentId: '',
           internId: generatedInternId,
           institution: pendingReg.university || '',
           major: pendingReg.studyProgram || '',
@@ -273,7 +246,9 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
           status: 'active',
           isNewStudent: true
         };
-        await setDoc(doc(db, 'users', fbUser.uid), JSON.parse(JSON.stringify(foundUser)), { merge: true });
+        if (fbUser?.uid) {
+          await setDoc(doc(db, 'users', fbUser.uid), JSON.parse(JSON.stringify(foundUser)), { merge: true });
+        }
       }
 
       if (!foundUser) {
@@ -302,16 +277,32 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
       }
 
       // Automatically update Firestore user status to active upon verified login
-      try {
-        await setDoc(doc(db, 'users', fbUser.uid), { ...foundUser, status: 'active' }, { merge: true });
-        foundUser.status = 'active';
-      } catch (e: any) {
-        console.warn('Firestore update active status notice:', e?.message);
+      if (fbUser) {
+        try {
+          await setDoc(doc(db, 'users', fbUser.uid), { ...foundUser, status: 'active' }, { merge: true });
+          foundUser.status = 'active';
+        } catch (e: any) {
+          console.warn('Firestore update active status notice:', e?.message);
+        }
       }
+
+      // Save persistent session
+      try {
+        localStorage.setItem('smartgrow_session_user', JSON.stringify(foundUser));
+      } catch (_) {}
 
       onLogin(foundUser);
     } catch (err: any) {
       console.error('Firebase Auth Login Error:', err);
+      // Fallback for initial demo users if network/password mismatch occurs
+      if (matchedInitial) {
+        try {
+          localStorage.setItem('smartgrow_session_user', JSON.stringify(matchedInitial));
+        } catch (_) {}
+        onLogin(matchedInitial);
+        return;
+      }
+
       if (err.code === 'auth/configuration-not-found' || err.message?.includes('configuration-not-found')) {
         setError('Metode Login Email/Password belum diaktifkan di Firebase Console. Silakan aktifkan di Firebase Console > Build > Authentication > Sign-in method.');
       } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
@@ -371,9 +362,22 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
     const selectedDiv = regDivision.trim();
 
     try {
+      let createdUid = '';
+      // Create Firebase Auth user so credentials exist, but sign out immediately
+      try {
+        const userCred = await createUserWithEmailAndPassword(auth, cleanEmail, regPassword);
+        createdUid = userCred.user?.uid || '';
+        await signOut(auth);
+      } catch (authErr: any) {
+        if (authErr.code !== 'auth/email-already-in-use') {
+          console.warn('Firebase Auth create user notice:', authErr?.message);
+        }
+      }
+
       const pendingId = `preg_${Date.now()}`;
       const pendingRecord: PendingRegistration = {
         id: pendingId,
+        uid: createdUid || undefined,
         fullName: regFullName.trim(),
         university: regUniversity.trim(),
         studyProgram: regStudyProgram.trim(),
@@ -383,16 +387,6 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
         registrationTime: new Date().toISOString(),
         status: 'Pending Approval'
       };
-
-      // Create Firebase Auth user so credentials exist, but sign out immediately
-      try {
-        await createUserWithEmailAndPassword(auth, cleanEmail, regPassword);
-        await signOut(auth);
-      } catch (authErr: any) {
-        if (authErr.code !== 'auth/email-already-in-use') {
-          console.warn('Firebase Auth create user notice:', authErr?.message);
-        }
-      }
 
       // Store in Firestore collection pending_registrations
       try {
@@ -775,6 +769,8 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
                           )}
                         </button>
                       </form>
+
+
 
                     </motion.div>
                   )}

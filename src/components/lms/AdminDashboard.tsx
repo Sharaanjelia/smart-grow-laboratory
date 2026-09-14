@@ -10,6 +10,7 @@ import {
   SystemLog,
   AttendanceRecord
 } from '../../types';
+import { getTodayDateJakarta } from '../../utils/dateUtils';
 import InternshipRecruitmentManager from './InternshipRecruitmentManager';
 import { 
   ShieldCheck, 
@@ -915,7 +916,7 @@ export default function AdminDashboard({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
               <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Total Presensi Hari Ini</span>
-              <p className="text-2xl font-black text-slate-900 mt-1">{attendance.filter(a => a.date === '2026-07-22').length} Anggota</p>
+              <p className="text-2xl font-black text-slate-900 mt-1">{attendance.filter(a => a.date === getTodayDateJakarta()).length} Anggota</p>
             </div>
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
               <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Rata-rata Jam Kerja</span>

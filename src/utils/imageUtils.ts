@@ -9,6 +9,11 @@ export function resolveImageUrl(url?: string, fallback = '/images/harvest-team-b
   
   const clean = url.trim();
 
+  // If this is the HTCI project image or previous Google Drive link
+  if (clean.includes('1KmNGEPsohEH3huD8aXpSSnE_9ZcXnmrY') || clean.includes('htci')) {
+    return '/images/htci/htci-poster.jpg';
+  }
+
   // Handle Google Drive share links
   // e.g. https://drive.google.com/file/d/1KmNGEPsohEH3huD8aXpSSnE_9ZcXnmrY/view?usp=sharing
   // or https://drive.google.com/open?id=1KmNGEPsohEH3huD8aXpSSnE_9ZcXnmrY

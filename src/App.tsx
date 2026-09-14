@@ -44,6 +44,10 @@ import HycosmartsShowcase from './components/HycosmartsShowcase';
 import SimonaShowcase from './components/SimonaShowcase';
 import LuminetShowcase from './components/LuminetShowcase';
 import FlocifyShowcase from './components/FlocifyShowcase';
+import SmartTbnShowcase from './components/SmartTbnShowcase';
+import HtciShowcase from './components/HtciShowcase';
+import SmartWaterShowcase from './components/SmartWaterShowcase';
+import MopsShowcase from './components/MopsShowcase';
 
 import LoginView from './components/lms/LoginView';
 import LmsLayout from './components/lms/LmsLayout';
@@ -51,12 +55,17 @@ const DirectorDashboard = React.lazy(() => import('./components/lms/DirectorDash
 const AssistantDashboard = React.lazy(() => import('./components/lms/AssistantDashboard'));
 const StudentDashboard = React.lazy(() => import('./components/lms/StudentDashboard'));
 const AdminDashboard = React.lazy(() => import('./components/lms/AdminDashboard'));
-import { FirebaseSeederModal } from './components/FirebaseSeederModal';
 import { auth, db, uploadAttendancePhotoToStorage, backupPhotoToGoogleDrive } from './firebase';
 import { resolveImageUrl } from './utils/imageUtils';
+import { 
+  getTodayDateJakarta, 
+  getNowTimeJakarta, 
+  determineAttendanceStatus, 
+  calculateWorkDuration 
+} from './utils/dateUtils';
+import ToastContainer from './components/common/Toast';
 import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { collection, onSnapshot, doc, setDoc, deleteDoc, getDoc, getDocs, query, where, limit, orderBy } from 'firebase/firestore';
-import { Database } from 'lucide-react';
 import { 
   ChevronRight, 
   Send, 
@@ -96,7 +105,6 @@ export default function App() {
 
   const [projectCategory, setProjectCategory] = useState<string>('All');
   const [joinModalOpen, setJoinModalOpen] = useState(false);
-  const [isFirebaseSeederOpen, setIsFirebaseSeederOpen] = useState(false);
 
   // ==========================================
   // LABORATORY MANAGEMENT SYSTEM (LMS) STATE
@@ -136,9 +144,10 @@ export default function App() {
   const [projectsList, setProjectsList] = useState<ProjectItem[]>(projectsData);
   const [teamList, setTeamList] = useState<TeamMember[]>(teamData);
 
-  // Sync newsList & teamList whenever newsData or teamData is updated
+  // Sync newsList, projectsList & teamList whenever data is updated
   useEffect(() => {
     setNewsList(newsData);
+    setProjectsList(projectsData);
     setTeamList(teamData);
   }, []);
 
@@ -219,22 +228,35 @@ export default function App() {
   };
 
   useEffect(() => {
-    // Clear any stale localStorage session — Firebase auth is the single source of truth
-    try { localStorage.removeItem('smartgrow_session_user'); } catch (_) {}
+    // 1. Initial session restoration from localStorage
+    try {
+      const savedSession = localStorage.getItem('smartgrow_session_user');
+      if (savedSession) {
+        const parsed = JSON.parse(savedSession);
+        if (parsed && (parsed.email || parsed.id)) {
+          setCurrentUser(enforceStrictUserRole(parsed));
+          setAuthLoading(false);
+        }
+      }
+    } catch (_) {}
 
+    // 2. Listen to Firebase Authentication state changes
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        const cleanEmail = (firebaseUser.email || '').toLowerCase();
+        const cleanEmail = (firebaseUser.email || '').toLowerCase().trim();
 
         // 1. Check if user is in pending_registrations and still pending/rejected
+        let pendingRecord: PendingRegistration | null = null;
         try {
           const qPending = query(collection(db, 'pending_registrations'), where('email', '==', cleanEmail));
           const snapPending = await getDocs(qPending);
           if (!snapPending.empty) {
             const docs = snapPending.docs.map(d => d.data() as PendingRegistration);
             docs.sort((a, b) => new Date(b.registrationTime || 0).getTime() - new Date(a.registrationTime || 0).getTime());
-            if (docs[0].status === 'Pending Approval' || docs[0].status === 'Rejected') {
+            pendingRecord = docs[0];
+            if (pendingRecord.status === 'Pending Approval' || pendingRecord.status === 'Rejected') {
               await signOut(auth);
+              try { localStorage.removeItem('smartgrow_session_user'); } catch (_) {}
               setCurrentUser(null);
               setAuthLoading(false);
               return;
@@ -250,29 +272,64 @@ export default function App() {
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
           if (userDoc.exists()) {
             matchedUser = userDoc.data() as User;
+          } else {
+            // Fallback: search users collection by email
+            const qUsers = query(collection(db, 'users'), where('email', '==', cleanEmail));
+            const snapUsers = await getDocs(qUsers);
+            if (!snapUsers.empty) {
+              matchedUser = snapUsers.docs[0].data() as User;
+            }
           }
         } catch (err) {
           console.warn('Error fetching Firestore user profile:', err);
         }
 
+        // 3. Fallback: check in-memory state or initial users
         if (!matchedUser && cleanEmail) {
           matchedUser = users.find(u => (u.email || '').toLowerCase() === cleanEmail) ||
             initialUsers.find(u => (u.email || '').toLowerCase() === cleanEmail) || null;
         }
 
-        // 3. Block auto-login ONLY if status is explicitly set and NOT 'active'
-        // (Users from initialUsers may not have status field — those are valid demo accounts)
+        // 4. Fallback: If student was approved in pending_registrations, construct active User record
+        if (!matchedUser && pendingRecord && pendingRecord.status === 'Approved') {
+          const generatedInternId = pendingRecord.internId || 'SGL-INT-2026-001';
+          matchedUser = {
+            id: firebaseUser.uid,
+            name: pendingRecord.fullName,
+            email: cleanEmail,
+            role: 'student',
+            title: 'Mahasiswa Magang Riset',
+            studentId: '',
+            internId: generatedInternId,
+            institution: pendingRecord.university || '',
+            major: pendingRecord.studyProgram || '',
+            specialty: pendingRecord.division || '',
+            phone: '',
+            address: '',
+            avatar: '',
+            bio: '',
+            github: '',
+            linkedin: '',
+            portfolio: '',
+            skillsList: [],
+            joinedDate: new Date().toISOString().split('T')[0],
+            status: 'active',
+            isNewStudent: true
+          };
+        }
+
+        // 5. Block auto-login ONLY if no user matched at all
         if (!matchedUser) {
-          // No matching user profile found — block login
           await signOut(auth);
+          try { localStorage.removeItem('smartgrow_session_user'); } catch (_) {}
           setCurrentUser(null);
           setAuthLoading(false);
           return;
         }
 
         if (matchedUser.status && matchedUser.status !== 'active') {
-          // Explicitly inactive/pending/rejected account — block login
           await signOut(auth);
+          try { localStorage.removeItem('smartgrow_session_user'); } catch (_) {}
           setCurrentUser(null);
           setAuthLoading(false);
           return;
@@ -281,26 +338,45 @@ export default function App() {
         // Strictly enforce that non-director emails cannot be director
         matchedUser = enforceStrictUserRole(matchedUser);
 
-        // Sync active status in Firestore for valid approved users
+        // Sync active status & UID in Firestore for valid approved users
         try {
-          await setDoc(doc(db, 'users', firebaseUser.uid), { role: matchedUser.role, status: 'active' }, { merge: true });
+          await setDoc(doc(db, 'users', firebaseUser.uid), { ...matchedUser, id: firebaseUser.uid, status: 'active' }, { merge: true });
         } catch (e: any) {
           console.warn('Sync active status on auth change notice:', e?.message);
         }
 
         setCurrentUser(matchedUser);
+        setUsers(prev => {
+          if (prev.some(u => (u.email || '').toLowerCase() === cleanEmail)) {
+            return prev.map(u => (u.email || '').toLowerCase() === cleanEmail ? { ...u, ...matchedUser! } : u);
+          }
+          return [matchedUser!, ...prev];
+        });
+        try {
+          localStorage.setItem('smartgrow_session_user', JSON.stringify(matchedUser));
+        } catch (_) {}
         setAuthLoading(false);
       } else {
+        // No Firebase Auth user — check if localStorage has an active demo/preset session
+        try {
+          const savedSession = localStorage.getItem('smartgrow_session_user');
+          if (savedSession) {
+            const parsed = JSON.parse(savedSession);
+            if (parsed && (parsed.email || parsed.id)) {
+              setCurrentUser(enforceStrictUserRole(parsed));
+              setAuthLoading(false);
+              return;
+            }
+          }
+        } catch (_) {}
+
         setCurrentUser(null);
         setAuthLoading(false);
-        if (currentPage === 'dashboard') {
-          setCurrentPage('login');
-        }
       }
     });
 
     return () => unsubscribe();
-  }, [currentPage, users]);
+  }, []);
 
   // LMS Handlers
   const handleLogin = (user: User) => {
@@ -503,36 +579,63 @@ export default function App() {
   // Private data loaded via authenticated listener (active only when logged in).
 
   const handleCheckIn = async (studentId: string, studentName: string, rawPhotoUrl?: string, locationAddress?: string) => {
-    const today = new Date().toISOString().split('T')[0];
-    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    // Determine status (if after 08:30 AM = late)
-    const hour = new Date().getHours();
-    const minute = new Date().getMinutes();
-    const isLate = hour > 8 || (hour === 8 && minute > 30);
+    const today = getTodayDateJakarta();
+    const nowTime = getNowTimeJakarta();
+    const nowTimestamp = Date.now();
 
-    // 1. Upload selfie photo to Firebase Storage `attendance/` folder
-    let publicPhotoUrl = rawPhotoUrl || '';
-    if (rawPhotoUrl && rawPhotoUrl.startsWith('data:image')) {
-      publicPhotoUrl = await uploadAttendancePhotoToStorage(rawPhotoUrl, studentId);
+    // 1. DUPLICATE CHECK-IN GUARD (Requirement #2)
+    const alreadyCheckedIn = attendance.some(a => {
+      if (a.date !== today) return false;
+      if (a.studentId === studentId) return true;
+      if (currentUser && (a.studentId === currentUser.id || a.studentId === currentUser.studentId)) return true;
+      if (currentUser?.name && a.studentName) {
+        const cleanUser = currentUser.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const cleanRec = a.studentName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (cleanUser && cleanRec && (cleanUser.includes(cleanRec) || cleanRec.includes(cleanUser))) return true;
+      }
+      return false;
+    });
+
+    if (alreadyCheckedIn) {
+      console.warn(`[Duplicate Check-In Guard] Mahasiswa ${studentName} sudah check-in hari ini (${today}).`);
+      return;
     }
 
-    // 2. Trigger async background GDrive backup
-    const gdriveStatus = await backupPhotoToGoogleDrive(publicPhotoUrl, studentName, today);
+    const calculatedStatus = determineAttendanceStatus(new Date(nowTimestamp));
+
+    // 2. Process selfie photo (Requirement #6: use actual selfie photo)
+    let publicPhotoUrl = rawPhotoUrl || '';
+    if (rawPhotoUrl && rawPhotoUrl.startsWith('data:image')) {
+      try {
+        publicPhotoUrl = await uploadAttendancePhotoToStorage(rawPhotoUrl, studentId);
+      } catch (_) {
+        publicPhotoUrl = rawPhotoUrl;
+      }
+    }
 
     // Get current user details for division & mentor
-    const currentStudentObj = users.find(u => u.id === studentId || u.name === studentName);
+    const currentStudentObj = users.find(u => 
+      u.id === studentId || 
+      u.name === studentName || 
+      (u.name && studentName && u.name.toLowerCase().replace(/[^a-z0-9]/g, '') === studentName.toLowerCase().replace(/[^a-z0-9]/g, ''))
+    );
+
+    const resolvedPhoto = publicPhotoUrl || rawPhotoUrl || currentStudentObj?.avatar || '/images/team/shara.jpg';
+
+    // Deterministic doc ID to enforce SATU STUDENT + SATU TANGGAL = SATU ATTENDANCE RECORD
+    const docId = `att_${studentId}_${today}`;
 
     const record: AttendanceRecord = {
-      id: `att_${Date.now()}`,
+      id: docId,
       studentId,
-      internshipId: currentStudentObj?.studentId || `13012100${Math.floor(10 + Math.random() * 89)}`,
+      internshipId: currentStudentObj?.studentId || currentStudentObj?.internId || '',
       studentName,
       division: currentStudentObj?.specialty || currentStudentObj?.title || 'IoT & Hardware Engineering',
       mentor: currentStudentObj?.advisor || 'Prof. Dr. Indrarini Dyah Irawati',
       date: today,
-      checkInTime: now,
-      status: isLate ? 'late' : 'present',
+      checkInTime: nowTime,
+      checkInTimestamp: nowTimestamp,
+      status: calculatedStatus,
       location: locationAddress || 'Smart Grow Laboratory • Area Bandung Techno Park (BTP) Telkom University',
       address: 'Jl. Telekomunikasi No.1, Sukapura, Dayeuhkolot, Bandung, Jawa Barat 40257',
       latitude: -6.9706,
@@ -542,20 +645,28 @@ export default function App() {
       deviceName: navigator.userAgent.includes('Windows') ? 'Windows PC' : navigator.userAgent.includes('Mac') ? 'MacBook Pro' : 'Mobile Device',
       browser: navigator.userAgent.includes('Chrome') ? 'Chrome' : 'Browser Web',
       operatingSystem: navigator.platform || 'Desktop',
-      checkInPhoto: publicPhotoUrl,
-      photoUrl: publicPhotoUrl,
-      firebaseStorageUrl: publicPhotoUrl,
+      checkInPhoto: resolvedPhoto,
+      photoUrl: resolvedPhoto,
+      firebaseStorageUrl: resolvedPhoto,
       photoFileName: `selfie_${studentId}_${today}.jpg`,
       photoSize: '245 KB',
       photoResolution: '640x480',
-      gdriveBackupStatus: gdriveStatus,
-      dailyNotes: 'Monitoring Smart Farming & Kalibrasi Sensor pH/EC',
+      gdriveBackupStatus: 'synced',
+      dailyNotes: 'Presensi harian riset Smart Grow Laboratory',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
-    setAttendance(prev => [record, ...prev]);
-    saveToFirestore('attendance', record.id, record);
+    // Update state IMMEDIATELY so UI reflects attendance with zero delay
+    setAttendance(prev => {
+      if (prev.some(a => a.id === docId || (a.studentId === studentId && a.date === today))) {
+        return prev.map(a => (a.id === docId || (a.studentId === studentId && a.date === today)) ? record : a);
+      }
+      return [record, ...prev];
+    });
+
+    // Save directly to Firestore
+    await saveToFirestore('attendance', docId, record);
 
     // Save System Log
     const logObj: SystemLog = {
@@ -563,31 +674,65 @@ export default function App() {
       timestamp: new Date().toLocaleString('id-ID'),
       user: studentName,
       action: 'PRESENSI_CHECKIN',
-      details: `Presensi check-in selfie terverifikasi BTP Telkom University (Jam ${now} WIB)`
+      details: `Presensi check-in selfie terverifikasi BTP Telkom University (Jam ${nowTime})`
     };
     setSystemLogs(prev => [logObj, ...prev]);
     saveToFirestore('system_logs', logObj.id, logObj);
+
+    // Async background GDrive backup trigger (non-blocking)
+    backupPhotoToGoogleDrive(resolvedPhoto, studentName, today).catch(e => console.info('GDrive sync notice:', e));
   };
 
   const handleCheckOut = async (studentId: string) => {
-    const today = new Date().toISOString().split('T')[0];
-    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const today = getTodayDateJakarta();
+    const nowTime = getNowTimeJakarta();
+    const nowTimestamp = Date.now();
 
-    setAttendance(prev => prev.map(a => {
-      if (a.studentId === studentId && (a.date === today || a.date === '2026-07-22')) {
-        const updated: AttendanceRecord = { 
-          ...a, 
-          checkOutTime: now,
-          workDuration: '7 Jam 45 Menit',
-          duration: '7 Jam 45 Menit',
-          status: (a.status === 'late' ? 'late' : 'checked_out') as any,
-          updatedAt: new Date().toISOString()
-        };
-        saveToFirestore('attendance', a.id, updated);
-        return updated;
-      }
-      return a;
-    }));
+    // Find existing check-in record for this student today
+    const targetRecord = attendance.find(a => 
+      (a.studentId === studentId || (currentUser && a.studentId === currentUser.id)) && 
+      a.date === today
+    );
+
+    if (!targetRecord) {
+      console.warn(`[Check-Out Notice] Tidak ada catatan check-in hari ini (${today}) untuk ${studentId}`);
+      return;
+    }
+
+    if (targetRecord.checkOutTime) {
+      console.warn(`[Check-Out Notice] Sudah checkout hari ini (${targetRecord.checkOutTime})`);
+      return;
+    }
+
+    const durationText = calculateWorkDuration(
+      targetRecord.checkInTimestamp,
+      nowTimestamp,
+      targetRecord.checkInTime,
+      nowTime
+    );
+
+    const updated: AttendanceRecord = { 
+      ...targetRecord, 
+      checkOutTime: nowTime,
+      checkOutTimestamp: nowTimestamp,
+      workDuration: durationText,
+      duration: durationText,
+      updatedAt: new Date().toISOString()
+    };
+
+    setAttendance(prev => prev.map(a => a.id === targetRecord.id ? updated : a));
+    saveToFirestore('attendance', targetRecord.id, updated);
+
+    // Save System Log
+    const logObj: SystemLog = {
+      id: `log_${Date.now()}`,
+      timestamp: new Date().toLocaleString('id-ID'),
+      user: targetRecord.studentName || currentUser?.name || 'Mahasiswa',
+      action: 'PRESENSI_CHECKOUT',
+      details: `Check-out presensi harian berhasil (Jam ${nowTime} • Durasi: ${durationText})`
+    };
+    setSystemLogs(prev => [logObj, ...prev]);
+    saveToFirestore('system_logs', logObj.id, logObj);
   };
 
   const handleSubmitTaskProgress = async (taskId: string, notes: string, links: { github?: string; docs?: string }) => {
@@ -773,9 +918,9 @@ export default function App() {
 
     // Construct active user record for student with NO DUMMY FIELDS (Requirement #6 & #9)
     const newStudentUser: User = {
-      id: pendingReg.id || `user_act_${Date.now()}`,
+      id: pendingReg.uid || pendingReg.id || `user_act_${Date.now()}`,
       name: pendingReg.fullName,
-      email: pendingReg.email,
+      email: (pendingReg.email || '').trim().toLowerCase(),
       role: 'student',
       title: 'Mahasiswa Magang Riset',
       studentId: '', // NIM empty per Req #6 & #9
@@ -806,6 +951,9 @@ export default function App() {
     try {
       await setDoc(doc(db, 'pending_registrations', pendingReg.id), JSON.parse(JSON.stringify(updated)));
       await setDoc(doc(db, 'users', newStudentUser.id), JSON.parse(JSON.stringify(newStudentUser)), { merge: true });
+      if (pendingReg.id && pendingReg.id !== newStudentUser.id) {
+        await setDoc(doc(db, 'users', pendingReg.id), JSON.parse(JSON.stringify(newStudentUser)), { merge: true });
+      }
 
       // Trigger Firebase Auth password reset email for account activation / login notification (Requirement #3)
       try {
@@ -842,30 +990,54 @@ export default function App() {
   // PUBLIC REALTIME LISTENERS — Active on all pages (news & showcase projects)
   // =========================================================================
   useEffect(() => {
+    // 1. Projects listener: Merge Firestore docs with built-in projectsData (guarantees smart-tbn is always present)
     const unsubProjects = onSnapshot(collection(db, 'projects'), (snapshot) => {
-      if (!snapshot.empty) {
-        const list: ProjectItem[] = [];
-        snapshot.forEach(docSnap => list.push(docSnap.data() as ProjectItem));
-        setProjectsList(list);
-      }
-    }, (err) => console.warn('Projects listener notice:', err));
+      const projectMap = new Map<string, ProjectItem>();
+      // Pre-populate with built-in projects
+      projectsData.forEach(p => projectMap.set(p.id, p));
 
-    const unsubNews = onSnapshot(collection(db, 'news'), (snapshot) => {
       if (!snapshot.empty) {
-        const oldDocIds = new Set(['hycosmarts-container', 'simona-aquaponics', 'luminet-smart-lighting', 'flocify-biofloc-ai']);
-        const list: NewsItem[] = [];
         snapshot.forEach(docSnap => {
-          const data = docSnap.data() as NewsItem;
-          if (!oldDocIds.has(data.id)) {
-            list.push(data);
+          const data = docSnap.data() as ProjectItem;
+          if (data && data.id) {
+            projectMap.set(data.id, data);
           }
         });
-        if (list.length > 0) {
-          setNewsList(list);
-        } else {
-          setNewsList(newsData);
-        }
       }
+      setProjectsList(Array.from(projectMap.values()));
+    }, (err) => console.warn('Projects listener notice:', err));
+
+    // Auto-sync smart-tbn, smart-water, and mops to Firestore
+    const smartTbnProject = projectsData.find(p => p.id === 'smart-tbn');
+    if (smartTbnProject) {
+      setDoc(doc(db, 'projects', 'smart-tbn'), JSON.parse(JSON.stringify(smartTbnProject)), { merge: true }).catch(() => {});
+    }
+    const smartWaterProject = projectsData.find(p => p.id === 'smart-water');
+    if (smartWaterProject) {
+      setDoc(doc(db, 'projects', 'smart-water'), JSON.parse(JSON.stringify(smartWaterProject)), { merge: true }).catch(() => {});
+    }
+    const mopsProject = projectsData.find(p => p.id === 'mops');
+    if (mopsProject) {
+      setDoc(doc(db, 'projects', 'mops'), JSON.parse(JSON.stringify(mopsProject)), { merge: true }).catch(() => {});
+    }
+
+    // 2. News listener: Merge Firestore docs with built-in newsData
+    const unsubNews = onSnapshot(collection(db, 'news'), (snapshot) => {
+      const newsMap = new Map<string, NewsItem>();
+      // Pre-populate with built-in newsData
+      newsData.forEach(n => newsMap.set(n.id, n));
+
+      if (!snapshot.empty) {
+        const oldDocIds = new Set(['hycosmarts-container', 'simona-aquaponics', 'luminet-smart-lighting', 'flocify-biofloc-ai']);
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data() as NewsItem;
+          if (data && data.id && !oldDocIds.has(data.id)) {
+            newsMap.set(data.id, data);
+          }
+        });
+      }
+      newsMap.delete('smart-tbn-goes-to-sumba');
+      setNewsList(Array.from(newsMap.values()));
     }, (err) => console.warn('News listener notice:', err));
 
     return () => {
@@ -923,7 +1095,10 @@ export default function App() {
       const unsubAttendance = onSnapshot(collection(db, 'attendance'), (snapshot) => {
         if (!snapshot.empty) {
           const list: AttendanceRecord[] = [];
-          snapshot.forEach(docSnap => list.push(docSnap.data() as AttendanceRecord));
+          snapshot.forEach(docSnap => {
+            const data = docSnap.data() as AttendanceRecord;
+            list.push({ id: docSnap.id, ...data });
+          });
           setAttendance(list);
         }
       }, (err) => console.warn('Attendance listener notice:', err));
@@ -1018,15 +1193,6 @@ export default function App() {
   // Project Gallery slider index
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
 
-  // Gamified Sensor Simulation State
-  const [simulatedSensors, setSimulatedSensors] = useState([
-    { name: 'pH Level', value: 6.2, unit: 'pH', minSafe: 5.5, maxSafe: 6.5, step: 0.1 },
-    { name: 'Total Dissolved Solids (TDS)', value: 1150, unit: 'ppm', minSafe: 800, maxSafe: 1400, step: 50 },
-    { name: 'Dissolved Oxygen (DO)', value: 7.8, unit: 'mg/L', minSafe: 6.0, maxSafe: 9.0, step: 0.2 },
-    { name: 'Electrical Conductivity (EC)', value: 1.8, unit: 'mS/cm', minSafe: 1.2, maxSafe: 2.2, step: 0.1 },
-    { name: 'Ambient Temp', value: 24.5, unit: '°C', minSafe: 18.0, maxSafe: 28.0, step: 0.5 }
-  ]);
-
   // Join form state
   const [joinForm, setJoinForm] = useState({
     name: '',
@@ -1114,13 +1280,6 @@ export default function App() {
     }, 2500);
   };
 
-  // Adjust active simulated sensor values
-  const updateSimulatedSensor = (index: number, val: number) => {
-    const updated = [...simulatedSensors];
-    updated[index].value = parseFloat(val.toFixed(1));
-    setSimulatedSensors(updated);
-  };
-
   // Scroll to top when page changes
   const handleNavigate = (page: PageId) => {
     setCurrentPage(page);
@@ -1130,13 +1289,9 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Helper to check if a sensor is within safe range
-  const isSensorSafe = (sensor: typeof simulatedSensors[0]) => {
-    return sensor.value >= sensor.minSafe && sensor.value <= sensor.maxSafe;
-  };
-
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-white text-slate-800 font-sans selection:bg-teal-500 selection:text-white relative">
+      <ToastContainer />
       
       {/* Subtle light background hints */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-teal-500/5 rounded-full blur-[100px] pointer-events-none"></div>
@@ -1217,7 +1372,11 @@ export default function App() {
               onAddPublicProject={handleAddProject}
               onEditPublicProject={handleEditProject}
               onDeletePublicProject={handleDeleteProject}
-              onNavigateToShowcase={(projId) => handleNavigate(projId as PageId)}
+              onNavigateToShowcase={(projId) => {
+                setCurrentPage('project');
+                setSelectedProjectId(projId);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               onUpdateProfile={handleUpdateUser}
               darkMode={darkMode}
               language={language}
@@ -1255,7 +1414,11 @@ export default function App() {
               onAddPublicProject={handleAddProject}
               onEditPublicProject={handleEditProject}
               onDeletePublicProject={handleDeleteProject}
-              onNavigateToShowcase={(projId) => handleNavigate(projId as PageId)}
+              onNavigateToShowcase={(projId) => {
+                setCurrentPage('project');
+                setSelectedProjectId(projId);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               onUpdateProfile={handleUpdateUser}
               darkMode={darkMode}
               language={language}
@@ -1266,6 +1429,7 @@ export default function App() {
             <StudentDashboard
               currentUser={currentUser}
               activeTab={lmsActiveTab}
+              onNavigateTab={setLmsActiveTab}
               tasks={tasks}
               attendance={attendance}
               projects={lmsProjects}
@@ -1545,7 +1709,11 @@ export default function App() {
                           src={resolveImageUrl(proj.image)}
                           alt={proj.title}
                           referrerPolicy="no-referrer"
-                          className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                          className={`h-full w-full transition-transform duration-700 group-hover:scale-105 ${
+                            (proj.image || '').includes('logo') || (proj.image || '').includes('poster') || (proj.image || '').includes('brochure') || proj.id === 'smart-tbn' || proj.id === 'proj_1788926059725' || proj.id === 'smart-water'
+                              ? 'object-contain p-2 bg-slate-950'
+                              : 'object-cover object-center'
+                          }`}
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg';
                           }}
@@ -1871,6 +2039,7 @@ export default function App() {
                   {[
                     { label: 'Semua Projek', value: 'All' },
                     { label: 'IoT & Telemetri', value: 'IoT' },
+                    { label: 'Smart Waste', value: 'Waste' },
                     { label: 'Hidroponik', value: 'Hydroponics' },
                     { label: 'Akuaponik', value: 'Aquaponics' },
                     { label: 'Smart Container', value: 'Container-based' }
@@ -1946,8 +2115,8 @@ export default function App() {
                                 alt={project.title}
                                 referrerPolicy="no-referrer"
                                 className={`h-full w-full transition-transform duration-700 group-hover:scale-105 ${
-                                  (project.image || '').includes('logo') 
-                                    ? 'object-contain p-6 bg-slate-950' 
+                                  (project.image || '').includes('logo') || (project.image || '').includes('poster') || (project.image || '').includes('brochure') || (project.image || '').includes('mops') || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water' || project.id === 'mops'
+                                    ? 'object-contain p-2 bg-slate-950' 
                                     : 'object-cover object-center'
                                 }`}
                                 onError={(e) => {
@@ -1963,6 +2132,21 @@ export default function App() {
                                 </span>
                               </div>
 
+                              {/* Direct Website / App Badge if liveUrl exists */}
+                              {(project.liveUrl || project.id === 'mops' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
+                                <a
+                                  href={project.liveUrl || (project.id === 'mops' ? 'https://mops-5f51b.web.app/' : project.id === 'smart-tbn' ? 'https://smarttrash.devtbn.tech/' : project.id === 'smart-water' ? 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing' : 'https://htci.netlify.app/')}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/80 hover:bg-emerald-600 text-white text-[11px] font-bold backdrop-blur-md border border-white/20 transition-all hover:scale-105 shadow-md z-10"
+                                  title={project.id === 'smart-water' ? 'Unduh Aplikasi Smart Water' : `Kunjungi Website Resmi ${project.title}`}
+                                >
+                                  <span>{project.id === 'smart-water' || (project.liveUrl || '').includes('drive.google.com') ? 'Unduh App' : 'Kunjungi Web'}</span>
+                                  <ExternalLink className="h-3 w-3" />
+                                </a>
+                              )}
+                              
                               {/* Overlay Date Badge */}
                               <div className="absolute bottom-4 left-4 flex items-center gap-1.5 bg-slate-950/70 border border-white/10 backdrop-blur-md px-3 py-1 rounded-full text-[10px] text-white font-mono font-medium">
                                 <Calendar className="h-3 w-3 text-emerald-400" />
@@ -1989,8 +2173,23 @@ export default function App() {
                             <span className="font-sans text-xs font-bold text-teal-600 group-hover:underline flex items-center gap-1.5">
                               Lihat Spesifikasi & Diagnostik
                             </span>
-                            <div className="h-8 w-8 rounded-full bg-slate-50 group-hover:bg-teal-50 flex items-center justify-center text-slate-400 group-hover:text-teal-600 transition-all">
-                              <ArrowUpRight className="h-4 w-4" />
+                            <div className="flex items-center gap-2">
+                              {(project.liveUrl || project.id === 'mops' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
+                                <a
+                                  href={project.liveUrl || (project.id === 'mops' ? 'https://mops-5f51b.web.app/' : project.id === 'smart-tbn' ? 'https://smarttrash.devtbn.tech/' : project.id === 'smart-water' ? 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing' : 'https://htci.netlify.app/')}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white text-[11px] font-bold border border-emerald-200 transition-all hover:scale-105 cursor-pointer"
+                                  title={project.id === 'smart-water' ? 'Unduh Aplikasi Smart Water' : `Buka Web Resmi ${project.title}`}
+                                >
+                                  <span>{project.id === 'smart-water' || (project.liveUrl || '').includes('drive.google.com') ? 'Unduh App' : 'Kunjungi Web'}</span>
+                                  <ExternalLink className="h-3 w-3" />
+                                </a>
+                              )}
+                              <div className="h-8 w-8 rounded-full bg-slate-50 group-hover:bg-teal-50 flex items-center justify-center text-slate-400 group-hover:text-teal-600 transition-all">
+                                <ArrowUpRight className="h-4 w-4" />
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -2044,6 +2243,69 @@ export default function App() {
                 if (project.id === 'flocify') {
                   return (
                     <FlocifyShowcase
+                      item={project}
+                      onBack={() => {
+                        setSelectedProjectId(null);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
+                  );
+                }
+
+                if (project.id === 'smart-tbn' || project.id?.includes('tbn')) {
+                  return (
+                    <SmartTbnShowcase
+                      item={project}
+                      onBack={() => {
+                        setSelectedProjectId(null);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
+                  );
+                }
+
+                if (
+                  project.id === 'proj_1788926059725' || 
+                  project.id === 'htci' || 
+                  project.id?.includes('htci') || 
+                  project.title?.toLowerCase().includes('hydrothermal') || 
+                  project.title?.toLowerCase().includes('htci')
+                ) {
+                  return (
+                    <HtciShowcase
+                      item={project}
+                      onBack={() => {
+                        setSelectedProjectId(null);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
+                  );
+                }
+
+                if (
+                  project.id === 'smart-water' || 
+                  project.id?.includes('water') || 
+                  project.title?.toLowerCase().includes('smart water')
+                ) {
+                  return (
+                    <SmartWaterShowcase
+                      item={project}
+                      onBack={() => {
+                        setSelectedProjectId(null);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
+                  );
+                }
+
+                if (
+                  project.id === 'mops' || 
+                  project.id?.includes('mops') || 
+                  project.title?.toLowerCase().includes('mops') ||
+                  project.title?.toLowerCase().includes('persampahan kota bandung')
+                ) {
+                  return (
+                    <MopsShowcase
                       item={project}
                       onBack={() => {
                         setSelectedProjectId(null);

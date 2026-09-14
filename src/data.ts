@@ -114,6 +114,36 @@ Dalam pertemuan ini, tim laboratorium mendemonstrasikan sistem pengontrolan mult
         timestamp: '2026-07-15 14:10'
       }
     ]
+  },
+  {
+    id: 'peluncuran-mops-smart-waste-bandung',
+    title: 'Peluncuran MOPS: Sistem Monitoring & Operasional Persampahan Kota Bandung Berbasis IoT',
+    tagline: 'Solusi Cerdas Pengendalian Luberan Sampah TPS & Rute Logistik Truk Sampah Terpadu',
+    category: 'Smart City & Waste Management',
+    date: '14 September 2026',
+    image: '/images/mops/mops-hardware-installation.png',
+    excerpt: 'Smart Grow Laboratory bersama mitra kota cerdas meluncurkan platform MOPS, sistem monitoring volume sampah TPS real-time dengan sensor ToF, kamera CCTV cerdas, dan portal publik terintegrasi.',
+    content: `Tim Smart Grow Laboratory resmi memperkenalkan MOPS (Sistem Monitoring & Operasional Persampahan Kota Bandung).
+
+MOPS dirancang untuk mengatasi persoalan penumpukan sampah di berbagai Tempat Pembuangan Sementara (TPS) Kota Bandung dengan memadukan sensor jarak Time-of-Flight (TOF400F), kamera IP outdoor TP-Link VIGI C340, dan kontroler edge computing.
+
+### Fitur Utama Platform MOPS:
+* **Monitoring Real-Time:** Deteksi ketinggian timbunan sampah TPS dengan akurasi tinggi dan visual CCTV real-time.
+* **Smart Alert & Dispatching:** Notifikasi otomatis saat volume TPS mencapai ambang kritis (85%+) untuk penjemputan armada truk terdekat.
+* **Portal Publik & Edukasi Warga:** Warga Kota Bandung dapat memantau kondisi TPS sekitar, mengajukan laporan luberan sampah, dan membaca artikel edukasi pemilahan sampah.
+* **Dashboard Berbasis Peran:** Mendukung Super Admin, Supervisor Kecamatan, dan Operator Lapangan untuk tata kelola operasional yang terintegrasi.
+
+Platform ini dapat diakses secara langsung oleh publik dan dinas melalui tautan resmi https://mops-5f51b.web.app/`,
+    readTime: '4 min',
+    comments: [
+      {
+        id: 'c_mops_news1',
+        name: 'Dinas Lingkungan Hidup Kota Bandung',
+        email: 'dlh@bandung.go.id',
+        content: 'Platform MOPS sangat krusial dalam mempercepat respon penjemputan sampah sebelum terjadi tumpukan luber di TPS perkotaan.',
+        timestamp: '2026-09-14 09:30'
+      }
+    ]
   }
 ];
 
@@ -332,6 +362,190 @@ export const projectsData: ProjectItem[] = [
         minSafe: 7.0,
         maxSafe: 7.8,
         description: 'Monitors nitrifying bacterial environment for stable biofloc C:N ratio transformation.'
+      }
+    ]
+  },
+  {
+    id: 'smart-tbn',
+    title: 'Smart TBN',
+    tagline: 'Tempat Sampah Pintar dengan Notifikasi Real-Time Berbasis IoT',
+    category: 'Smart Waste Management',
+    description: 'Smart Trash Bin Notification (Smart TBN) adalah sistem tempat sampah pintar berbasis IoT yang memantau ketinggian, kapasitas, dan bobot timbunan sampah secara real-time disertai kamera visual dan notifikasi otomatis ke petugas di Desa Wisata Kampung Raja Prailiu, Sumba NTT.',
+    fullDescription: 'Smart Trash Bin Notification (Smart TBN) hadir di Kampung Raja Prailiu, Waingapu, Sumba, Nusa Tenggara Timur. Pada 27 Juli 2026, tim peneliti Telkom University bersama PT Tigaresi Bangun Nusaperdana melaksanakan sosialisasi dan implementasi Smart TBN bersama masyarakat Kampung Raja Prailiu. Smart TBN merupakan tempat sampah pintar berbasis Internet of Things (IoT) yang memantau kondisi tempat sampah secara real-time melalui ketinggian dan kapasitas timbunan sampah, serta informasi visual dari kamera. Sistem juga dapat memberikan notifikasi ketika kondisi sampah mencapai ambang yang telah ditentukan.\n\nKampung Raja Prailiu dipilih karena merupakan desa wisata berbasis budaya dengan rumah adat, tradisi tenun ikat, dan berbagai kerajinan masyarakat yang menjadi daya tarik bagi wisatawan. Dalam kawasan seperti ini, kebersihan lingkungan tidak hanya berkaitan dengan pengelolaan sampah, tetapi juga berpengaruh langsung terhadap kenyamanan pengunjung, kualitas lingkungan, citra destinasi, pelestarian lingkungan, serta keberlanjutan aktivitas wisata dan ekonomi masyarakat setempat.\n\nRangkaian kegiatan meliputi sosialisasi, demonstrasi Smart TBN, penjelasan sistem pemantauan, hingga serah terima unit Smart TBN. Kegiatan ini juga memperlihatkan kekayaan Kampung Raja Prailiu melalui rumah adat, tenun ikat dengan alat tenun gedogan, kerajinan masyarakat, serta bentang alam khas Sumba.\n\nTim Peneliti Telkom University:\n1. Prof. Dr. Indrarini Dyah Irawati, S.T., M.T. - Ketua Tim Peneliti\n2. Vivi Monika, S.T., M.T.\n3. Prof. Dr. Augustine Asih Rumanti, S.T., M.T.\n4. Mohammad As’ad Rosyadi, S.Pd., M.T.\n\nMitra Industri:\nPT Tigaresi Bangun Nusaperdana\n\nKolaborasi antara perguruan tinggi, mitra industri, dan masyarakat menjadi langkah penting dalam menghadirkan inovasi teknologi yang relevan dengan kebutuhan kawasan serta mendukung pengelolaan lingkungan dan pengembangan desa wisata yang berkelanjutan.',
+    image: '/images/smart-tbn/smart-tbn-poster.png',
+    gallery: [
+      '/images/smart-tbn/smart-tbn-poster.png'
+    ],
+    date: '2026-09-10',
+    liveUrl: 'https://smarttrash.devtbn.tech/',
+    sensors: [
+      {
+        name: 'Tingkat Ketinggian Sampah',
+        value: 45,
+        unit: '%',
+        minSafe: 0,
+        maxSafe: 80,
+        description: 'Sensor ultrasonik presisi mendeteksi kapasitas volume timbunan sampah secara real-time.'
+      },
+      {
+        name: 'Berat Timbunan Sampah',
+        value: 14.2,
+        unit: 'kg',
+        minSafe: 0,
+        maxSafe: 35.0,
+        description: 'Sensor Load Cell HX711 mengukur massa timbunan sampah untuk efisiensi jadwal pengangkutan.'
+      },
+      {
+        name: 'Jarak Bebas Tutup',
+        value: 48,
+        unit: 'cm',
+        minSafe: 15,
+        maxSafe: 90,
+        description: 'Jarak sensor ke permukaan sampah tertinggi untuk mencegah tumpukan meluap.'
+      },
+      {
+        name: 'Baterai & Solar Telemetry',
+        value: 12.6,
+        unit: 'V',
+        minSafe: 11.2,
+        maxSafe: 14.4,
+        description: 'Tegangan sistem catu daya mandiri panel surya untuk operasional continuous outdoor.'
+      }
+    ]
+  },
+  {
+    id: 'proj_1788926059725',
+    title: 'Hydrothermal Cogenerator Incinerator',
+    tagline: 'Sistem Reaktor Pengolahan Sampah Subkritis Tanpa Asap & Penghasil Energi Bersih',
+    category: 'IoT & Hardware',
+    description: 'HTCI merupakan sistem pengelolaan dan pengolahan sampah terpadu yang memanfaatkan proses hydrothermal cogeneration untuk mengolah sampah organik dan inert menjadi bio-oil, biochar, dan gas yang berpotensi sebagai sumber energi.',
+    fullDescription: 'HTCI merupakan sistem pengelolaan dan pengolahan sampah terpadu yang memanfaatkan proses hydrothermal cogeneration untuk mengolah sampah organik dan inert menjadi produk bernilai guna, seperti bio-oil, biochar, dan gas yang berpotensi sebagai sumber energi. Sistem dilengkapi dengan sensor berbasis IoT, Programmable Logic Controller (PLC), serta algoritma kendali berbasis Artificial Intelligence (AI) untuk melakukan pemantauan dan pengendalian parameter proses secara otomatis, termasuk suhu, tekanan, konsumsi energi, dan emisi.\n\nPelaksanaan proyek mencakup pemetaan dan analisis kebutuhan, perancangan dan pembangunan sistem, instalasi dan pengujian teknologi, pelatihan serta pendampingan operator desa, monitoring dan evaluasi, serta pengembangan pemanfaatan produk hasil pengolahan sampah. Melalui pendekatan teknologi dan pemberdayaan masyarakat tersebut, proyek HTCI diharapkan dapat membangun model pengelolaan sampah desa yang berkelanjutan, mendukung ekonomi sirkular, meningkatkan kapasitas masyarakat, serta menjadi model yang dapat direplikasi di wilayah lainnya.',
+    image: '/images/htci/htci-poster.jpg',
+    gallery: [
+      '/images/htci/htci-poster.jpg'
+    ],
+    date: '2026-09-09',
+    liveUrl: 'https://htci.netlify.app/',
+    sensors: [
+      {
+        name: 'Suhu Reaktor Subkritis',
+        value: 212.5,
+        unit: '°C',
+        minSafe: 180,
+        maxSafe: 250,
+        description: 'Temperatur air panas subkritis pemecah polimer selulosa dan biomassa.'
+      },
+      {
+        name: 'Tekanan Reaktor',
+        value: 2.45,
+        unit: 'MPa',
+        minSafe: 2.0,
+        maxSafe: 3.0,
+        description: 'Tekanan uap tertutup tinggi untuk menjaga fase air subkritis tanpa penguapan liar.'
+      },
+      {
+        name: 'Reduksi Volume',
+        value: 86.4,
+        unit: '%',
+        minSafe: 80,
+        maxSafe: 95,
+        description: 'Persentase penyusutan timbunan sampah setelah perlakuan reaktor termal.'
+      }
+    ]
+  },
+  {
+    id: 'smart-water',
+    title: 'Smart Water',
+    tagline: 'Transformasi Digital Perumda Air Minum Melalui Smart Self Meter Reading Berbasis AI',
+    category: 'AI & Smart Utility',
+    description: 'Smart Water adalah platform Self Meter Reading berbasis AI-OCR yang memungkinkan pelanggan melakukan pencatatan meter air secara mandiri melalui smartphone disertai validasi foto, timestamp, dan koordinat GPS.',
+    fullDescription: 'Transformasi Digital Perumda Air Minum Melalui Smart Self Meter Reading Berbasis AI\n\nMasalah yang Dihadapi PDAM Saat Ini:\n✅ Petugas harus datang ke rumah pelanggan.\n✅ Biaya operasional pembacaan meter tinggi.\n✅ Human error dalam pencatatan angka meter.\n✅ Data terlambat masuk ke sistem.\n✅ Komplain pelanggan terkait tagihan.\n✅ Sulit menjangkau pelanggan di daerah terpencil.\n\nSmart Water adalah platform Self Meter Reading berbasis AI-OCR yang memungkinkan pelanggan melakukan pencatatan meter air secara mandiri melalui smartphone. Solusi ini membantu Perumda Air Minum mengurangi biaya operasional pembacaan meter, meningkatkan akurasi data konsumsi, mempercepat proses penagihan, serta meningkatkan kualitas layanan pelanggan.\n\nManfaat Utama:\n1. Pengurangan biaya operasional petugas meter hingga puluhan persen.\n2. Pengurangan human error pencatatan meter.\n3. Percepatan proses billing dan penagihan pelanggan.\n\nSolusi Smart Water:\n1. Self Meter Reading Berbasis AI-OCR: Pelanggan cukup memfoto meter air. AI akan membaca angka meter secara otomatis.\n2. Tagihan Otomatis Real-Time: Setelah angka terbaca, pemakaian dihitung otomatis, tagihan langsung muncul, dan data tersimpan dalam database cloud.\n3. Validasi Bukti Foto: Setiap pembacaan disertai foto meter, timestamp, dan lokasi GPS untuk akuntabilitas tinggi serta mencegah manipulasi.\n4. Dashboard Monitoring: Manajemen PDAM dapat melihat jumlah pelanggan yang sudah lapor, konsumsi air bulanan, tren penggunaan, dan wilayah dengan anomali pemakaian.\n\nTim Pengembang Smart Grow Lab:\n1. Prof. Dr. Indrarini Dyah Irawati S.T., M.T.\n2. Shara Anjelia\n3. M. Chico DwiKasa',
+    image: '/images/smart-water/smart-water-app.jpg',
+    gallery: [
+      '/images/smart-water/smart-water-app.jpg'
+    ],
+    date: '2026-09-10',
+    liveUrl: 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing',
+    sensors: [
+      {
+        name: 'Akurasi Pengenalan OCR',
+        value: 98.6,
+        unit: '%',
+        minSafe: 90.0,
+        maxSafe: 100.0,
+        description: 'Tingkat akurasi pembacaan angka mekanik meter air oleh model AI Computer Vision.'
+      },
+      {
+        name: 'Rata-rata Waktu Verifikasi',
+        value: 1.4,
+        unit: 'detik',
+        minSafe: 0.5,
+        maxSafe: 3.0,
+        description: 'Kecepatan ekstraksi angka meter air, inferensi lokal, dan kalkulasi tagihan real-time.'
+      },
+      {
+        name: 'Efisiensi Biaya Operasional',
+        value: 68.5,
+        unit: '%',
+        minSafe: 40.0,
+        maxSafe: 85.0,
+        description: 'Estimasi reduksi pengeluaran pembacaan lapangan rutin PDAM setelah adopsi mandiri.'
+      },
+      {
+        name: 'Tingkat Pelaporan Mandiri',
+        value: 84.2,
+        unit: '%',
+        minSafe: 60.0,
+        maxSafe: 100.0,
+        description: 'Persentase pelanggan aktif yang melaporkan angka meter tepat waktu sebelum tanggal cut-off.'
+      }
+    ]
+  },
+  {
+    id: 'mops',
+    title: 'MOPS Kota Bandung',
+    tagline: 'Sistem Monitoring & Operasional Persampahan Kota Bandung Berbasis IoT & Smart City',
+    category: 'Smart Waste & IoT Smart City',
+    description: 'MOPS adalah platform Smart City berbasis IoT dan Web untuk memantau kondisi volume sampah di berbagai TPS Kota Bandung secara real-time, mencegah terjadinya luberan sampah, dan mengefisiensikan rute armada truk sampah.',
+    fullDescription: 'MOPS (Sistem Monitoring & Operasional Persampahan Kota Bandung) merupakan platform inovatif Smart City berbasis Internet of Things (IoT) dan Web yang dirancang secara komprehensif untuk memantau kondisi volume sampah di Tempat Pembuangan Sementara (TPS) se-Kota Bandung secara real-time. Melalui integrasi sensor jarak Time-of-Flight (ToF TOF400F) dan ultrasonik industri, kamera IP outdoor cerdas TP-Link VIGI C340, serta control box edge computing, MOPS secara presisi mendeteksi ketinggian dan volume timbunan sampah, mencegah luberan sampah ke badan jalan, mengantisipasi timbulan bau tidak sedap, serta mengoptimalkan rute logistik armada truk sampah Dinas Lingkungan Hidup (DLH).\n\nPlatform ini terbagi ke dalam 2 ekosistem utama:\n1. Portal Publik Warga Bandung: Menyajikan statistik kebersihan kota, peta monitoring interaktif status TPS (Normal, Hampir Penuh, Penuh/Kritis), feed visual CCTV FPS tinggi, artikel edukasi pemilahan sampah 3R, serta formulir aduan luberan sampah dan pengajuan TPS Pintar tingkat RT/RW.\n2. Dashboard Operasional Internal Role-Based: Mendukung 3 tingkat hierarki operasional — Super Admin (manajemen perangkat sensor IoT & tata kelola pengguna), Supervisor (analisis utilisasi armada truk & rekap performa TPS per kecamatan), dan Operator Lapangan (pemantauan status kritis darurat & konfirmasi dispatching truk penjemput).\n\nDibangun menggunakan arsitektur modern React 19, TypeScript, Tailwind CSS, Recharts, Motion, dan konektivitas telemetri sensorik, MOPS menjadi wujud nyata transformasi Bandung Smart City menuju tata kelola lingkungan yang bersih, terukur, dan berkelanjutan.',
+    image: '/images/mops/mops-hardware-installation.png',
+    gallery: [
+      '/images/mops/mops-hardware-installation.png'
+    ],
+    date: '2026-09-14',
+    liveUrl: 'https://mops-5f51b.web.app/',
+    sensors: [
+      {
+        name: 'Sensor Node ToF Jarak Sampah (TOF400F)',
+        value: 124,
+        unit: 'cm',
+        minSafe: 40,
+        maxSafe: 300,
+        description: 'Sensor ToF mengukur jarak permukaan tumpukan sampah ke bibir penampungan untuk estimasi volume kapasitas TPS.'
+      },
+      {
+        name: 'Tingkat Kapasitas TPS Terisi',
+        value: 74,
+        unit: '%',
+        minSafe: 0,
+        maxSafe: 85,
+        description: 'Persentase tingkat kepenuhan TPS yang memicu status Normal, Hampir Penuh, hingga Penuh (Kritis).'
+      },
+      {
+        name: 'Live CCTV Feed (TP-Link VIGI C340)',
+        value: 30,
+        unit: 'FPS',
+        minSafe: 24,
+        maxSafe: 30,
+        description: 'Visual monitoring outdoor real-time untuk memantau aktivitas petugas, antrean warga, dan armada truk pengangkut.'
+      },
+      {
+        name: 'Estimasi Beban Sampah Terkumpul',
+        value: 3.8,
+        unit: 'Ton',
+        minSafe: 0.5,
+        maxSafe: 5.0,
+        description: 'Kalkulasi massa sampah di bak TPS untuk optimasi dispatching dan kapasitas bak truk sampah DLH.'
       }
     ]
   }

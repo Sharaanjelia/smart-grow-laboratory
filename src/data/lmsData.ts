@@ -820,6 +820,8 @@ export const initialAttendance: AttendanceRecord[] = [
     checkOutTime: '17:30 WIB',
     duration: '9 Jam 30 Menit',
     status: 'present',
+    photoUrl: '/images/team/shara.jpg',
+    checkInPhoto: '/images/team/shara.jpg',
     notes: 'Pengembangan portal analitik real-time telemetry WebSocket.',
     location: 'Bandung Techno Park Lab Smart Grow',
     ipAddress: '103.14.22.82',
@@ -834,6 +836,8 @@ export const initialAttendance: AttendanceRecord[] = [
     checkOutTime: '17:30 WIB',
     duration: '9 Jam 25 Menit',
     status: 'present',
+    photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    checkInPhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
     notes: 'Melakukan kalibrasi probe sensor pH & EC pada Hidroponik Bay #2.',
     location: 'Bandung Techno Park Lab Smart Grow',
     ipAddress: '103.14.22.83',
@@ -848,6 +852,8 @@ export const initialAttendance: AttendanceRecord[] = [
     checkOutTime: '17:00 WIB',
     duration: '8 Jam 45 Menit',
     status: 'present',
+    photoUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+    checkInPhoto: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
     notes: 'Pengujian jaringan nirkabel telemetry ESP32 LoRaWAN.',
     location: 'Bandung Techno Park Lab Smart Grow',
     ipAddress: '103.14.22.84',
@@ -862,6 +868,8 @@ export const initialAttendance: AttendanceRecord[] = [
     checkOutTime: '18:00 WIB',
     duration: '10 Jam 05 Menit',
     status: 'present',
+    photoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
+    checkInPhoto: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
     notes: 'Mendampingi mahasiswa magang dan melakukan review tugas model AI.',
     location: 'Bandung Techno Park Lab Smart Grow',
     ipAddress: '103.14.22.81',
@@ -876,6 +884,8 @@ export const initialAttendance: AttendanceRecord[] = [
     checkOutTime: '17:20 WIB',
     duration: '9 Jam 18 Menit',
     status: 'present',
+    photoUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80',
+    checkInPhoto: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80',
     notes: 'Integrasi kelistrikan LED grow light dan kontroler mekanik hidroponik.',
     location: 'Bandung Techno Park Lab Smart Grow',
     ipAddress: '103.14.22.85',
@@ -1021,6 +1031,25 @@ export const initialLmsProjects: LmsProject[] = [
     photoUrl: 'https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=800&q=80',
     documents: [
       { name: 'Arsitektur_Gateway_WebSocket_JWT.pdf', url: '#', date: '2026-07-15', size: '3.4 MB' }
+    ]
+  },
+  {
+    id: 'proj_smart_tbn',
+    projectNumber: 'PRJ-WASTE-2026-05',
+    title: 'Smart TBN - Smart Trash Bin Notification Goes to Sumba',
+    category: 'Smart Waste Management IoT',
+    description: 'Smart Trash Bin Notification (Smart TBN) adalah tempat sampah pintar berbasis IoT yang memantau kondisi ketinggian sampah, beban muatan, dan visual kamera secara real-time dengan notifikasi otomatis ke petugas di Desa Wisata Kampung Raja Prailiu, Sumba NTT.',
+    advisor: 'Prof. Dr. Indrarini Dyah Irawati, S.T., M.T.',
+    assignedStudentIds: ['user_student_shara', 'user_student_1'],
+    assignedStudentNames: ['Shara Anjelia', 'Shella Nadya Putri'],
+    status: 'in_progress',
+    progressPercent: 94,
+    deadline: '2026-11-20',
+    repoUrl: 'https://github.com/smartgrowlab/smart-tbn-iot',
+    photoUrl: '/images/smart-tbn/smart-tbn-poster.png',
+    documents: [
+      { name: 'Implementasi_IoT_Smart_TBN_Sumba.pdf', url: '#', date: '2026-07-27', size: '5.2 MB' },
+      { name: 'Manual_Integrasi_Sensor_Ultrasonik_Kamera.pdf', url: '#', date: '2026-07-27', size: '3.4 MB' }
     ]
   }
 ];

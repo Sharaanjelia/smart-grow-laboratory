@@ -100,33 +100,79 @@ export async function uploadFileToFirebaseStorage(file: File, folder: string = '
 }
 
 /**
- * Uploads a DataURL (Base64 JPEG/PNG) snapshot selfie to Firebase Storage under `attendance/` folder.
+ * Compresses a base64 DataURL selfie to ~25-35KB (480px width, 0.65 JPEG)
+ * Ensures attendance photo can always be stored in Firestore even without Firebase Storage bucket.
+ */
+export async function compressSelfieDataUrl(dataUrl: string, maxDimension: number = 480, quality: number = 0.65): Promise<string> {
+  if (!dataUrl || !dataUrl.startsWith('data:image')) return dataUrl;
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxDimension || height > maxDimension) {
+        if (width > height) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
+        } else {
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve(dataUrl);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+/**
+ * Uploads a DataURL snapshot selfie to Firebase Storage under `attendance/` folder.
+ * If Firebase Storage bucket is not enabled or fails, seamlessly falls back to ultra-lightweight compressed DataURL (~25KB)
+ * so it will NEVER exceed Firestore's 1MB document limit.
  */
 export async function uploadAttendancePhotoToStorage(dataUrl: string, studentId: string): Promise<string> {
   try {
-    if (!dataUrl.startsWith('data:image')) {
-      return dataUrl;
+    if (!dataUrl || !dataUrl.startsWith('data:image')) {
+      return dataUrl || '';
     }
+    // Always compress first to ensure lightweight footprint (~15-25KB)
+    const compressed = await compressSelfieDataUrl(dataUrl, 400, 0.6);
     const timestamp = Date.now();
     const fileName = `selfie_${studentId}_${timestamp}.jpg`;
     
-    // Convert DataURL to Blob
-    const arr = dataUrl.split(',');
-    const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-    const blob = new Blob([u8arr], { type: mime });
+    // Attempt Firebase Storage upload with a strict 2-second timeout
+    // (Firebase Storage is unprovisioned on this project, so it must not hang check-in)
+    try {
+      const arr = compressed.split(',');
+      const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      const blob = new Blob([u8arr], { type: mime });
 
-    const storageRef = ref(storage, `attendance/${fileName}`);
-    await uploadBytes(storageRef, blob);
-    const downloadUrl = await getDownloadURL(storageRef);
-    return downloadUrl;
+      const storageRef = ref(storage, `attendance/${fileName}`);
+      const uploadPromise = uploadBytes(storageRef, blob).then(() => getDownloadURL(storageRef));
+      const timeoutPromise = new Promise<string>((_, reject) => setTimeout(() => reject(new Error('Storage timeout')), 2000));
+      const downloadUrl = await Promise.race([uploadPromise, timeoutPromise]);
+      return downloadUrl;
+    } catch (storageErr) {
+      console.info('Using ultra-lightweight compressed DataURL for selfie (~20KB):', storageErr);
+      return compressed;
+    }
   } catch (err: any) {
-    console.warn('Firebase Storage attendance upload error (using DataURL fallback):', err?.message);
+    console.warn('Attendance photo processing notice:', err?.message);
     return dataUrl;
   }
 }

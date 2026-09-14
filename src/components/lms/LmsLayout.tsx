@@ -291,6 +291,22 @@ export default function LmsLayout({
           {/* Right Header Utilities: Language, Theme Toggle, Role Badge, Notifications, Profile */}
           <div className="flex items-center gap-2.5 sm:gap-3">
             
+            {/* Direct Shortcut to Public Research Web */}
+            {(onBackToWebsite || onBackToPublicSite) && (
+              <button
+                onClick={onBackToWebsite || onBackToPublicSite}
+                title="Lihat Website Profil Laboratorium"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  darkMode
+                    ? 'bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 border-emerald-800'
+                    : 'bg-emerald-50 hover:bg-emerald-100 text-[#355E3B] border-emerald-200 shadow-xs'
+                }`}
+              >
+                <ExternalLink className="h-3.5 w-3.5 text-[#2E7D32] dark:text-emerald-400" />
+                <span className="hidden sm:inline">Web Publik</span>
+              </button>
+            )}
+
             {/* Language Switcher Button (ID / EN) */}
             <button
               onClick={onToggleLanguage}

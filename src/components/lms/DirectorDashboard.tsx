@@ -23,6 +23,7 @@ import StudentAcademicProfileModal from './StudentAcademicProfileModal';
 import InternshipRecruitmentManager from './InternshipRecruitmentManager';
 import PendingRegistrationsView from './PendingRegistrationsView';
 import { resolveImageUrl } from '../../utils/imageUtils';
+import { getTodayDateJakarta } from '../../utils/dateUtils';
 import { 
   Users, 
   FolderKanban, 
@@ -242,8 +243,8 @@ export default function DirectorDashboard({
     setPubGallery([]);
   };
 
-  const today = new Date().toISOString().split('T')[0];
-  const todayAtt = attendance.filter(a => a.date === '2026-07-22' || a.date === today);
+  const today = getTodayDateJakarta();
+  const todayAtt = attendance.filter(a => a.date === today);
   const presentCount = todayAtt.filter(a => a.status === 'present').length;
   const lateCount = todayAtt.filter(a => a.status === 'late').length;
   const leaveCount = todayAtt.filter(a => a.status === 'leave').length;
@@ -515,7 +516,7 @@ export default function DirectorDashboard({
               .map(student => {
                 const studentTasks = tasks.filter(t => t.assignedStudentId === student.id);
                 const completedTasks = studentTasks.filter(t => t.status === 'completed').length;
-                const studentAtt = attendance.find(a => a.studentId === student.id && (a.date === '2026-07-22' || a.date === today));
+                const studentAtt = attendance.find(a => a.studentId === student.id && a.date === today);
 
                 return (
                   <div 

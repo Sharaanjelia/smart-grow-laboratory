@@ -39,6 +39,7 @@ export interface ProjectItem {
   image: string;
   gallery: string[];
   date: string;
+  liveUrl?: string;
 }
 
 export interface TeamMember {
@@ -112,6 +113,7 @@ export interface User {
 
 export interface PendingRegistration {
   id: string;
+  uid?: string;
   fullName: string;
   university: string;
   studyProgram: string;
@@ -179,9 +181,12 @@ export interface AttendanceRecord {
   mentor?: string;
   date: string; // YYYY-MM-DD
   checkInTime?: string;
+  checkInTimestamp?: number | string;
   checkOutTime?: string;
+  checkOutTimestamp?: number | string;
   duration?: string; // Durasi e.g. "7 Jam 30 Menit"
   workDuration?: string;
+  durationMinutes?: number;
   status: 'present' | 'late' | 'leave' | 'sick' | 'absent' | 'working' | 'checked_out';
   notes?: string; // Keterangan
   dailyNotes?: string;
