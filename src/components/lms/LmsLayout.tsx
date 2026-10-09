@@ -339,63 +339,65 @@ export default function LmsLayout({
               <span>{roleBadge.label}</span>
             </div>
 
-            {/* Notifications Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => {
-                  setNotifDropdownOpen(!notifDropdownOpen);
-                  setUserDropdownOpen(false);
-                }}
-                className={`relative p-2 rounded-xl border transition-all cursor-pointer ${
-                  darkMode ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700' : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                <Bell className="h-4 w-4" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#2E7D32] text-[9px] font-bold font-mono text-white flex items-center justify-center animate-pulse">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
+            {/* Notifications Dropdown (Hidden for Director/Ibu) */}
+            {currentUser.role !== 'director' && (
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setNotifDropdownOpen(!notifDropdownOpen);
+                    setUserDropdownOpen(false);
+                  }}
+                  className={`relative p-2 rounded-xl border transition-all cursor-pointer ${
+                    darkMode ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700' : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  <Bell className="h-4 w-4" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#2E7D32] text-[9px] font-bold font-mono text-white flex items-center justify-center animate-pulse">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
 
-              {notifDropdownOpen && (
-                <div className={`absolute right-0 mt-2 w-[calc(100vw-32px)] max-w-sm sm:w-96 rounded-2xl border shadow-2xl p-4 z-50 space-y-3 ${
-                  darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-[#E5E7EB]'
-                }`}>
-                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-                    <h4 className="font-bold text-xs font-mono uppercase tracking-wider flex items-center gap-2">
-                      <Bell className="h-3.5 w-3.5 text-[#2E7D32]" />
-                      <span>{isID ? 'Notifikasi' : 'Notifications'} ({unreadCount})</span>
-                    </h4>
-                    <span className="text-[10px] text-slate-400 font-mono">Live Feed</span>
-                  </div>
+                {notifDropdownOpen && (
+                  <div className={`absolute right-0 mt-2 w-[calc(100vw-32px)] max-w-sm sm:w-96 rounded-2xl border shadow-2xl p-4 z-50 space-y-3 ${
+                    darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-[#E5E7EB]'
+                  }`}>
+                    <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                      <h4 className="font-bold text-xs font-mono uppercase tracking-wider flex items-center gap-2">
+                        <Bell className="h-3.5 w-3.5 text-[#2E7D32]" />
+                        <span>{isID ? 'Notifikasi' : 'Notifications'} ({unreadCount})</span>
+                      </h4>
+                      <span className="text-[10px] text-slate-400 font-mono">Live Feed</span>
+                    </div>
 
-                  <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
-                    {notifications.length === 0 ? (
-                      <p className="text-xs text-slate-400 text-center py-4">{isID ? 'Belum ada notifikasi baru' : 'No notifications yet'}</p>
-                    ) : (
-                      notifications.map(notif => (
-                        <div 
-                          key={notif.id}
-                          onClick={() => onMarkNotificationRead && onMarkNotificationRead(notif.id)}
-                          className={`p-3 rounded-xl border text-xs space-y-1 transition-all cursor-pointer ${
-                            notif.read
-                              ? darkMode ? 'bg-slate-800/50 border-slate-800 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'
-                              : darkMode ? 'bg-emerald-950/60 border-emerald-800 text-slate-200' : 'bg-emerald-50/60 border-emerald-200 text-slate-800'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold">{notif.title}</span>
-                            <span className="text-[9px] font-mono text-slate-400">{notif.date}</span>
+                    <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
+                      {notifications.length === 0 ? (
+                        <p className="text-xs text-slate-400 text-center py-4">{isID ? 'Belum ada notifikasi baru' : 'No notifications yet'}</p>
+                      ) : (
+                        notifications.map(notif => (
+                          <div 
+                            key={notif.id}
+                            onClick={() => onMarkNotificationRead && onMarkNotificationRead(notif.id)}
+                            className={`p-3 rounded-xl border text-xs space-y-1 transition-all cursor-pointer ${
+                              notif.read
+                                ? darkMode ? 'bg-slate-800/50 border-slate-800 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'
+                                : darkMode ? 'bg-emerald-950/60 border-emerald-800 text-slate-200' : 'bg-emerald-50/60 border-emerald-200 text-slate-800'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold">{notif.title}</span>
+                              <span className="text-[9px] font-mono text-slate-400">{notif.date}</span>
+                            </div>
+                            <p className="text-[11px] leading-relaxed text-slate-400">{notif.message}</p>
                           </div>
-                          <p className="text-[11px] leading-relaxed text-slate-400">{notif.message}</p>
-                        </div>
-                      ))
-                    )}
+                        ))
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* User Profile Navigation Button & Clean Menu */}
             <div className="relative">

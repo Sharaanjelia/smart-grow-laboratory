@@ -1547,6 +1547,7 @@ export default function App() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               onUpdateProfile={handleUpdateUser}
+              onDeleteStudent={handleDeleteUser}
               darkMode={darkMode}
               language={language}
             />

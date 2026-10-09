@@ -82,6 +82,7 @@ interface DirectorDashboardProps {
   onDeletePublicProject?: (id: string) => void;
   onNavigateToShowcase?: (projId: string) => void;
   onUpdateProfile?: (updatedUser: User) => void;
+  onDeleteStudent?: (studentId: string) => void;
   darkMode?: boolean;
   language?: 'id' | 'en';
 }
@@ -119,6 +120,7 @@ export default function DirectorDashboard({
   onDeletePublicProject,
   onNavigateToShowcase,
   onUpdateProfile,
+  onDeleteStudent,
   darkMode = false,
   language = 'id'
 }: DirectorDashboardProps) {
@@ -565,9 +567,27 @@ export default function DirectorDashboard({
                         </span>
                       </div>
 
-                      <div className="text-[11px] font-bold text-[#2E7D32] flex items-center justify-end gap-1 pt-1">
-                        <span>Buka Profil Akademik</span>
-                        <ChevronRight className="h-3.5 w-3.5" />
+                      <div className="flex items-center justify-between pt-1">
+                        {onDeleteStudent && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm(`Hapus mahasiswa "${student.name || 'ini'}" dari data laboratorium?`)) {
+                                onDeleteStudent(student.id);
+                              }
+                            }}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 px-2 py-1 rounded-lg transition-colors flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
+                            title="Hapus Mahasiswa"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            <span>Hapus</span>
+                          </button>
+                        )}
+                        <div className="text-[11px] font-bold text-[#2E7D32] flex items-center justify-end gap-1 ml-auto">
+                          <span>Buka Profil Akademik</span>
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </div>
                       </div>
                     </div>
                   </div>
