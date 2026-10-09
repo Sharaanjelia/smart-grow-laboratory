@@ -18,19 +18,24 @@ import {
   Send,
   ShieldCheck,
   Search,
-  Filter
+  Filter,
+  Trash2
 } from 'lucide-react';
 
 interface PendingRegistrationsViewProps {
   registrations: PendingRegistration[];
   onApprove: (reg: PendingRegistration) => void;
   onReject: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onClearAll?: () => void;
 }
 
 export default function PendingRegistrationsView({
   registrations = [],
   onApprove,
-  onReject
+  onReject,
+  onDelete,
+  onClearAll
 }: PendingRegistrationsViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -181,6 +186,21 @@ Telkom University`;
               </button>
             ))}
           </div>
+
+          {onClearAll && registrations.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm(`Hapus semua ${registrations.length} data pendaftaran ini? Tindakan ini permanen.`)) {
+                  onClearAll();
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200 transition-all cursor-pointer shadow-xs whitespace-nowrap shrink-0"
+            >
+              <Trash2 className="h-3.5 w-3.5 text-rose-600" />
+              <span>Hapus Semua ({registrations.length})</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -323,6 +343,21 @@ Telkom University`;
                   </button>
                 ) : (
                   <span className="text-xs text-rose-500 font-semibold px-2 py-1 bg-rose-50 rounded-lg">Pendaftaran Ditolak</span>
+                )}
+
+                {onDelete && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(`Hapus data pendaftaran "${reg.fullName}"?`)) {
+                        onDelete(reg.id);
+                      }
+                    }}
+                    title="Hapus Data"
+                    className="p-2 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 transition-all cursor-pointer shrink-0"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 )}
               </div>
             </motion.div>

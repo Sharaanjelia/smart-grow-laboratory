@@ -65,6 +65,8 @@ interface DirectorDashboardProps {
   pendingRegistrations?: PendingRegistration[];
   onApproveRegistration?: (reg: PendingRegistration) => void;
   onRejectRegistration?: (id: string) => void;
+  onDeleteRegistration?: (id: string) => void;
+  onClearAllRegistrations?: () => void;
   onApproveRequest: (id: string) => void;
   onRejectRequest: (id: string) => void;
   onAdvanceApplicantStage?: (applicantId: string, nextStage: SelectionStage, notes?: string) => void;
@@ -100,6 +102,8 @@ export default function DirectorDashboard({
   pendingRegistrations = [],
   onApproveRegistration,
   onRejectRegistration,
+  onDeleteRegistration,
+  onClearAllRegistrations,
   onApproveRequest,
   onRejectRequest,
   onAdvanceApplicantStage,
@@ -257,6 +261,8 @@ export default function DirectorDashboard({
           registrations={pendingRegistrations}
           onApprove={onApproveRegistration || (() => {})}
           onReject={onRejectRegistration || (() => {})}
+          onDelete={onDeleteRegistration}
+          onClearAll={onClearAllRegistrations}
         />
       )}
       

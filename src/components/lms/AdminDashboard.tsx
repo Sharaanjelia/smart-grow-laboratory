@@ -66,6 +66,8 @@ interface AdminDashboardProps {
   pendingRegistrations?: PendingRegistration[];
   onApproveRegistration?: (reg: PendingRegistration) => void;
   onRejectRegistration?: (id: string) => void;
+  onDeleteRegistration?: (id: string) => void;
+  onClearAllRegistrations?: () => void;
   news: NewsItem[];
   projects: ProjectItem[];
   team: TeamMember[];
@@ -98,6 +100,8 @@ export default function AdminDashboard({
   pendingRegistrations = [],
   onApproveRegistration,
   onRejectRegistration,
+  onDeleteRegistration,
+  onClearAllRegistrations,
   news,
   projects,
   team,
@@ -296,6 +300,8 @@ export default function AdminDashboard({
           registrations={pendingRegistrations}
           onApprove={onApproveRegistration || (() => {})}
           onReject={onRejectRegistration || (() => {})}
+          onDelete={onDeleteRegistration}
+          onClearAll={onClearAllRegistrations}
         />
       )}
 

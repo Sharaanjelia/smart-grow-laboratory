@@ -69,6 +69,8 @@ interface AssistantDashboardProps {
   pendingRegistrations?: PendingRegistration[];
   onApproveRegistration?: (reg: PendingRegistration) => void;
   onRejectRegistration?: (id: string) => void;
+  onDeleteRegistration?: (id: string) => void;
+  onClearAllRegistrations?: () => void;
   onCreateTask: (task: Omit<Task, 'id' | 'createdAt' | 'status'>) => void;
   onUpdateTask?: (task: Task) => void;
   onDeleteTask?: (taskId: string) => void;
@@ -108,6 +110,8 @@ export default function AssistantDashboard({
   pendingRegistrations = [],
   onApproveRegistration,
   onRejectRegistration,
+  onDeleteRegistration,
+  onClearAllRegistrations,
   onCreateTask,
   onUpdateTask,
   onDeleteTask,
@@ -338,6 +342,8 @@ export default function AssistantDashboard({
           registrations={pendingRegistrations}
           onApprove={onApproveRegistration || (() => {})}
           onReject={onRejectRegistration || (() => {})}
+          onDelete={onDeleteRegistration}
+          onClearAll={onClearAllRegistrations}
         />
       )}
 

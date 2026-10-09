@@ -1108,6 +1108,27 @@ export default function App() {
     }
   };
 
+  const handleDeleteRegistration = async (id: string) => {
+    setPendingRegistrations(prev => prev.filter(p => p.id !== id));
+    try {
+      await deleteDoc(doc(db, 'pending_registrations', id));
+    } catch (e: any) {
+      console.warn('Firestore delete pending registration notice:', e?.message);
+    }
+  };
+
+  const handleClearAllPendingRegistrations = async () => {
+    const list = [...pendingRegistrations];
+    setPendingRegistrations([]);
+    for (const r of list) {
+      try {
+        await deleteDoc(doc(db, 'pending_registrations', r.id));
+      } catch (e: any) {
+        console.warn('Firestore clear registration notice:', e?.message);
+      }
+    }
+  };
+
   // =========================================================================
   // PUBLIC REALTIME LISTENERS — Active on all pages (news & showcase projects)
   // =========================================================================
@@ -1189,6 +1210,8 @@ export default function App() {
           const list: PendingRegistration[] = [];
           snapshot.forEach(docSnap => list.push(docSnap.data() as PendingRegistration));
           setPendingRegistrations(list);
+        } else {
+          setPendingRegistrations([]);
         }
       }, (err) => console.warn('Pending registrations listener notice:', err));
 
@@ -1503,6 +1526,8 @@ export default function App() {
               pendingRegistrations={pendingRegistrations}
               onApproveRegistration={handleApproveRegistration}
               onRejectRegistration={handleRejectRegistration}
+              onDeleteRegistration={handleDeleteRegistration}
+              onClearAllRegistrations={handleClearAllPendingRegistrations}
               onApproveRequest={handleApproveRequest}
               onRejectRequest={handleRejectRequest}
               onAdvanceApplicantStage={handleAdvanceApplicantStage}
@@ -1540,6 +1565,8 @@ export default function App() {
               pendingRegistrations={pendingRegistrations}
               onApproveRegistration={handleApproveRegistration}
               onRejectRegistration={handleRejectRegistration}
+              onDeleteRegistration={handleDeleteRegistration}
+              onClearAllRegistrations={handleClearAllPendingRegistrations}
               students={users.filter(u => u.role === 'student' && u.status === 'active')}
               onCreateTask={handleCreateTask}
               onUpdateTask={handleUpdateTask}
@@ -1596,6 +1623,8 @@ export default function App() {
               pendingRegistrations={pendingRegistrations}
               onApproveRegistration={handleApproveRegistration}
               onRejectRegistration={handleRejectRegistration}
+              onDeleteRegistration={handleDeleteRegistration}
+              onClearAllRegistrations={handleClearAllPendingRegistrations}
               news={newsList}
               projects={projectsList}
               team={teamList}

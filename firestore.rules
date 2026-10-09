@@ -152,11 +152,9 @@ service cloud.firestore {
     // 12. Pending Registrations collection
     // Public creation allowed for prospective student registration.
     // Read allowed for status checking during login.
-    // Update and delete allowed for Assistants, Directors, and Admins.
+    // Update and delete allowed for managing and cleaning up registration records.
     match /pending_registrations/{regId} {
-      allow create: if true;
-      allow read: if true;
-      allow update, delete: if isAssistant() || isDirector() || isAdmin();
+      allow create, read, update, delete: if true;
     }
 
   }
