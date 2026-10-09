@@ -12,7 +12,6 @@ import {
   Zap, 
   Thermometer, 
   Activity, 
-  Sparkles, 
   CheckCircle2, 
   Cpu, 
   Gauge, 

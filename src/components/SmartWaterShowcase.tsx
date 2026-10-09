@@ -7,8 +7,7 @@ import {
   Droplets, 
   Activity, 
   AlertTriangle, 
-  CheckCircle2, 
-  Sparkles,
+  CheckCircle2,
   RefreshCw,
   Camera,
   QrCode,
@@ -169,7 +168,7 @@ export default function SmartWaterShowcase({
               Smart Utility & AI • Perumda Air Minum (PDAM)
             </span>
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-mono text-xs font-semibold">
-              <Sparkles className="h-3.5 w-3.5 text-amber-300" />
+              
               AI-OCR Self Meter Reading
             </span>
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-400/20 border border-emerald-300/30 text-emerald-200 font-mono text-xs font-semibold">
@@ -436,7 +435,7 @@ export default function SmartWaterShowcase({
         {/* 4 SOLUSI SMART WATER */}
         <div className="p-6 sm:p-8 rounded-3xl bg-sky-50/40 dark:bg-sky-950/20 border border-sky-200/70 dark:border-sky-900/40 space-y-4">
           <div className="flex items-center gap-2 text-sky-700 dark:text-sky-400 font-bold text-sm">
-            <Sparkles className="h-5 w-5" />
+            
             <h3>4 Pilar Solusi Smart Water untuk Perumda:</h3>
           </div>
 
@@ -512,7 +511,7 @@ export default function SmartWaterShowcase({
             </div>
             <div>
               <h4 className="font-bold text-sm text-slate-900 dark:text-white">Prof. Dr. Indrarini Dyah Irawati S.T., M.T.</h4>
-              <span className="text-xs font-semibold text-sky-600 dark:text-sky-400 block">Lead Researcher & Mentor</span>
+              <span className="text-xs font-semibold text-sky-600 dark:text-sky-400 block">Lead Researcher & Pembina Lab</span>
               <p className="text-[11px] text-slate-500 mt-1">Pakar Sistem Cerdas & Pengolahan Sinyal Digital Telkom University.</p>
             </div>
           </div>

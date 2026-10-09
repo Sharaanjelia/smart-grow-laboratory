@@ -10,8 +10,7 @@ import {
   UserCheck, 
   Layers, 
   Search, 
-  Filter, 
-  Sparkles,
+  Filter,
   ExternalLink,
   Github,
   Instagram,
@@ -55,15 +54,14 @@ export default function InternshipRecruitmentManager({
     },
     3: { 
       title: 'Tahap 3: Wawancara Pembimbing', 
-      desc: 'Wawancara tatap muka/online dengan Asisten & Mentor Lab', 
+      desc: 'Wawancara tatap muka/online dengan Asisten & Pembina Lab', 
       icon: UserCheck,
       color: 'bg-amber-50 text-amber-700 border-amber-200' 
     },
     4: { 
       title: 'Tahap 4: Verifikasi Akhir', 
       desc: 'Penetapan posisi & validasi komitmen riset magang', 
-      icon: Sparkles,
-      color: 'bg-teal-50 text-teal-700 border-teal-200' 
+      icon: CheckCircle2, color: 'bg-teal-50 text-teal-700 border-teal-200' 
     },
     5: { 
       title: 'Tahap 5: Terbit ID Magang Resmi', 

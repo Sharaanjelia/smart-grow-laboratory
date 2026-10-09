@@ -20,8 +20,7 @@ import {
   ArrowLeft, 
   CheckCircle2, 
   ShieldCheck, 
-  UserCheck, 
-  Sparkles,
+  UserCheck,
   GraduationCap, 
   Briefcase, 
   Eye,
@@ -56,8 +55,8 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
   const [activeTab, setActiveTab] = useState<AuthTab>('login');
   const [isBlurActive, setIsBlurActive] = useState(true);
   
-  // Form states
-  const [email, setEmail] = useState('');
+  // Form states (identifier accepts ID Magang, NIM, or Email)
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -65,6 +64,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
   // Register Form states (initialized 100% EMPTY with placeholders)
   const [regDivision, setRegDivision] = useState('');
   const [regFullName, setRegFullName] = useState('');
+  const [regNim, setRegNim] = useState('');
   const [regUniversity, setRegUniversity] = useState('');
   const [regStudyProgram, setRegStudyProgram] = useState('');
   const [regEmail, setRegEmail] = useState('');
@@ -115,13 +115,103 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
     setIsLoading(true);
     setError('');
 
-    const cleanEmail = email.trim().toLowerCase();
+    const rawInput = identifier.trim();
     const cleanPassword = password.trim() || 'smartgrow123';
 
-    if (!cleanEmail) {
-      setError('Mohon masukkan email Anda.');
+    if (!rawInput) {
+      setError('Mohon masukkan ID Magang Resmi, NIM, atau Email Anda.');
       setIsLoading(false);
       return;
+    }
+
+    const cleanInputLower = rawInput.toLowerCase();
+    const isDirectEmail = rawInput.includes('@');
+
+    // 0. RESOLVE IDENTIFIER (ID Magang Resmi / NIM / Email) TO EMAIL
+    let cleanEmail = isDirectEmail ? rawInput.toLowerCase() : '';
+    let matchedInitial: User | null = null;
+
+    if (!isDirectEmail) {
+      // Helper function to match user by ID Magang or NIM
+      const matchesUser = (u: User) => {
+        const uEmail = (u.email || '').trim().toLowerCase();
+        const uStudentId = (u.studentId || '').trim().toLowerCase();
+        const uInternId = (u.internId || '').trim().toLowerCase();
+
+        if (uEmail === cleanInputLower) return true;
+        if (uInternId && uInternId === cleanInputLower) return true;
+        if (uStudentId && uStudentId === cleanInputLower) return true;
+        if (uStudentId && cleanInputLower === `sgl-int-2026-${uStudentId}`) return true;
+        if (uStudentId && cleanInputLower.endsWith(uStudentId)) return true;
+
+        // Special test alias: SGL-INT-2026-001 or 001 maps to Aqila / Shara
+        if (cleanInputLower === 'sgl-int-2026-001' || cleanInputLower === '001') {
+          if (u.id === 'user_student_aqila' || u.id === 'user_student_shara') return true;
+        }
+        return false;
+      };
+
+      const foundInMemory = users.find(matchesUser) || initialUsers.find(matchesUser);
+      if (foundInMemory) {
+        matchedInitial = foundInMemory;
+        cleanEmail = (foundInMemory.email || '').trim().toLowerCase();
+      }
+
+      // If not found in memory, query Firestore users collection
+      if (!cleanEmail) {
+        try {
+          const qUsersIntern = query(collection(db, 'users'), where('internId', '==', rawInput));
+          const snapUsersIntern = await getDocs(qUsersIntern);
+          if (!snapUsersIntern.empty) {
+            cleanEmail = ((snapUsersIntern.docs[0].data() as User).email || '').trim().toLowerCase();
+          } else {
+            const qUsersStudent = query(collection(db, 'users'), where('studentId', '==', rawInput));
+            const snapUsersStudent = await getDocs(qUsersStudent);
+            if (!snapUsersStudent.empty) {
+              cleanEmail = ((snapUsersStudent.docs[0].data() as User).email || '').trim().toLowerCase();
+            } else {
+              const qUsersPrefixed = query(collection(db, 'users'), where('internId', '==', `SGL-INT-2026-${rawInput}`));
+              const snapUsersPrefixed = await getDocs(qUsersPrefixed);
+              if (!snapUsersPrefixed.empty) {
+                cleanEmail = ((snapUsersPrefixed.docs[0].data() as User).email || '').trim().toLowerCase();
+              }
+            }
+          }
+        } catch (e: any) {
+          console.warn('Firestore query user by ID notice:', e?.message);
+        }
+      }
+
+      // If still not found, query Firestore pending_registrations collection
+      if (!cleanEmail) {
+        try {
+          const qPendingIntern = query(collection(db, 'pending_registrations'), where('internId', '==', rawInput));
+          const snapPendingIntern = await getDocs(qPendingIntern);
+          if (!snapPendingIntern.empty) {
+            cleanEmail = ((snapPendingIntern.docs[0].data() as PendingRegistration).email || '').trim().toLowerCase();
+          } else {
+            const qPendingNim = query(collection(db, 'pending_registrations'), where('nim', '==', rawInput));
+            const snapPendingNim = await getDocs(qPendingNim);
+            if (!snapPendingNim.empty) {
+              cleanEmail = ((snapPendingNim.docs[0].data() as PendingRegistration).email || '').trim().toLowerCase();
+            } else {
+              const qPendingPrefix = query(collection(db, 'pending_registrations'), where('internId', '==', `SGL-INT-2026-${rawInput}`));
+              const snapPendingPrefix = await getDocs(qPendingPrefix);
+              if (!snapPendingPrefix.empty) {
+                cleanEmail = ((snapPendingPrefix.docs[0].data() as PendingRegistration).email || '').trim().toLowerCase();
+              }
+            }
+          }
+        } catch (e: any) {
+          console.warn('Firestore query pending by ID notice:', e?.message);
+        }
+      }
+
+      if (!cleanEmail) {
+        setError(`ID Magang Resmi atau NIM "${rawInput}" tidak ditemukan. Pastikan data ID Magang atau NIM yang Anda masukkan sudah benar.`);
+        setIsLoading(false);
+        return;
+      }
     }
 
     try {
@@ -142,7 +232,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
       // Block login if account is pending approval in pending_registrations
       if (pendingReg && pendingReg.status === 'Pending Approval') {
         await signOut(auth);
-        setError('Akun Anda masih menunggu persetujuan Pembina / Mentor / Admin Laboratorium. Silakan tunggu hingga proses verifikasi selesai.');
+        setError('Akun Anda masih menunggu persetujuan Pembina Lab / Admin Laboratorium. Silakan tunggu hingga proses verifikasi selesai.');
         setIsLoading(false);
         return;
       }
@@ -157,8 +247,10 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
 
       // 2. Perform Firebase Auth Login
       let userCredential: any = null;
-      const matchedInitial = users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail) 
-        || initialUsers.find(u => (u.email || '').trim().toLowerCase() === cleanEmail);
+      if (!matchedInitial) {
+        matchedInitial = users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail) 
+          || initialUsers.find(u => (u.email || '').trim().toLowerCase() === cleanEmail) || null;
+      }
 
       try {
         userCredential = await signInWithEmailAndPassword(auth, cleanEmail, cleanPassword);
@@ -222,14 +314,15 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
 
       // If user approved from pending registration but user doc not yet created in Firestore
       if (!foundUser && pendingReg && pendingReg.status === 'Approved') {
-        const generatedInternId = pendingReg.internId || 'SGL-INT-2026-001';
+        const generatedInternId = pendingReg.internId || (pendingReg.nim ? `SGL-INT-2026-${pendingReg.nim}` : 'SGL-INT-2026-001');
+        const assignedStudentId = pendingReg.nim || pendingReg.studentId || '';
         foundUser = {
           id: fbUser?.uid || pendingReg.id,
           name: pendingReg.fullName,
           email: cleanEmail,
           role: 'student',
           title: 'Mahasiswa Magang Riset',
-          studentId: '',
+          studentId: assignedStudentId,
           internId: generatedInternId,
           institution: pendingReg.university || '',
           major: pendingReg.studyProgram || '',
@@ -251,10 +344,19 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
         }
       }
 
+      if (foundUser) {
+        if (!foundUser.internId) {
+          foundUser.internId = foundUser.studentId ? `SGL-INT-2026-${foundUser.studentId}` : 'SGL-INT-2026-001';
+        }
+        if (!foundUser.studentId && pendingReg && pendingReg.nim) {
+          foundUser.studentId = pendingReg.nim;
+        }
+      }
+
       if (!foundUser) {
         if (pendingReg && pendingReg.status !== 'Approved') {
           await signOut(auth);
-          setError('Akun Anda belum diaktifkan oleh Pembina / Mentor / Admin Laboratorium. Silakan tunggu hingga proses verifikasi selesai.');
+          setError('Akun Anda belum diaktifkan oleh Pembina Lab / Admin Laboratorium. Silakan tunggu hingga proses verifikasi selesai.');
           setIsLoading(false);
           return;
         }
@@ -264,7 +366,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
       // Strict Status Check: Must be 'active'
       if (foundUser.status && foundUser.status !== 'active') {
         await signOut(auth);
-        setError('Akun Anda belum diaktifkan atau saat ini dinonaktifkan. Silakan hubungi Pembina / Mentor / Admin Laboratorium.');
+        setError('Akun Anda belum diaktifkan atau saat ini dinonaktifkan. Silakan hubungi Pembina Lab / Admin Laboratorium.');
         setIsLoading(false);
         return;
       }
@@ -327,6 +429,10 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
       setError('Mohon isi Nama Lengkap Anda.');
       return;
     }
+    if (!regNim.trim()) {
+      setError('Mohon isi NIM (Nomor Induk Mahasiswa) Anda.');
+      return;
+    }
     if (!regUniversity.trim()) {
       setError('Mohon isi Asal Universitas Anda.');
       return;
@@ -359,6 +465,8 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
     setIsLoading(true);
 
     const cleanEmail = regEmail.trim().toLowerCase();
+    const cleanNim = regNim.trim().replace(/\s+/g, '');
+    const generatedInternId = `SGL-INT-2026-${cleanNim}`;
     const selectedDiv = regDivision.trim();
 
     try {
@@ -379,6 +487,9 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
         id: pendingId,
         uid: createdUid || undefined,
         fullName: regFullName.trim(),
+        nim: cleanNim,
+        studentId: cleanNim,
+        internId: generatedInternId,
         university: regUniversity.trim(),
         studyProgram: regStudyProgram.trim(),
         division: selectedDiv,
@@ -485,13 +596,6 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform text-[#2E7D32]" />
           <span>Kembali ke Website Utama</span>
         </button>
-
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-white/90 border border-emerald-300 px-3.5 py-1.5 rounded-full text-[11px] font-mono text-[#2E7D32] shadow-md backdrop-blur-md font-bold">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#2E7D32] animate-pulse"></span>
-            <span>TIM PANEN HIDROPONIK TELKOM UNIVERSITY</span>
-          </div>
-        </div>
       </header>
 
       {/* 3. MAIN GLASSMORPHISM AUTHENTICATION CARD (1100px x 650px) */}
@@ -500,7 +604,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full min-h-[640px] rounded-[32px] bg-white/85 backdrop-blur-xl border border-white/80 shadow-2xl shadow-emerald-950/30 overflow-hidden flex flex-col lg:flex-row relative"
+          className="w-full min-h-[580px] rounded-[24px] sm:rounded-[32px] bg-white/85 backdrop-blur-xl border border-white/80 shadow-2xl shadow-emerald-950/30 overflow-hidden flex flex-col lg:flex-row relative"
         >
           {/* TWO PANELS WITH SMOOTH SLIDING LAYOUT TRANSITION */}
           <div className={`w-full flex flex-col lg:flex-row transition-all duration-700 ease-in-out ${
@@ -511,7 +615,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
             <motion.div 
               layout
               transition={{ duration: 0.5, ease: "easeInOut" }}
-              className="w-full lg:w-[45%] p-8 sm:p-10 flex flex-col justify-between bg-gradient-to-br from-white/90 via-emerald-50/70 to-teal-50/60 backdrop-blur-md relative overflow-hidden border-b lg:border-b-0 lg:border-r border-emerald-100 min-h-[500px] lg:min-h-[640px]"
+              className="w-full lg:w-[45%] p-6 sm:p-8 md:p-10 flex flex-col justify-between bg-gradient-to-br from-white/90 via-emerald-50/70 to-teal-50/60 backdrop-blur-md relative overflow-hidden border-b lg:border-b-0 lg:border-r border-emerald-100 min-h-[420px] lg:min-h-[640px]"
             >
               {/* Background Organic Shapes & Leaves Decor */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-[#66BB6A]/20 rounded-full blur-3xl pointer-events-none" />
@@ -536,29 +640,12 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
                     transition={{ duration: 0.3 }}
                     className="space-y-3"
                   >
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#2E7D32]/10 border border-[#2E7D32]/20 text-[#2E7D32] text-xs font-mono font-bold">
-                      <Sparkles className="h-3.5 w-3.5 text-[#2E7D32]" />
-                      <span>
-                        {activeTab === 'login' && 'Smart Grow Research Portal'}
-                        {activeTab === 'register' && 'New Intern Registration'}
-                        {activeTab === 'forgot' && 'Account Security Recovery'}
-                      </span>
-                    </div>
-
                     <h1 className="text-3xl sm:text-4xl font-black text-[#1F2937] font-display tracking-tight leading-none">
                       Smart Grow <br />
                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2E7D32] via-[#388E3C] to-[#66BB6A]">
                         Laboratory
                       </span>
                     </h1>
-
-                    <p className="text-base font-semibold text-[#2E7D32]">
-                      Research Portal
-                    </p>
-
-                    <div className="inline-block px-3 py-1 rounded-lg bg-emerald-100/80 border border-emerald-200 text-[11px] font-bold text-[#2E7D32] tracking-wide">
-                      Research • Innovation • Sustainable Agriculture
-                    </div>
 
                     <p className="text-xs text-slate-600 leading-relaxed font-sans pt-1 max-w-sm">
                       Akses terpadu alur kerja magang, presensi mahasiswa, telemetri sensor hidroponik, dan verifikasi riset Pembina Lab.
@@ -609,16 +696,16 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
             </motion.div>
 
             {/* RIGHT PANEL (55% Width) - Auth Tabs & Interactive Forms */}
-            <div className="w-full lg:w-[55%] p-8 sm:p-10 flex flex-col justify-between bg-white/70 backdrop-blur-xl relative">
+            <div className="w-full lg:w-[55%] p-5 sm:p-8 md:p-10 flex flex-col justify-between bg-white/70 backdrop-blur-xl relative">
               
               {/* Navigation Tabs Header */}
               <div>
                 <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 mb-6">
-                  <div className="flex items-center gap-1 sm:gap-2">
+                  <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 w-full">
                     <button
                       type="button"
                       onClick={() => { setActiveTab('login'); setError(''); }}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer relative ${
+                      className={`px-3 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer relative whitespace-nowrap shrink-0 ${
                         activeTab === 'login' 
                           ? 'text-[#2E7D32] bg-emerald-50 border border-emerald-200/80 shadow-xs' 
                           : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
@@ -633,7 +720,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
                     <button
                       type="button"
                       onClick={() => { setActiveTab('register'); setError(''); }}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer relative ${
+                      className={`px-3 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer relative whitespace-nowrap shrink-0 ${
                         activeTab === 'register' 
                           ? 'text-[#2E7D32] bg-emerald-50 border border-emerald-200/80 shadow-xs' 
                           : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
@@ -648,7 +735,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
                     <button
                       type="button"
                       onClick={() => { setActiveTab('forgot'); setError(''); }}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer relative ${
+                      className={`px-3 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer relative whitespace-nowrap shrink-0 ${
                         activeTab === 'forgot' 
                           ? 'text-[#2E7D32] bg-emerald-50 border border-emerald-200/80 shadow-xs' 
                           : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
@@ -694,18 +781,19 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
 
                       <form onSubmit={handleLoginSubmit} className="space-y-4">
                         <div className="space-y-1">
-                          <label className="block text-xs font-semibold text-slate-700">
-                            Email Address
+                          <label className="block text-xs font-semibold text-slate-700 flex items-center justify-between">
+                            <span>ID Magang Resmi / Email</span>
+                            <span className="text-[10px] text-emerald-700 font-mono font-medium">Bisa pakai ID Magang / NIM</span>
                           </label>
                           <div className="relative">
-                            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                            <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600" />
                             <input 
-                              type="email"
+                              type="text"
                               required
-                              value={email}
-                              onChange={e => setEmail(e.target.value)}
-                              placeholder="Masukkan email Anda"
-                              className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 transition-all"
+                              value={identifier}
+                              onChange={e => setIdentifier(e.target.value)}
+                              placeholder="Contoh: SGL-INT-2026-001, 1301220250, atau Email"
+                              className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 transition-all font-medium"
                             />
                           </div>
                         </div>
@@ -829,13 +917,21 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
                           </div>
 
                           <p className="text-xs text-slate-700 leading-relaxed font-medium max-w-md mx-auto">
-                            Data pengajuan magang Anda telah berhasil tersimpan di sistem Smart Grow Laboratory dan saat ini dalam antrean verifikasi Pembina (Director), Mentor, atau Admin.
+                            Data pengajuan magang Anda telah berhasil tersimpan di sistem Smart Grow Laboratory dan saat ini dalam antrean verifikasi Pembina Lab (Director) atau Admin.
                           </p>
 
-                          <div className="p-3.5 rounded-2xl bg-white border border-emerald-200 text-left space-y-1 font-mono text-[11px] text-emerald-950">
+                          <div className="p-3.5 rounded-2xl bg-white border border-emerald-200 text-left space-y-1.5 font-mono text-[11px] text-emerald-950">
                             <div className="flex justify-between">
                               <span className="text-slate-500">Nama Pendaftar:</span>
                               <span className="font-bold text-slate-900">{regFullName}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">NIM Mahasiswa:</span>
+                              <span className="font-bold text-slate-900">{regNim}</span>
+                            </div>
+                            <div className="flex justify-between items-center py-1 px-2 rounded-lg bg-emerald-50 border border-emerald-200">
+                              <span className="text-emerald-700 font-bold">ID Magang Resmi:</span>
+                              <span className="font-bold text-emerald-900 text-xs">SGL-INT-2026-{regNim.trim()}</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-slate-500">Email Terdaftar:</span>
@@ -848,7 +944,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
                           </div>
 
                           <p className="text-[11px] text-slate-500 font-sans">
-                            Anda akan menerima notifikasi email aktivasi setelah akun Anda disetujui.
+                            Setelah disetujui, Anda dapat langsung login menggunakan <strong>ID Magang Resmi ({`SGL-INT-2026-${regNim.trim()}`})</strong> atau Email Anda.
                           </p>
 
                           <div className="pt-2">
@@ -877,6 +973,39 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
                             </div>
 
                             <div className="space-y-1">
+                              <label className="block text-[11px] font-semibold text-slate-700 flex items-center justify-between">
+                                <span>NIM (Nomor Induk Mahasiswa)</span>
+                                <span className="text-[10px] text-emerald-700 font-mono font-bold">*Wajib</span>
+                              </label>
+                              <div className="relative">
+                                <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                                <input 
+                                  type="text"
+                                  required
+                                  value={regNim}
+                                  onChange={e => setRegNim(e.target.value.replace(/\s+/g, ''))}
+                                  placeholder="e.g. 1301220250"
+                                  className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32] font-mono"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Live Preview ID Magang Resmi */}
+                          {regNim.trim() && (
+                            <div className="p-2.5 rounded-xl bg-emerald-50/90 border border-emerald-300 text-emerald-900 text-[11px] font-mono flex items-center justify-between shadow-xs animate-fade-in">
+                              <div className="flex items-center gap-1.5">
+                                <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+                                <span>ID Magang Resmi Otomatis:</span>
+                              </div>
+                              <span className="font-bold text-[#1b5e20] bg-white px-2 py-0.5 rounded border border-emerald-200 shadow-xs">
+                                SGL-INT-2026-{regNim.trim()}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-1">
                               <label className="block text-[11px] font-semibold text-slate-700">Asal Universitas</label>
                               <input 
                                 type="text"
@@ -887,18 +1016,18 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
                                 className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
                               />
                             </div>
-                          </div>
 
-                          <div className="space-y-1">
-                            <label className="block text-[11px] font-semibold text-slate-700">Program Studi</label>
-                            <input 
-                              type="text"
-                              required
-                              value={regStudyProgram}
-                              onChange={e => setRegStudyProgram(e.target.value)}
-                              placeholder="e.g. D3 Sistem Informasi / D3 Teknik Telekomunikasi"
-                              className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
-                            />
+                            <div className="space-y-1">
+                              <label className="block text-[11px] font-semibold text-slate-700">Program Studi</label>
+                              <input 
+                                type="text"
+                                required
+                                value={regStudyProgram}
+                                onChange={e => setRegStudyProgram(e.target.value)}
+                                placeholder="e.g. S1 Informatika / Teknik Komputer"
+                                className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
+                              />
+                            </div>
                           </div>
 
                           {/* Divisi / Role Magang Selector */}

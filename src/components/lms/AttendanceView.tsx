@@ -24,8 +24,7 @@ import {
   Laptop, 
   Image, 
   Camera,
-  BarChart3, 
-  Sparkles 
+  BarChart3 
 } from 'lucide-react';
 
 interface AttendanceViewProps {
@@ -537,12 +536,12 @@ export default function AttendanceView({
               )}
             </div>
           ) : (
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs min-w-[760px]">
               <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-700">
                 <tr>
                   <th className="py-3 px-3">Foto</th>
                   <th className="py-3 px-3">Mahasiswa & NIM</th>
-                  <th className="py-3 px-3 hidden xl:table-cell">Divisi & Mentor</th>
+                  <th className="py-3 px-3 hidden xl:table-cell">Divisi & Pembina Lab</th>
                   <th className="py-3 px-3">Tanggal</th>
                   <th className="py-3 px-3">Check In</th>
                   <th className="py-3 px-3">Check Out</th>

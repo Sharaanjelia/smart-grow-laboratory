@@ -49,6 +49,8 @@ import HtciShowcase from './components/HtciShowcase';
 import SmartWaterShowcase from './components/SmartWaterShowcase';
 import MopsShowcase from './components/MopsShowcase';
 import SapaJamiyyahShowcase from './components/SapaJamiyyahShowcase';
+import ResearchInterestSlider from './components/ResearchInterestSlider';
+import VisionMissionSection from './components/VisionMissionSection';
 
 import LoginView from './components/lms/LoginView';
 import LmsLayout from './components/lms/LmsLayout';
@@ -71,7 +73,6 @@ import {
   ChevronRight, 
   Send, 
   Users, 
-  Sparkles, 
   TrendingUp, 
   ArrowUpRight, 
   Activity, 
@@ -99,10 +100,42 @@ import {
   ExternalLink
 } from 'lucide-react';
 
+const parseUrlNavigationState = () => {
+  if (typeof window === 'undefined') {
+    return { page: 'home' as PageId, newsId: null, projId: null, tab: 'overview' };
+  }
+  const raw = window.location.hash.replace(/^#\/?/, '');
+  const [pathPart, queryPart] = raw.split('?');
+  const validPages: PageId[] = ['home', 'news', 'project', 'about', 'join', 'login', 'dashboard'];
+  const pageFromHash = validPages.includes(pathPart as PageId) ? (pathPart as PageId) : null;
+
+  let newsId: string | null = null;
+  let projId: string | null = null;
+  let tab: string | null = null;
+
+  if (queryPart) {
+    const params = new URLSearchParams(queryPart);
+    newsId = params.get('newsId') || params.get('id');
+    projId = params.get('projectId') || params.get('projId');
+    tab = params.get('tab');
+  }
+
+  const savedPage = localStorage.getItem('smartgrow_current_page') as PageId;
+  const page = pageFromHash || (validPages.includes(savedPage) ? savedPage : 'home');
+
+  return {
+    page,
+    newsId: newsId || localStorage.getItem('smartgrow_selected_news'),
+    projId: projId || localStorage.getItem('smartgrow_selected_proj'),
+    tab: tab || localStorage.getItem('smartgrow_lms_tab') || 'overview'
+  };
+};
+
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<PageId>('home');
-  const [selectedNewsId, setSelectedNewsId] = useState<string | null>(null);
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const initialNav = parseUrlNavigationState();
+  const [currentPage, setCurrentPage] = useState<PageId>(initialNav.page);
+  const [selectedNewsId, setSelectedNewsId] = useState<string | null>(initialNav.newsId);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(initialNav.projId);
 
   const [projectCategory, setProjectCategory] = useState<string>('All');
   const [joinModalOpen, setJoinModalOpen] = useState(false);
@@ -112,7 +145,63 @@ export default function App() {
   // ==========================================
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
-  const [lmsActiveTab, setLmsActiveTab] = useState<string>('overview');
+  const [lmsActiveTab, setLmsActiveTab] = useState<string>(initialNav.tab || 'overview');
+
+  // Synchronize route state with URL hash and localStorage so refresh stays on current page
+  useEffect(() => {
+    try {
+      localStorage.setItem('smartgrow_current_page', currentPage);
+      if (selectedNewsId) {
+        localStorage.setItem('smartgrow_selected_news', selectedNewsId);
+      } else {
+        localStorage.removeItem('smartgrow_selected_news');
+      }
+      if (selectedProjectId) {
+        localStorage.setItem('smartgrow_selected_proj', selectedProjectId);
+      } else {
+        localStorage.removeItem('smartgrow_selected_proj');
+      }
+      localStorage.setItem('smartgrow_lms_tab', lmsActiveTab);
+
+      let newHash = `#${currentPage}`;
+      const params = new URLSearchParams();
+      if (currentPage === 'news' && selectedNewsId) {
+        params.set('id', selectedNewsId);
+      } else if (currentPage === 'project' && selectedProjectId) {
+        params.set('id', selectedProjectId);
+      } else if (currentPage === 'dashboard' && lmsActiveTab && lmsActiveTab !== 'overview') {
+        params.set('tab', lmsActiveTab);
+      }
+      const paramString = params.toString();
+      if (paramString) newHash += `?${paramString}`;
+
+      if (window.location.hash !== newHash) {
+        window.history.replaceState(null, '', newHash);
+      }
+    } catch (_) {}
+  }, [currentPage, selectedNewsId, selectedProjectId, lmsActiveTab]);
+
+  // Handle browser Back / Forward history button and hashchange
+  useEffect(() => {
+    const handleHashChange = () => {
+      const state = parseUrlNavigationState();
+      if (state.page && state.page !== currentPage) {
+        setCurrentPage(state.page);
+      }
+      if (state.newsId !== selectedNewsId) {
+        setSelectedNewsId(state.newsId);
+      }
+      if (state.projId !== selectedProjectId) {
+        setSelectedProjectId(state.projId);
+      }
+      if (state.tab && state.tab !== lmsActiveTab) {
+        setLmsActiveTab(state.tab);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [currentPage, selectedNewsId, selectedProjectId, lmsActiveTab]);
 
   // Global LMS Theme & Language State
   const [darkMode, setDarkMode] = useState<boolean>(false);
@@ -234,7 +323,15 @@ export default function App() {
       const savedSession = localStorage.getItem('smartgrow_session_user');
       if (savedSession) {
         const parsed = JSON.parse(savedSession);
-        if (parsed && (parsed.email || parsed.id)) {
+        const dummyIds = [
+          'user_assistant_2', 'user_student_shara', 'user_student_aqila', 
+          'user_student_1', 'user_student_farid', 'user_student_sirvani', 
+          'user_student_tiara', 'user_nasywa', 'user_divia'
+        ];
+        if (parsed?.id && dummyIds.includes(parsed.id)) {
+          localStorage.removeItem('smartgrow_session_user');
+          setCurrentUser(null);
+        } else if (parsed && (parsed.email || parsed.id)) {
           setCurrentUser(enforceStrictUserRole(parsed));
           setAuthLoading(false);
         }
@@ -293,14 +390,15 @@ export default function App() {
 
         // 4. Fallback: If student was approved in pending_registrations, construct active User record
         if (!matchedUser && pendingRecord && pendingRecord.status === 'Approved') {
-          const generatedInternId = pendingRecord.internId || 'SGL-INT-2026-001';
+          const assignedNim = pendingRecord.nim || pendingRecord.studentId || '';
+          const generatedInternId = pendingRecord.internId || (assignedNim ? `SGL-INT-2026-${assignedNim}` : 'SGL-INT-2026-001');
           matchedUser = {
             id: firebaseUser.uid,
             name: pendingRecord.fullName,
             email: cleanEmail,
             role: 'student',
             title: 'Mahasiswa Magang Riset',
-            studentId: '',
+            studentId: assignedNim,
             internId: generatedInternId,
             institution: pendingRecord.university || '',
             major: pendingRecord.studyProgram || '',
@@ -317,6 +415,15 @@ export default function App() {
             status: 'active',
             isNewStudent: true
           };
+        }
+
+        if (matchedUser) {
+          if (!matchedUser.internId) {
+            matchedUser.internId = matchedUser.studentId ? `SGL-INT-2026-${matchedUser.studentId}` : 'SGL-INT-2026-001';
+          }
+          if (!matchedUser.studentId && pendingRecord && pendingRecord.nim) {
+            matchedUser.studentId = pendingRecord.nim;
+          }
         }
 
         // 5. Block auto-login ONLY if no user matched at all
@@ -363,6 +470,17 @@ export default function App() {
           const savedSession = localStorage.getItem('smartgrow_session_user');
           if (savedSession) {
             const parsed = JSON.parse(savedSession);
+            const dummyIds = [
+              'user_assistant_2', 'user_student_shara', 'user_student_aqila', 
+              'user_student_1', 'user_student_farid', 'user_student_sirvani', 
+              'user_student_tiara', 'user_nasywa', 'user_divia'
+            ];
+            if (parsed?.id && dummyIds.includes(parsed.id)) {
+              localStorage.removeItem('smartgrow_session_user');
+              setCurrentUser(null);
+              setAuthLoading(false);
+              return;
+            }
             if (parsed && (parsed.email || parsed.id)) {
               setCurrentUser(enforceStrictUserRole(parsed));
               setAuthLoading(false);
@@ -905,27 +1023,30 @@ export default function App() {
 
   const handleApproveRegistration = async (pendingReg: PendingRegistration) => {
     const approvedCount = pendingRegistrations.filter(r => r.status === 'Approved').length + 1;
-    const generatedInternId = pendingReg.internId || `SGL-INT-2026-${String(approvedCount).padStart(3, '0')}`;
+    const assignedNim = pendingReg.nim || pendingReg.studentId || '';
+    const generatedInternId = pendingReg.internId || (assignedNim ? `SGL-INT-2026-${assignedNim}` : `SGL-INT-2026-${String(approvedCount).padStart(3, '0')}`);
     const token = `act_token_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
     const updated: PendingRegistration = {
       ...pendingReg,
       status: 'Approved',
+      nim: assignedNim,
+      studentId: assignedNim,
       internId: generatedInternId,
       activationToken: token
     };
 
     setPendingRegistrations(prev => prev.map(p => p.id === pendingReg.id ? updated : p));
 
-    // Construct active user record for student with NO DUMMY FIELDS (Requirement #6 & #9)
+    // Construct active user record for student with NIM and ID Magang
     const newStudentUser: User = {
       id: pendingReg.uid || pendingReg.id || `user_act_${Date.now()}`,
       name: pendingReg.fullName,
       email: (pendingReg.email || '').trim().toLowerCase(),
       role: 'student',
       title: 'Mahasiswa Magang Riset',
-      studentId: '', // NIM empty per Req #6 & #9
-      internId: generatedInternId,
+      studentId: assignedNim, // NIM recorded in user profile!
+      internId: generatedInternId, // ID Magang recorded in user profile!
       institution: pendingReg.university || '',
       major: pendingReg.studyProgram || '',
       specialty: pendingReg.division || '',
@@ -1329,20 +1450,26 @@ export default function App() {
       )}
 
       {/* DASHBOARD LMS PAGE */}
-      {currentPage === 'dashboard' && currentUser && (
-        <LmsLayout
-          currentUser={currentUser}
-          onSwitchUser={handleSwitchUser}
-          activeTab={lmsActiveTab}
-          setActiveTab={setLmsActiveTab}
-          notifications={notifications}
-          onSignOut={handleLogout}
-          onBackToWebsite={() => handleNavigate('home')}
-          darkMode={darkMode}
-          onToggleDarkMode={handleToggleDarkMode}
-          language={language}
-          onToggleLanguage={handleToggleLanguage}
-        >
+      {currentPage === 'dashboard' && (
+        authLoading ? (
+          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 py-24">
+            <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-sm font-semibold text-slate-500 font-sans">Memuat sesi laboratorium...</p>
+          </div>
+        ) : currentUser ? (
+          <LmsLayout
+            currentUser={currentUser}
+            onSwitchUser={handleSwitchUser}
+            activeTab={lmsActiveTab}
+            setActiveTab={setLmsActiveTab}
+            notifications={notifications}
+            onSignOut={handleLogout}
+            onBackToWebsite={() => handleNavigate('home')}
+            darkMode={darkMode}
+            onToggleDarkMode={handleToggleDarkMode}
+            language={language}
+            onToggleLanguage={handleToggleLanguage}
+          >
           <Suspense fallback={
             <div className="flex items-center justify-center min-h-[60vh]">
               <div className="flex flex-col items-center gap-4">
@@ -1487,6 +1614,15 @@ export default function App() {
           )}
           </Suspense>
         </LmsLayout>
+        ) : (
+          <LoginView 
+            users={users} 
+            onLogin={handleLogin} 
+            onRegister={(newUser) => setUsers(prev => [newUser, ...prev])}
+            onPendingRegister={(newPending) => setPendingRegistrations(prev => [newPending, ...prev])}
+            onBack={() => handleNavigate('home')} 
+          />
+        )
       )}
 
       {/* Main Content Area for Public Pages */}
@@ -1550,140 +1686,21 @@ export default function App() {
                       className="inline-flex items-center gap-2 rounded-full bg-white/80 hover:bg-white backdrop-blur-xl border border-emerald-400 px-6 py-3 text-xs font-extrabold tracking-wider uppercase text-[#0A5247] hover:scale-105 active:scale-95 transition-all duration-300 shadow-sm cursor-pointer"
                     >
                       <span>Explore Lab News</span>
-                      <Sparkles className="h-3.5 w-3.5 text-[#058257]" />
+
                     </button>
                   </div>
 
-                  {/* Live Research Metrics Bar */}
-                  <div className="pt-3 grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full border-t border-emerald-900/20 mt-3">
-                    <div className="p-3 rounded-2xl bg-white/60 backdrop-blur-md border border-white/70 shadow-xs">
-                      <div className="text-lg sm:text-xl font-black text-[#0A5247] font-display">99.8%</div>
-                      <div className="text-[9px] uppercase tracking-wider text-slate-800 font-black mt-0.5">Telemetry Uptime</div>
-                    </div>
-                    <div className="p-3 rounded-2xl bg-white/60 backdrop-blur-md border border-white/70 shadow-xs">
-                      <div className="text-lg sm:text-xl font-black text-[#058257] font-display">1,200+</div>
-                      <div className="text-[9px] uppercase tracking-wider text-slate-800 font-black mt-0.5">Plants Monitored</div>
-                    </div>
-                    <div className="p-3 rounded-2xl bg-white/60 backdrop-blur-md border border-white/70 shadow-xs">
-                      <div className="text-lg sm:text-xl font-black text-teal-800 font-display">Scopus Q1</div>
-                      <div className="text-[9px] uppercase tracking-wider text-slate-800 font-black mt-0.5">Publication Hub</div>
-                    </div>
-                    <div className="p-3 rounded-2xl bg-white/60 backdrop-blur-md border border-white/70 shadow-xs">
-                      <div className="text-lg sm:text-xl font-black text-emerald-900 font-display">Kedaireka</div>
-                      <div className="text-[9px] uppercase tracking-wider text-slate-800 font-black mt-0.5">Industry Grant</div>
-                    </div>
-                  </div>
-
                 </div>
               </div>
             </section>
 
-            {/* BENTO STATS & FEATURED PREVIEW SECTION (Matches photo blocks perfectly) */}
-            <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12" id="home-bento">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
-                
-                {/* Photo Card Left: Panen Hasil Hidroponik */}
-                <div className="md:col-span-4 group relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-4 shadow-sm hover:shadow-md transition-all duration-300">
-                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
-                    <img 
-                      src="/images/harvest-team-bg.jpg" 
-                      alt="Harvest crop"
-                      className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-slate-950/10 to-transparent"></div>
-                    <span className="absolute bottom-3 left-3 rounded-md bg-teal-600 px-2.5 py-1 text-[10px] font-sans font-bold tracking-wider text-white uppercase">
-                      LAB ACTIVITIES
-                    </span>
-                  </div>
-                  <div className="mt-4 px-2">
-                    <h3 className="font-display text-lg font-bold text-slate-900 transition-colors">
-                      Panen Hasil Hidroponik Cerdas
-                    </h3>
-                    <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-                      Continuous cultivation of heavy-yielding leafy crops integrated directly with automated electronic feeding.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Stats Blocks: Partners, Projects, Members & Dynamic Lettuce image */}
-                <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  
-                  {/* Stat 1: Blue Partners Block */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-emerald-600 p-8 flex flex-col justify-between min-h-[190px] transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-600/20">
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                      <Users className="h-20 w-20 text-white" />
-                    </div>
-                    <div>
-                      <span className="font-sans text-[11px] tracking-wider font-bold text-emerald-100 uppercase">PARTNERS AND CLIENTS</span>
-                      <h4 className="mt-2 font-display text-4xl sm:text-5xl font-extrabold text-white">10+</h4>
-                    </div>
-                    <p className="mt-4 text-xs text-emerald-50/90 font-sans leading-relaxed">
-                      Our Partners and corporate clients collaborate to scale laboratory prototypes into commercial agricultural projects.
-                    </p>
-                  </div>
-
-                  {/* Stat 2: White/Sleek Project Block */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-white border border-slate-100 p-8 flex flex-col justify-between min-h-[190px] shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]">
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                      <TrendingUp className="h-20 w-20 text-teal-600" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-sans text-[11px] tracking-wider font-bold text-slate-400 uppercase">TOTAL PROJECTS</span>
-                        <span className="rounded-full bg-teal-50 px-2.5 py-0.5 font-sans text-[10px] font-bold text-teal-600">
-                          +5 This Month
-                        </span>
-                      </div>
-                      <h4 className="mt-2 font-display text-4xl sm:text-5xl font-extrabold text-slate-900">10+</h4>
-                    </div>
-                    <p className="mt-4 text-xs text-slate-500 font-sans leading-relaxed">
-                      Active systems research models deployed this quarter in both high-yield containers and smart municipal fixtures.
-                    </p>
-                  </div>
-
-                  {/* Stat 3: Yellow Members Block */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-[#ffd214] p-8 flex flex-col justify-between min-h-[190px] transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-yellow-500/10">
-                    <div>
-                      <span className="font-sans text-[11px] tracking-wider font-bold text-amber-950/80 uppercase">LABORATORY MEMBERS</span>
-                      <h4 className="mt-2 font-display text-4xl sm:text-5xl font-extrabold text-amber-950">10+</h4>
-                    </div>
-                    <p className="mt-4 text-xs text-amber-900 font-sans leading-relaxed">
-                      Active multidisciplinary engineering students, researchers, and agronomists coordinating in Telkom University.
-                    </p>
-                  </div>
-
-                  {/* Lettuce Card: Achieve Optimal Efficiency */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-[#0c5a57] p-6 flex flex-col justify-between min-h-[190px] transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-teal-900/10 text-white">
-                    <div className="relative h-20 overflow-hidden rounded-xl opacity-80">
-                      <img 
-                        src="/images/harvest-team-bg.jpg" 
-                        alt="Hydroponic Optimization"
-                        className="h-full w-full object-cover object-center"
-                      />
-                    </div>
-                    <div className="mt-3">
-                      <p className="text-sm font-extrabold tracking-tight leading-snug">
-                        "Achieve optimal efficiency and boost crop productivity!"
-                      </p>
-                      <span className="mt-1 block font-sans text-[9px] text-teal-200 uppercase tracking-widest font-bold">
-                        HYDROPONIC OPTIMIZATION CORE
-                      </span>
-                    </div>
-                  </div>
-
-                </div>
-
-              </div>
-            </section>
+            {/* VISI & MISI SECTION */}
+            <VisionMissionSection />
 
             {/* FEATURED RESEARCH PROJECTS SECTION — Dynamically synced from Firestore */}
             <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10" id="home-featured-projects">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono font-bold uppercase tracking-wider mb-2">
-                    <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
-                    <span>LATEST INNOVATIONS & RESEARCH</span>
-                  </div>
                   <h2 className="font-display text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
                     Proyek Riset & Inovasi Unggulan
                   </h2>
@@ -1753,154 +1770,37 @@ export default function App() {
               </div>
             </section>
 
-            {/* RESEARCH INTEREST SECTION (High-end dynamic glassmorphic design) */}
-            <section className="w-full bg-slate-950 py-20 px-4 sm:px-6 lg:px-8 my-12 relative overflow-hidden" id="research-interests">
-              {/* Soft ambient background lights */}
-              <div className="absolute top-0 right-0 h-96 w-96 bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none"></div>
-              <div className="absolute -bottom-20 -left-20 h-[500px] w-[500px] bg-teal-600/10 rounded-full blur-[140px] pointer-events-none"></div>
-              
-              <div className="mx-auto max-w-7xl relative z-10">
-                <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/20 text-emerald-400 text-xs font-mono font-bold uppercase tracking-wider">
-                    <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-                    <span>SMART GROW RESEARCH DOMAINS</span>
-                  </div>
-                  <h2 className="font-display text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
-                    Research Interest
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-sans">
-                    Fokus kepakaran dan kelompok laboratorium riset terpadu dalam memajukan teknologi pertanian cerdas dan sistem siber.
+            {/* RESEARCH INTEREST SECTION (Smooth Interactive Slider) */}
+            <ResearchInterestSlider />
+
+            {/* COLLABORATION & RECRUITMENT CTA BANNER */}
+            <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 mb-6">
+              <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#0A5247] via-[#084239] to-[#042823] p-8 sm:p-12 text-white shadow-xl shadow-emerald-950/15 border border-emerald-700/30 flex flex-col lg:flex-row items-center justify-between gap-8">
+                <div className="space-y-3 text-center lg:text-left max-w-2xl">
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-emerald-300 text-[10px] font-mono font-bold uppercase tracking-widest">
+                    KOLABORASI & TALENTA RISET
+                  </span>
+                  <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
+                    Tertarik Berkolaborasi atau Bergabung dalam Riset Kami?
+                  </h3>
+                  <p className="text-xs sm:text-sm text-emerald-100/80 leading-relaxed font-sans">
+                    Smart Grow Laboratory membuka peluang kemitraan industri, riset bersama, dan program magang intensif bagi mahasiswa berdedikasi.
                   </p>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {/* Card 1 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
-                    <div className="flex items-start justify-between">
-                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
-                        <Sprout className="h-6 w-6" />
-                      </div>
-                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
-                    </div>
-                    <div className="space-y-2 mt-6">
-                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">PRECISION FARMING</span>
-                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
-                        Smart Farming & Precision Agriculture
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Card 2 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
-                    <div className="flex items-start justify-between">
-                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
-                        <Network className="h-6 w-6" />
-                      </div>
-                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
-                    </div>
-                    <div className="space-y-2 mt-6">
-                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">IOT PROTOCOLS</span>
-                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
-                        Internet of Things (IoT) & Wireless Sensor Networks
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Card 3 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
-                    <div className="flex items-start justify-between">
-                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
-                        <Brain className="h-6 w-6" />
-                      </div>
-                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
-                    </div>
-                    <div className="space-y-2 mt-6">
-                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">DEEP LEARNING</span>
-                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
-                        Artificial Intelligence & Machine Learning Applications
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Card 4 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
-                    <div className="flex items-start justify-between">
-                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
-                        <Shield className="h-6 w-6" />
-                      </div>
-                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
-                    </div>
-                    <div className="space-y-2 mt-6">
-                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">CYBERSECURITY</span>
-                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
-                        Quantum & Information Security
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Card 5 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
-                    <div className="flex items-start justify-between">
-                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
-                        <Activity className="h-6 w-6" />
-                      </div>
-                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
-                    </div>
-                    <div className="space-y-2 mt-6">
-                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">DSP TELEMETRY</span>
-                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
-                        Signal Processing & Compressive Sensing
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Card 6 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
-                    <div className="flex items-start justify-between">
-                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
-                        <Heart className="h-6 w-6" />
-                      </div>
-                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
-                    </div>
-                    <div className="space-y-2 mt-6">
-                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">HEALTH TECH</span>
-                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
-                        Telemedicine & Health Technology
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Card 7 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
-                    <div className="flex items-start justify-between">
-                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
-                        <GitBranch className="h-6 w-6" />
-                      </div>
-                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
-                    </div>
-                    <div className="space-y-2 mt-6">
-                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">SDN ARCHITECTURE</span>
-                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
-                        Networking & Software Defined Networks (SDN)
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Card 8 */}
-                  <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e635f] via-[#0c5a57] to-[#073d3b] p-7 flex flex-col justify-between min-h-[230px] border border-emerald-400/25 hover:border-emerald-300/80 transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-pointer">
-                    <div className="flex items-start justify-between">
-                      <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-400/30 text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-800/80 transition-all duration-300 shadow-inner">
-                        <Leaf className="h-6 w-6" />
-                      </div>
-                      <ArrowUpRight className="h-5 w-5 text-emerald-400/60 group-hover:text-emerald-300 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
-                    </div>
-                    <div className="space-y-2 mt-6">
-                      <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-300/80 uppercase block">SUSTAINABLE TECH</span>
-                      <h3 className="font-display text-base sm:text-lg font-extrabold text-white leading-snug">
-                        Green Technology & Sustainable Systems
-                      </h3>
-                    </div>
-                  </div>
+                <div className="flex flex-wrap items-center justify-center gap-4 shrink-0">
+                  <button
+                    onClick={() => handleNavigate('join')}
+                    className="inline-flex items-center gap-2 rounded-full bg-white text-[#0A5247] hover:bg-emerald-50 px-7 py-3.5 text-xs font-extrabold tracking-wider uppercase transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg cursor-pointer"
+                  >
+                    <span>Daftar Magang Riset</span>
+                    <ArrowUpRight className="h-4 w-4 text-[#0A5247]" />
+                  </button>
+                  <button
+                    onClick={() => handleNavigate('project')}
+                    className="inline-flex items-center gap-2 rounded-full bg-emerald-900/60 hover:bg-emerald-800/80 border border-emerald-400/30 text-white px-6 py-3.5 text-xs font-bold tracking-wider uppercase transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+                  >
+                    <span>Lihat Semua Proyek</span>
+                  </button>
                 </div>
               </div>
             </section>
@@ -2029,10 +1929,6 @@ export default function App() {
                 {/* Section Header */}
                 <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="h-1.5 w-8 rounded bg-teal-600"></span>
-                      <span className="font-sans text-xs font-bold tracking-widest text-teal-600 uppercase">Riset & Inovasi</span>
-                    </div>
                     <h1 className="font-display text-4xl font-extrabold text-slate-900 md:text-5xl tracking-tight">
                       Projek R&D Hub
                     </h1>
@@ -2114,9 +2010,9 @@ export default function App() {
                               </div>
 
                               {/* Direct Website / App Badge if liveUrl exists */}
-                              {(project.liveUrl || project.id === 'mops' || project.id === 'sapa-jamiyyah' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
+                              {(project.liveUrl || project.id === 'flocify' || project.id === 'mops' || project.id === 'sapa-jamiyyah' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
                                 <a
-                                  href={project.liveUrl || (project.id === 'sapa-jamiyyah' ? 'https://www.sapajamiyyah.com/' : project.id === 'mops' ? 'https://mops-5f51b.web.app/' : project.id === 'smart-tbn' ? 'https://smarttrash.devtbn.tech/' : project.id === 'smart-water' ? 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing' : 'https://htci.netlify.app/')}
+                                  href={project.liveUrl || (project.id === 'flocify' ? 'https://ppmtelkom.vercel.app/' : project.id === 'sapa-jamiyyah' ? 'https://www.sapajamiyyah.com/' : project.id === 'mops' ? 'https://mops-5f51b.web.app/' : project.id === 'smart-tbn' ? 'https://smarttrash.devtbn.tech/' : project.id === 'smart-water' ? 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing' : 'https://htci.netlify.app/')}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   onClick={(e) => e.stopPropagation()}
@@ -2155,9 +2051,9 @@ export default function App() {
                               Lihat Spesifikasi & Diagnostik
                             </span>
                             <div className="flex items-center gap-2">
-                              {(project.liveUrl || project.id === 'mops' || project.id === 'sapa-jamiyyah' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
+                              {(project.liveUrl || project.id === 'flocify' || project.id === 'mops' || project.id === 'sapa-jamiyyah' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
                                 <a
-                                  href={project.liveUrl || (project.id === 'sapa-jamiyyah' ? 'https://www.sapajamiyyah.com/' : project.id === 'mops' ? 'https://mops-5f51b.web.app/' : project.id === 'smart-tbn' ? 'https://smarttrash.devtbn.tech/' : project.id === 'smart-water' ? 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing' : 'https://htci.netlify.app/')}
+                                  href={project.liveUrl || (project.id === 'flocify' ? 'https://ppmtelkom.vercel.app/' : project.id === 'sapa-jamiyyah' ? 'https://www.sapajamiyyah.com/' : project.id === 'mops' ? 'https://mops-5f51b.web.app/' : project.id === 'smart-tbn' ? 'https://smarttrash.devtbn.tech/' : project.id === 'smart-water' ? 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing' : 'https://htci.netlify.app/')}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   onClick={(e) => e.stopPropagation()}
@@ -2489,9 +2385,9 @@ export default function App() {
               </p>
             </div>
 
-            {/* Main Mentor Card (Prof Indrarini) - Highlighted size */}
+            {/* Main Pembina Lab Card (Prof Indrarini) - Highlighted size */}
             {(() => {
-              const mentor = teamList.find(m => m.role === 'Mentor');
+              const mentor = teamList.find(m => m.role === 'Pembina Lab' || m.role === 'Mentor');
               if (!mentor) return null;
               const pilrekUrl = mentor.profileUrl || 'https://pilrek.telkomuniversity.ac.id/indrarini-dyah-irawati/';
               return (
@@ -2520,7 +2416,7 @@ export default function App() {
                         <span className="rounded bg-pink-50 border border-pink-200 px-2.5 py-0.5 font-sans text-[10px] font-bold text-pink-700 uppercase tracking-wider">
                           {mentor.role}
                         </span>
-                        <span className="text-slate-400 font-sans text-[9px] font-bold">SMART GROW LAB MENTOR</span>
+                        <span className="text-slate-400 font-sans text-[9px] font-bold">PEMBINA LAB SMART GROW</span>
                       </div>
                       <a
                         href={pilrekUrl}
@@ -2567,7 +2463,7 @@ export default function App() {
 
             {/* Students & Researchers Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-              {teamList.filter(m => m.role !== 'Mentor').map((member) => (
+              {teamList.filter(m => m.role !== 'Pembina Lab' && m.role !== 'Mentor').map((member) => (
                 <div 
                   key={member.id}
                   className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-100 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-teal-500/20"
@@ -2664,7 +2560,7 @@ export default function App() {
             {/* Header */}
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-teal-600 animate-pulse" />
+
                 <h3 className="font-display text-lg font-bold text-slate-900 uppercase tracking-wider">
                   Apply to Join the Lab
                 </h3>

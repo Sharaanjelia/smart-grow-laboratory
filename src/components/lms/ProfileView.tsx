@@ -18,7 +18,6 @@ import {
   Key, 
   Upload, 
   CheckCircle2, 
-  Sparkles, 
   Activity, 
   ShieldCheck, 
   Clock, 
@@ -105,12 +104,12 @@ export default function ProfileView({
   const [paperSubtitle, setPaperSubtitle] = useState(currentUser.paperSubtitle || 'Q1 & Q2 Smart Precision Farming');
   const [totalPaten, setTotalPaten] = useState(currentUser.totalPaten || '5 Hak Cipta');
   const [patenSubtitle, setPatenSubtitle] = useState(currentUser.patenSubtitle || 'Sistem Algoritma & Hardware');
-  const [totalMahasiswaOverride, setTotalMahasiswaOverride] = useState(currentUser.totalMahasiswaOverride || '8 Mahasiswa Magang');
-  const [mahasiswaSubtitle, setMahasiswaSubtitle] = useState(currentUser.mahasiswaSubtitle || '8 Mahasiswa Magang & 6 Alumni Riset');
+  const [totalMahasiswaOverride, setTotalMahasiswaOverride] = useState(currentUser.totalMahasiswaOverride || '9 Mahasiswa Magang');
+  const [mahasiswaSubtitle, setMahasiswaSubtitle] = useState(currentUser.mahasiswaSubtitle || '9 Mahasiswa Magang & 6 Alumni Riset');
 
   // Dynamic values calculated from system database
-  const activeStudentsCount = users && users.length > 0 ? users.filter(u => u.role === 'student' && u.status === 'active').length : 0;
-  const alumniCount = users && users.length > 0 ? users.filter(u => u.status === 'alumni').length : 6;
+  const activeStudentsCount = users && users.length > 0 ? users.filter(u => (u.role === 'student' || u.id === 'user_assistant_2') && u.status === 'active').length : 9;
+  const alumniCount = users && users.length > 0 ? users.filter(u => u.status === 'alumni' || u.id === 'user_assistant_alfachri').length : 6;
   const totalProjectsCount = (projects?.length || 0) + (publicProjects?.length || 0);
 
   const displayHibah = totalHibah.trim() || 'Rp 100 Juta+';
@@ -122,8 +121,8 @@ export default function ProfileView({
   const displayPaten = totalPaten.trim() || '5 Hak Cipta';
   const displayPatenSub = patenSubtitle.trim() || 'Sistem Algoritma & Hardware';
 
-  const displayMahasiswa = totalMahasiswaOverride.trim() || (activeStudentsCount > 0 ? `${activeStudentsCount} Mahasiswa Magang` : '8 Mahasiswa Magang');
-  const displayMahasiswaSub = mahasiswaSubtitle.trim() || (activeStudentsCount > 0 ? `${activeStudentsCount} Mahasiswa Magang & ${alumniCount} Alumni Riset` : '8 Mahasiswa Magang & 6 Alumni Riset');
+  const displayMahasiswa = totalMahasiswaOverride.trim() || (activeStudentsCount > 0 ? `${activeStudentsCount} Mahasiswa Magang` : '9 Mahasiswa Magang');
+  const displayMahasiswaSub = mahasiswaSubtitle.trim() || (activeStudentsCount > 0 ? `${activeStudentsCount} Mahasiswa Magang & ${alumniCount} Alumni Riset` : '9 Mahasiswa Magang & 6 Alumni Riset');
 
   // Password Form State
   const [oldPassword, setOldPassword] = useState('');
@@ -137,10 +136,12 @@ export default function ProfileView({
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    const effectiveInternId = currentUser.internId || (studentId ? `SGL-INT-2026-${studentId}` : '');
     const updated: User = {
       ...currentUser,
       name,
       studentId,
+      internId: effectiveInternId,
       institution,
       major,
       semester,
@@ -268,7 +269,7 @@ export default function ProfileView({
               {/* Director Info Header */}
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold border border-amber-400/30">
-                  <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                  
                   <span>Direktur Utama & Kepala Laboratorium Smart Grow</span>
                 </div>
                 
@@ -449,7 +450,7 @@ export default function ProfileView({
             {/* Leadership Vision Card */}
             <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-4">
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-amber-500" />
+                
                 <span>Visi Kepemimpinan & Pengarahan Riset</span>
               </h3>
 
@@ -718,7 +719,7 @@ export default function ProfileView({
           {/* User Basic Info */}
           <div className="flex-1 text-center md:text-left space-y-2">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#C7D8A8]/30 text-[#C7D8A8] text-xs font-mono font-bold border border-[#C7D8A8]/40">
-              <Sparkles className="h-3.5 w-3.5" />
+              
               <span>{isAssistant ? 'Asisten Laboratorium' : 'Mahasiswa Magang Riset'}</span>
             </div>
             
@@ -728,14 +729,12 @@ export default function ProfileView({
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs text-slate-200 pt-1 font-sans">
               <span className="flex items-center gap-1.5">
                 <BookOpen className="h-3.5 w-3.5 text-[#C7D8A8]" />
-                <span>NIM: {studentId}</span>
+                <span>NIM: {studentId || currentUser.studentId || '-'}</span>
               </span>
-              {currentUser.internId && (
-                <span className="flex items-center gap-1.5 font-mono font-bold text-white bg-white/20 px-2.5 py-0.5 rounded-lg border border-white/30 shadow-xs">
-                  <Award className="h-3.5 w-3.5 text-amber-300" />
-                  <span>ID MAGANG: {currentUser.internId}</span>
-                </span>
-              )}
+              <span className="flex items-center gap-1.5 font-mono font-bold text-white bg-white/20 px-2.5 py-0.5 rounded-lg border border-white/30 shadow-xs">
+                <Award className="h-3.5 w-3.5 text-amber-300" />
+                <span>ID MAGANG: {currentUser.internId || (studentId || currentUser.studentId ? `SGL-INT-2026-${studentId || currentUser.studentId}` : 'SGL-INT-2026-001')}</span>
+              </span>
               <span className="flex items-center gap-1.5">
                 <Building2 className="h-3.5 w-3.5 text-[#C7D8A8]" />
                 <span>{institution}</span>
@@ -777,6 +776,16 @@ export default function ProfileView({
             </h3>
 
             <div className="space-y-3 text-xs text-slate-600 dark:text-slate-300">
+              <div className="flex items-center gap-3">
+                <Award className="h-4 w-4 text-emerald-600 shrink-0" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-medium">ID Magang Resmi</p>
+                  <p className="font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                    {currentUser.internId || (studentId || currentUser.studentId ? `SGL-INT-2026-${studentId || currentUser.studentId}` : 'SGL-INT-2026-001')}
+                  </p>
+                </div>
+              </div>
+
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-slate-400 shrink-0" />
                 <div>
@@ -1054,7 +1063,7 @@ export default function ProfileView({
               {isDirector && (
                 <div className="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/80 space-y-3 mt-4">
                   <h4 className="text-xs font-bold text-[#2E7D32] dark:text-emerald-400 flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-emerald-600" />
+                    
                     <span>Pengaturan 4 Kartu KPI Eksekutif (Data Asli)</span>
                   </h4>
 
@@ -1079,7 +1088,7 @@ export default function ProfileView({
 
                     <div>
                       <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">Mahasiswa Bimbingan (Kustom / Otomatis)</label>
-                      <input type="text" value={totalMahasiswaOverride} onChange={e => setTotalMahasiswaOverride(e.target.value)} placeholder={`Otomatis (${activeStudentsCount || 8} Mahasiswa Magang)`} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                      <input type="text" value={totalMahasiswaOverride} onChange={e => setTotalMahasiswaOverride(e.target.value)} placeholder={`Otomatis (${activeStudentsCount || 9} Mahasiswa Magang)`} className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
                       <input type="text" value={mahasiswaSubtitle} onChange={e => setMahasiswaSubtitle(e.target.value)} placeholder="Subtitle Bimbingan" className="w-full mt-1.5 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-[10px]" />
                     </div>
                   </div>

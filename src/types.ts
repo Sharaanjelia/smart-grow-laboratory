@@ -17,6 +17,8 @@ export interface NewsItem {
   content: string;
   readTime: string;
   comments: Comment[];
+  externalUrl?: string;
+  sourceMedia?: string;
 }
 
 export interface SensorData {
@@ -115,6 +117,8 @@ export interface PendingRegistration {
   id: string;
   uid?: string;
   fullName: string;
+  nim?: string; // NIM Mahasiswa
+  studentId?: string; // Alias NIM
   university: string;
   studyProgram: string;
   division: string;
@@ -228,6 +232,7 @@ export interface LmsProject {
   progressPercent: number; // Progress
   deadline: string;
   repoUrl?: string; // Repository GitHub
+  liveUrl?: string; // Live Demo or Production URL
   githubUrl?: string;
   documents?: { name: string; url: string; date: string; size?: string }[]; // Dokumen
   photoUrl?: string; // Foto Proyek

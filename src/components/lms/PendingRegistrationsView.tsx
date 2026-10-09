@@ -13,7 +13,6 @@ import {
   Mail, 
   Calendar, 
   Briefcase, 
-  Sparkles, 
   Copy, 
   Check, 
   Send,
@@ -46,12 +45,14 @@ export default function PendingRegistrationsView({
   };
 
   const generateEmailBody = (reg: PendingRegistration) => {
+    const assignedId = reg.internId || (reg.nim ? `SGL-INT-2026-${reg.nim}` : 'SGL-INT-2026-001');
     return `Halo ${reg.fullName},
 
 Pendaftaran magang riset Anda untuk divisi ${reg.division} di Smart Grow Laboratory Telkom University telah DISETUJUI & DIAKTIFKAN secara resmi!
 
 RINCIAN AKUN MAGANG:
-- ID Magang Resmi: ${reg.internId || 'SGL-INT-2026-001'}
+- ID Magang Resmi: ${assignedId}
+- NIM: ${reg.nim || reg.studentId || '-'}
 - Email Terdaftar: ${reg.email}
 - Asal Universitas: ${reg.university}
 - Program Studi: ${reg.studyProgram}
@@ -59,7 +60,7 @@ RINCIAN AKUN MAGANG:
 Anda sekarang sudah dapat masuk (login) ke Portal LMS Smart Grow Laboratory menggunakan link berikut:
 ${window.location.origin}/#login
 
-Gunakan email (${reg.email}) dan kata sandi yang Anda daftarkan saat mengisi form pendaftaran.
+Anda dapat login menggunakan ID Magang Resmi Anda (${assignedId}) atau Email (${reg.email}), beserta kata sandi yang Anda daftarkan saat mengisi formulir pendaftaran.
 
 Salam hangat,
 Tim Pengelola Smart Grow Laboratory
@@ -164,14 +165,14 @@ Telkom University`;
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto overflow-hidden">
           <Filter className="h-4 w-4 text-slate-400 shrink-0" />
-          <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
+          <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto overflow-x-auto no-scrollbar scroll-smooth">
             {['all', 'Pending Approval', 'Approved', 'Rejected'].map(st => (
               <button
                 key={st}
                 onClick={() => setFilterStatus(st)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   filterStatus === st 
                     ? 'bg-white text-emerald-800 shadow-xs' 
                     : 'text-slate-500 hover:text-slate-900'
@@ -236,6 +237,13 @@ Telkom University`;
                 <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-2 text-xs">
                   <div className="flex items-center justify-between text-slate-700">
                     <span className="text-slate-500 flex items-center gap-1.5">
+                      <GraduationCap className="h-3.5 w-3.5 text-slate-400" />
+                      NIM
+                    </span>
+                    <span className="font-mono font-bold text-slate-900 truncate max-w-[140px]">{reg.nim || reg.studentId || '-'}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-700">
+                    <span className="text-slate-500 flex items-center gap-1.5">
                       <Building2 className="h-3.5 w-3.5 text-slate-400" />
                       Universitas
                     </span>
@@ -266,12 +274,12 @@ Telkom University`;
                   </div>
                 </div>
 
-                {reg.internId && (
-                  <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 flex items-center justify-between text-xs font-mono font-bold text-emerald-900">
-                    <span>ID MAGANG RESMI:</span>
-                    <span className="text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">{reg.internId}</span>
-                  </div>
-                )}
+                <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 flex items-center justify-between text-xs font-mono font-bold text-emerald-900">
+                  <span>ID MAGANG RESMI:</span>
+                  <span className="text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">
+                    {reg.internId || (reg.nim ? `SGL-INT-2026-${reg.nim}` : 'SGL-INT-2026-001')}
+                  </span>
+                </div>
               </div>
 
               {/* Action Buttons */}
@@ -353,6 +361,14 @@ Telkom University`;
 
               <div className="space-y-3 text-xs">
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2.5">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">NIM Mahasiswa:</span>
+                    <span className="font-mono font-bold text-slate-900">{selectedReg.nim || selectedReg.studentId || '-'}</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-emerald-50 p-2 rounded-xl border border-emerald-200">
+                    <span className="text-emerald-700 font-bold">ID Magang Resmi:</span>
+                    <span className="font-mono font-bold text-emerald-900">{selectedReg.internId || (selectedReg.nim ? `SGL-INT-2026-${selectedReg.nim}` : 'SGL-INT-2026-001')}</span>
+                  </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Asal Universitas:</span>
                     <span className="font-bold text-slate-900">{selectedReg.university}</span>

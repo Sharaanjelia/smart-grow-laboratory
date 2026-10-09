@@ -16,7 +16,6 @@ import {
   X, 
   FileText, 
   Send,
-  Sparkles,
   ChevronRight,
   Eye,
   AlertCircle

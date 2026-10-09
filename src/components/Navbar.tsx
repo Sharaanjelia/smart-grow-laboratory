@@ -60,12 +60,12 @@ export default function Navbar({
         </nav>
 
         {/* Right CTA Button & Login / Portal Link */}
-        <div className="flex items-center gap-2 sm:gap-3" id="navbar-cta-container">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0" id="navbar-cta-container">
           {isLoggedIn ? (
             <button
               onClick={() => setCurrentPage('dashboard')}
               id="lab-portal-navbar-button"
-              className="rounded-full bg-[#0A5247] hover:bg-[#073d34] px-5 py-2 text-xs sm:text-sm font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-md flex items-center gap-2"
+              className="rounded-full bg-[#0A5247] hover:bg-[#073d34] px-3 sm:px-5 py-1.5 sm:py-2 text-[11px] sm:text-sm font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-md flex items-center gap-1.5 sm:gap-2"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>Lab Portal</span>
@@ -79,7 +79,7 @@ export default function Navbar({
             <button
               onClick={() => onOpenLogin ? onOpenLogin() : setCurrentPage('login')}
               id="login-navbar-button"
-              className="rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-700 px-4 py-2 text-xs sm:text-sm font-semibold text-slate-200 transition-all duration-300 hover:text-white cursor-pointer"
+              className="rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-700 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold text-slate-200 transition-all duration-300 hover:text-white cursor-pointer"
             >
               <span>Lab Login</span>
             </button>
@@ -88,7 +88,7 @@ export default function Navbar({
           <button
             onClick={onOpenJoin}
             id="join-us-navbar-button"
-            className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-5 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-md shadow-emerald-600/10"
+            className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-3.5 sm:px-6 py-1.5 sm:py-2.5 text-[11px] sm:text-sm font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-md shadow-emerald-600/10"
           >
             <span>Join Us!</span>
           </button>

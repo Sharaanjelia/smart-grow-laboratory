@@ -7,8 +7,7 @@ import {
   Trash2, 
   Activity, 
   AlertTriangle, 
-  CheckCircle2, 
-  Sparkles,
+  CheckCircle2,
   RefreshCw,
   Camera,
   Bell,
@@ -174,7 +173,7 @@ export default function SmartTbnShowcase({
         <div className="relative z-10 max-w-4xl space-y-4">
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/70 border border-emerald-400/40 text-emerald-300 font-mono text-xs font-bold uppercase tracking-wider backdrop-blur-md">
-              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+              
               Riset Pengabdian Masyarakat • Sumba NTT
             </span>
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-mono text-xs font-semibold">
@@ -485,7 +484,7 @@ export default function SmartTbnShowcase({
               <p className="text-[11px] text-slate-500 leading-normal mt-0.5">Tidak perlu inspeksi manual setiap saat ke seluruh titik.</p>
             </div>
             <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700">
-              <Sparkles className="h-5 w-5 text-emerald-600 mb-1" />
+              
               <div className="font-bold text-xs text-slate-900 dark:text-white">Lebih Bersih</div>
               <p className="text-[11px] text-slate-500 leading-normal mt-0.5">Mencegah sampah meluap dan menimbulkan bau tidak sedap.</p>
             </div>

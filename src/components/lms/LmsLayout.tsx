@@ -25,7 +25,6 @@ import {
   Settings, 
   History,
   CheckCircle2,
-  Sparkles,
   Sun,
   Moon,
   Globe
@@ -106,7 +105,7 @@ export default function LmsLayout({
           { id: 'attendance', label: isID ? 'Presensi Harian' : 'Attendance', icon: Clock },
           { id: 'tasks', label: isID ? 'Tugas & Progres' : 'Assigned Tasks & Progress', icon: CheckSquare },
           { id: 'announcements', label: isID ? 'Pengumuman Lab' : 'Announcements', icon: Megaphone },
-          { id: 'mentor', label: isID ? 'Pembimbing Riset' : 'Mentor', icon: Users },
+          { id: 'mentor', label: isID ? 'Pembina Lab' : 'Pembina Lab', icon: Users },
           { id: 'profile', label: isID ? 'Profil Saya' : 'Profile', icon: UserCheck },
           { id: 'settings', label: isID ? 'Pengaturan' : 'Settings', icon: Settings },
         ];
@@ -116,7 +115,7 @@ export default function LmsLayout({
           { id: 'pending_registrations', label: isID ? 'Persetujuan Pendaftaran' : 'Pending Registrations', icon: ShieldCheck },
           { id: 'users', label: isID ? 'Kelola Pengguna' : 'User Management', icon: Users },
           { id: 'applicants', label: isID ? 'Pendaftaran Magang' : 'Join Submissions', icon: FileText },
-          { id: 'content', label: isID ? 'Konten Website' : 'Website Content', icon: Sparkles },
+          { id: 'content', label: isID ? 'Konten Website' : 'Website Content', icon: Globe },
           { id: 'attendance', label: isID ? 'Log Presensi' : 'Attendance Logs', icon: Clock },
           { id: 'logs', label: isID ? 'Audit Sistem' : 'System Audit Logs', icon: History },
           { id: 'settings', label: isID ? 'Pengaturan' : 'Settings', icon: Settings },
@@ -289,7 +288,7 @@ export default function LmsLayout({
           </div>
 
           {/* Right Header Utilities: Language, Theme Toggle, Role Badge, Notifications, Profile */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 md:gap-3">
             
             {/* Direct Shortcut to Public Research Web */}
             {(onBackToWebsite || onBackToPublicSite) && (
@@ -360,7 +359,7 @@ export default function LmsLayout({
               </button>
 
               {notifDropdownOpen && (
-                <div className={`absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border shadow-2xl p-4 z-50 space-y-3 ${
+                <div className={`absolute right-0 mt-2 w-[calc(100vw-32px)] max-w-sm sm:w-96 rounded-2xl border shadow-2xl p-4 z-50 space-y-3 ${
                   darkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-[#E5E7EB]'
                 }`}>
                   <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">

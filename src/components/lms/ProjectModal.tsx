@@ -6,8 +6,7 @@ import {
   Github, 
   FileText, 
   Users, 
-  Image, 
-  Sparkles,
+  Image,
   Save
 } from 'lucide-react';
 

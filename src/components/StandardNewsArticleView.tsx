@@ -6,8 +6,7 @@ import {
   User as UserIcon, 
   Send, 
   MessageSquare, 
-  CheckCircle2, 
-  Sparkles,
+  CheckCircle2,
   Share2,
   Tag,
   BookOpen,
@@ -16,7 +15,8 @@ import {
   Copy,
   ArrowRight,
   ShieldCheck,
-  Building2
+  Building2,
+  ExternalLink
 } from 'lucide-react';
 import { NewsItem, Comment } from '../types';
 
@@ -260,13 +260,39 @@ export default function StandardNewsArticleView({
         {/* MAIN ARTICLE BODY CONTENT */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-10 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
           <h2 className="text-lg font-bold font-display text-slate-900 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-emerald-600" />
+            
             <span>Laporan Berita & Liputan Kegiatan</span>
           </h2>
 
           <div className="prose prose-slate dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 font-sans">
             {renderFormattedContent(item.content)}
           </div>
+
+          {/* External Source Link Banner */}
+          {item.externalUrl && (
+            <div className="my-6 p-4 sm:p-5 rounded-2xl bg-teal-50/80 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-teal-600 animate-pulse"></span>
+                  <span className="text-xs font-bold text-teal-800 dark:text-teal-200 uppercase tracking-wider font-mono">
+                    Liputan Media Eksternal ({item.sourceMedia || 'Koran Gala'})
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                  Liputan lengkap berita ini diterbitkan secara resmi oleh media <strong>{item.sourceMedia || 'Koran Gala'}</strong>. Anda dapat membaca artikel selengkapnya langsung di portal media terkait.
+                </p>
+              </div>
+              <a
+                href={item.externalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 active:scale-95 text-white font-bold text-xs sm:text-sm shadow-md transition-all shrink-0 cursor-pointer"
+              >
+                <span>Baca Selengkapnya di {item.sourceMedia || 'Koran Gala'}</span>
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            </div>
+          )}
 
           {/* Article Footer Reaction Bar */}
           <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">

@@ -18,8 +18,7 @@ import {
   Mail, 
   Phone, 
   BarChart3, 
-  CheckSquare, 
-  Sparkles,
+  CheckSquare,
   ChevronRight,
   ExternalLink,
   MessageSquare,
@@ -123,7 +122,7 @@ export default function InternshipStudentsView({
       {/* MAHASISWA MAGANG COMPLETE DATA TABLE */}
       <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs min-w-[850px]">
             <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-700">
               <tr>
                 <th className="py-3.5 px-4 whitespace-nowrap">Foto & Mahasiswa</th>

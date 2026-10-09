@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, MapPin, CheckCircle2, AlertCircle, X, Sparkles, RefreshCw, Upload } from 'lucide-react';
+import { Camera, MapPin, CheckCircle2, AlertCircle, X, RefreshCw, Upload } from 'lucide-react';
 
 interface CheckInCameraModalProps {
   isOpen: boolean;
@@ -364,7 +364,7 @@ export default function CheckInCameraModal({
                       }}
                       className="px-4 py-2 rounded-full bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs shadow-lg border border-emerald-600 transition-all cursor-pointer flex items-center gap-1.5"
                     >
-                      <Sparkles className="h-4 w-4 text-emerald-300" />
+                      
                       <span>Foto Profil Lab 👤</span>
                     </button>
                   </div>

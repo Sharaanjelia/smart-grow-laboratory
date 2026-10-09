@@ -171,7 +171,7 @@ export default function RevisionDetailModal({
           </div>
 
           <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-2xl">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs min-w-[720px]">
               <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-700">
                 <tr>
                   <th className="py-3 px-4">Versi</th>

@@ -21,7 +21,6 @@ import {
   Award, 
   BarChart3, 
   Layers, 
-  Sparkles, 
   ChevronRight, 
   CheckSquare, 
   Building2, 
@@ -351,7 +350,7 @@ export default function StudentAcademicProfileModal({
               {/* SKILLS BADGES */}
               <div className="p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-amber-500" />
+                  
                   <span>Keahlian & Spesialisasi Kunci (Skills)</span>
                 </h3>
 
@@ -466,7 +465,7 @@ export default function StudentAcademicProfileModal({
 
               <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-xs">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                  <table className="w-full text-left text-xs min-w-[650px]">
                     <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-700">
                       <tr>
                         <th className="py-3 px-4">Nomor & Judul Tugas</th>
@@ -560,7 +559,7 @@ export default function StudentAcademicProfileModal({
               {/* Attendance Log Table */}
               <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-xs">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                  <table className="w-full text-left text-xs min-w-[600px]">
                     <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-700">
                       <tr>
                         <th className="py-3 px-4">Tanggal</th>

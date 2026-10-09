@@ -8,7 +8,6 @@ import {
   Briefcase, 
   Users, 
   CheckCircle2, 
-  Sparkles, 
   Send, 
   MessageSquare,
   ArrowRight,
@@ -138,7 +137,7 @@ export default function RecruitmentNewsShowcase({
           
           <div className="flex items-center gap-2">
             <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold font-mono">
-              <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
+              
               STATUS: OPEN RECRUITMENT
             </span>
 
@@ -322,7 +321,7 @@ export default function RecruitmentNewsShowcase({
         {/* BIG CALL TO ACTION (CTA) CARD */}
         {onOpenJoinModal && (
           <div className="rounded-3xl bg-gradient-to-r from-emerald-700 via-teal-800 to-slate-900 text-white p-8 sm:p-10 shadow-xl text-center space-y-4 border border-emerald-500/40">
-            <Sparkles className="h-8 w-8 text-amber-300 mx-auto animate-bounce" />
+            
             <h2 className="text-2xl sm:text-3xl font-extrabold font-display">
               Siap Bergabung dengan Tim Riset Smart Grow Laboratory?
             </h2>

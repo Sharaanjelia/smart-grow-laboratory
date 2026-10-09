@@ -45,8 +45,7 @@ import {
   Trash2, 
   Github,
   ExternalLink,
-  Upload,
-  Sparkles
+  Upload
 } from 'lucide-react';
 
 interface DirectorDashboardProps {
@@ -632,7 +631,7 @@ export default function DirectorDashboard({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-700 pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-emerald-600 animate-pulse" />
+                  
                   <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
                     Proyek Riset Utama Showcase (Tampil di Website Utama)
                   </h2>
@@ -858,7 +857,7 @@ export default function DirectorDashboard({
                               const toUpload = Array.from(files).slice(0, remaining);
                               for (const f of toUpload) {
                                 try {
-                                  const downloadUrl = await uploadFileToFirebaseStorage(f, 'projects');
+                                  const downloadUrl = await uploadFileToFirebaseStorage(f as File, 'projects');
                                   setPubGallery(prev => [...prev, downloadUrl].slice(0, MAX_GALLERY));
                                 } catch (err) {
                                   console.error('Gallery file upload error:', err);

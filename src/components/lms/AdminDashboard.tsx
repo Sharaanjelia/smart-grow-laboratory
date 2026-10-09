@@ -24,8 +24,7 @@ import {
   X, 
   Search, 
   History, 
-  Settings, 
-  Sparkles,
+  Settings,
   ExternalLink,
   ChevronRight,
   BookOpen,
@@ -399,7 +398,7 @@ export default function AdminDashboard({
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Publikasi Website (CMS)</span>
                 <p className="text-3xl font-black text-teal-700 font-display mt-1">{news.length + projects.length}</p>
                 <span className="text-[11px] font-bold text-teal-600 flex items-center gap-1 mt-1">
-                  <Sparkles className="h-3 w-3" /> Live on public site
+                   Live on public site
                 </span>
               </div>
               <div className="h-12 w-12 rounded-2xl bg-teal-50 border border-teal-100 text-teal-700 flex items-center justify-center">
@@ -606,7 +605,7 @@ export default function AdminDashboard({
 
           {/* User Accounts Table */}
           <div className="overflow-x-auto rounded-2xl border border-slate-200">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs min-w-[720px]">
               <thead className="bg-slate-50 text-slate-500 font-mono text-[10px] uppercase border-b border-slate-200">
                 <tr>
                   <th className="p-3.5">User Details</th>
@@ -689,7 +688,7 @@ export default function AdminDashboard({
           {/* Header Description */}
           <div className="border-b border-slate-100 pb-5">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-teal-600" />
+              
               <h2 className="text-xl font-bold text-slate-900 font-display">Website Content Management System (CMS)</h2>
             </div>
             <p className="text-xs text-slate-500 mt-1">
@@ -941,7 +940,7 @@ export default function AdminDashboard({
             </div>
 
             <div className="overflow-x-auto rounded-2xl border border-slate-200">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left text-xs min-w-[680px]">
                 <thead className="bg-slate-50 text-slate-500 font-mono text-[10px] uppercase border-b border-slate-200">
                   <tr>
                     <th className="p-3">Tanggal</th>

@@ -11,7 +11,6 @@ import {
   Zap, 
   Thermometer, 
   Activity, 
-  Sparkles, 
   CheckCircle2, 
   Cpu, 
   Gauge, 
@@ -185,7 +184,7 @@ export default function HycosmartsShowcase({
           <div className="relative z-10 space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-emerald-400 animate-spin" style={{ animationDuration: '6s' }} />
+                
                 Smart Farming Specs
               </span>
               <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-400/30">

@@ -15,7 +15,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
       <div className={`relative overflow-hidden bg-slate-900 border border-pink-200/40 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/indrarini.jpg" alt={name} className="w-full h-full object-cover object-top" />
         <div className="absolute bottom-2 left-2 right-2 bg-pink-950/85 backdrop-blur-md text-pink-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-pink-500/30">
-          HEAD OF LAB / MENTOR
+          HEAD OF LAB / PEMBINA LAB
         </div>
       </div>
     );
@@ -50,6 +50,18 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-teal-200/30 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/shara.jpg" alt={name} className="w-full h-full object-cover object-[center_15%]" />
+        <div className="absolute bottom-2 left-2 right-2 bg-teal-950/85 backdrop-blur-md text-teal-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-teal-800">
+          FULL-STACK DEVELOPER
+        </div>
+      </div>
+    );
+  }
+
+  // Aqila (Full-stack Developer)
+  if (id === 'member-aqila' || safeName.includes('aqila')) {
+    return (
+      <div className={`relative overflow-hidden bg-slate-900 border border-teal-200/30 shadow-inner flex items-center justify-center ${className}`}>
+        <img src="/images/team/aqila.jpg" alt={name} className="w-full h-full object-cover object-top" />
         <div className="absolute bottom-2 left-2 right-2 bg-teal-950/85 backdrop-blur-md text-teal-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-teal-800">
           FULL-STACK DEVELOPER
         </div>

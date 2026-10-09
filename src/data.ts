@@ -114,7 +114,8 @@ Dalam pertemuan ini, tim laboratorium mendemonstrasikan sistem pengontrolan mult
         timestamp: '2026-07-15 14:10'
       }
     ]
-  }
+  },
+
 ];
 
 export const projectsData: ProjectItem[] = [
@@ -300,6 +301,7 @@ export const projectsData: ProjectItem[] = [
       '/images/flocify/flocify-perspective-tank.png'
     ],
     date: '2026-07-24',
+    liveUrl: 'https://ppmtelkom.vercel.app/',
     sensors: [
       {
         name: 'Dissolved Oxygen (DO)',
@@ -574,7 +576,7 @@ export const teamData: TeamMember[] = [
   {
     id: 'mentor-indrarini',
     name: 'Prof. Dr. Indrarini Dyah Irawati, S.T., M.T.',
-    role: 'Mentor',
+    role: 'Pembina Lab',
     image: 'mentor-indrarini',
     email: 'indrarini@telkomuniversity.ac.id',
     profileUrl: 'https://pilrek.telkomuniversity.ac.id/indrarini-dyah-irawati/',
@@ -607,6 +609,15 @@ export const teamData: TeamMember[] = [
     email: 'mchikodwikasa@student.telkomuniversity.ac.id',
     bio: 'Mengembangkan infrastruktur fisik laboratorium, integrasi kelistrikan instrumen pencahayaan LED, serta kalibrasi mekanik hydroponics.',
     skills: ['System Design', 'Power Electronics', 'Hydroponic Hardware', 'Embedded Control']
+  },
+  {
+    id: 'member-aqila',
+    name: 'Aqila',
+    role: 'Full-stack Developer',
+    image: 'member-aqila',
+    email: 'aqilarashahumairah@student.telkomuniversity.ac.id',
+    bio: 'Berkolaborasi dalam pengembangan sistem backend serverless, database real-time telemetry, dan portal web untuk tim riset bersama Shara.',
+    skills: ['React / Vite', 'Node.js', 'Database', 'UI/UX', 'Frontend', 'Backend']
   },
   {
     id: 'member-shela',

@@ -43,7 +43,6 @@ import {
   Briefcase,
   FileText,
   ChevronRight,
-  Sparkles,
   Download,
   Printer,
   Sprout,
@@ -353,7 +352,7 @@ export default function AssistantDashboard({
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="space-y-2">
                 <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-400/30">
-                  <Sparkles className="h-3.5 w-3.5" />
+                  
                   <span>Portal Asisten Laboratorium Smart Grow</span>
                 </span>
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
@@ -620,7 +619,7 @@ export default function AssistantDashboard({
           {/* FULL TASK MANAGEMENT TABLE */}
           <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left text-xs min-w-[900px]">
                 <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-700">
                   <tr>
                     <th className="py-3.5 px-4">Nomor & Tugas</th>
@@ -756,7 +755,7 @@ export default function AssistantDashboard({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-700 pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-emerald-600 animate-pulse" />
+                  
                   <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
                     Proyek Riset Utama Showcase (Tampil di Website Utama)
                   </h2>

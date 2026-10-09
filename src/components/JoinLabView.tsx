@@ -8,7 +8,6 @@ import {
   Instagram, 
   Send, 
   CheckCircle2, 
-  Sparkles, 
   BookOpen, 
   Sprout, 
   Network, 
@@ -753,7 +752,7 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
             {/* Card 1: Collaborate & Learn */}
             <div className="bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 hover:shadow-xl hover:border-emerald-500/20 hover:-translate-y-1 transition-all duration-300">
               <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
-                <Sparkles className="h-5 w-5" />
+                
               </div>
               <h3 className="font-display text-base font-bold text-white mb-1.5">Collaborate & Learn</h3>
               <p className="text-xs text-slate-400 font-sans leading-relaxed">

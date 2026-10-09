@@ -4,8 +4,7 @@ import {
   X, 
   Send, 
   MessageSquare, 
-  CheckCircle2, 
-  Sparkles,
+  CheckCircle2,
   RefreshCw,
   Users,
   Building2,
@@ -26,8 +25,7 @@ import {
   Award,
   Lock,
   MessageCircle,
-  Layers,
-  Sparkle
+  Layers
 } from 'lucide-react';
 import { ProjectItem, Comment } from '../types';
 
@@ -260,7 +258,6 @@ export default function SapaJamiyyahShowcase({
         <div className="relative z-10 max-w-4xl space-y-4">
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/70 border border-emerald-400/40 text-emerald-200 font-mono text-xs font-bold uppercase tracking-wider backdrop-blur-md">
-              <Sparkle className="w-3.5 h-3.5 text-amber-300" />
               Program Unggulan Jam'iyyah 2024–2026
             </span>
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-mono text-xs font-semibold">
@@ -672,7 +669,7 @@ export default function SapaJamiyyahShowcase({
               <div className="pt-2 border-t border-emerald-200/60 dark:border-slate-700 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
-                    <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                    
                     Simulasi Tambah Infaq Digital (Klik untuk menguji respon live counter):
                   </span>
                   {lastDonationAmount && (

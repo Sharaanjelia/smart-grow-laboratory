@@ -177,7 +177,7 @@ export default function ReportExportModal({ darkMode = false }: ReportExportModa
             </div>
 
             <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-2xl max-h-60 overflow-y-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left text-xs min-w-[620px]">
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                   {sampleDataMap[selectedReportType].map((row, idx) => (
                     <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">

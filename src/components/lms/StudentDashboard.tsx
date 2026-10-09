@@ -32,7 +32,6 @@ import {
   AlertCircle, 
   X, 
   RotateCcw,
-  Sparkles,
   Zap,
   Flame,
   Trophy,
@@ -441,7 +440,7 @@ export default function StudentDashboard({
             <div className="lg:col-span-8 space-y-6 text-left">
               <div className="flex flex-wrap items-center gap-2.5">
                 <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#C7D8A8]/40 border border-[#C7D8A8] text-[#355E3B] dark:text-emerald-300 text-xs font-mono font-extrabold tracking-wider uppercase backdrop-blur-md">
-                  <Sparkles className="h-3.5 w-3.5 text-[#355E3B]" />
+                  
                   <span>Smart Grow Laboratory • Telkom University</span>
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 text-[#355E3B] text-xs font-mono font-bold uppercase">
@@ -486,7 +485,7 @@ export default function StudentDashboard({
                   <p className="text-xs font-bold text-[#355E3B] dark:text-emerald-300">{currentUser.specialty || currentUser.title || 'IoT & Web Telemetry Engineering'}</p>
                 </div>
                 <div className="space-y-0.5">
-                  <span className="text-[10px] font-mono uppercase font-bold text-slate-400 dark:text-slate-500">Main Mentor</span>
+                  <span className="text-[10px] font-mono uppercase font-bold text-slate-400 dark:text-slate-500">Pembina Lab</span>
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{currentUser.advisor || 'Belum ditugaskan'}</p>
                 </div>
                 <div className="space-y-0.5">
@@ -539,7 +538,7 @@ export default function StudentDashboard({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <button
                       onClick={() => setSelectedPhoto(myTodayAtt.photoUrl || myTodayAtt.checkInPhoto || currentUser.avatar || '/images/team/shara.jpg')}
                       className="px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 text-xs font-bold border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
@@ -702,7 +701,7 @@ export default function StudentDashboard({
 
             <div className="p-5 rounded-[24px] bg-white dark:bg-slate-900 border border-black/[0.06] dark:border-slate-800 shadow-[0_20px_60px_rgba(0,0,0,0.04)] space-y-2">
               <div className="flex items-center justify-between text-purple-600 dark:text-purple-400">
-                <Sparkles className="h-5 w-5" />
+                
                 <span className="text-[10px] font-mono font-extrabold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700">
                   Aktif
                 </span>
@@ -720,7 +719,7 @@ export default function StudentDashboard({
               <div className="absolute -right-10 -top-10 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
               <div className="relative z-10 space-y-2">
                 <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-mono font-extrabold tracking-wider uppercase border border-emerald-400/30">
-                  <Sparkles className="h-3.5 w-3.5" />
+                  
                   <span>Langkah Awal Magang Riset</span>
                 </span>
                 <h3 className="text-xl sm:text-2xl font-extrabold font-display tracking-tight text-white">
@@ -744,17 +743,17 @@ export default function StudentDashboard({
                 <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 space-y-2.5 flex flex-col justify-between hover:bg-white/15 transition-all">
                   <div className="space-y-2">
                     <div className="w-8 h-8 rounded-xl bg-emerald-400/20 text-emerald-300 font-bold flex items-center justify-center font-mono text-sm border border-emerald-400/30">2</div>
-                    <h4 className="font-bold text-xs text-white">Hubungi Mentor</h4>
-                    <p className="text-[11px] text-emerald-100/70 leading-normal">Lakukan koordinasi awal dengan mentor pembimbing.</p>
+                    <h4 className="font-bold text-xs text-white">Hubungi Pembina Lab</h4>
+                    <p className="text-[11px] text-emerald-100/70 leading-normal">Lakukan koordinasi awal dengan Pembina Lab.</p>
                   </div>
-                  <span className="text-[10px] font-mono font-bold text-emerald-300 uppercase pt-1">Step 2 • Mentor</span>
+                  <span className="text-[10px] font-mono font-bold text-emerald-300 uppercase pt-1">Step 2 • Pembina Lab</span>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 space-y-2.5 flex flex-col justify-between hover:bg-white/15 transition-all">
                   <div className="space-y-2">
                     <div className="w-8 h-8 rounded-xl bg-emerald-400/20 text-emerald-300 font-bold flex items-center justify-center font-mono text-sm border border-emerald-400/30">3</div>
                     <h4 className="font-bold text-xs text-white">Terima Tugas</h4>
-                    <p className="text-[11px] text-emerald-100/70 leading-normal">Terima penugasan riset pertama dari asisten/mentor.</p>
+                    <p className="text-[11px] text-emerald-100/70 leading-normal">Terima penugasan riset pertama dari asisten/Pembina Lab.</p>
                   </div>
                   <span className="text-[10px] font-mono font-bold text-emerald-300 uppercase pt-1">Step 3 • Task</span>
                 </div>
@@ -814,7 +813,7 @@ export default function StudentDashboard({
               { time: '09.00', title: 'Research Activity', desc: 'Kalibrasi sensor pH/EC dan pengujian transmisi modul ESP32 ke gateway', status: 'Completed', icon: CheckCircle2 },
               { time: '11.00', title: 'Dashboard Development', desc: 'Pengembangan antarmuka telemetry real-time dan koneksi WebSocket API', status: 'In Progress', icon: Activity },
               { time: '13.00', title: 'Lunch Break', desc: 'Istirahat dan diskusi bersama sesama mahasiswa magang SGL', status: 'Scheduled', icon: Clock },
-              { time: '14.00', title: 'Mentor Discussion', desc: 'Konsultasi hasil riset telemetry dan bimbingan laporan dengan Dosen Pembimbing', status: 'Scheduled', icon: Calendar },
+              { time: '14.00', title: 'Diskusi Pembina Lab', desc: 'Konsultasi hasil riset telemetry dan bimbingan laporan dengan Pembina Lab', status: 'Scheduled', icon: Calendar },
               { time: '16.00', title: 'Submit Daily Logbook', desc: 'Pengisian jurnal harian dan upload dokumentasi foto riset magang', status: 'Pending', icon: FileCheck }
             ].map((act, i) => {
               const Icon = act.icon;
