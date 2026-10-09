@@ -16,7 +16,12 @@ import {
   Ruler,
   BarChart3,
   HelpCircle,
-  FileText
+  FileText,
+  Maximize2,
+  X,
+  Camera,
+  Zap,
+  Cpu
 } from 'lucide-react';
 import { ProjectItem, Comment } from '../types';
 
@@ -34,7 +39,9 @@ export default function MopsShowcase({
   onAddComment 
 }: MopsShowcaseProps) {
   
+  const hardwareImageUrl = '/images/mops/mops-hardware-installation.png';
   const officialWebUrl = 'https://mops-5f51b.web.app/';
+  const [modalImage, setModalImage] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
   // Comment Form States
@@ -158,6 +165,17 @@ export default function MopsShowcase({
               <span>Buka Website Resmi MOPS (mops-5f51b.web.app)</span>
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
+
+            <button
+              onClick={() => {
+                const el = document.getElementById('hardware-section');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs backdrop-blur-md border border-white/20 transition-all cursor-pointer"
+            >
+              <Maximize2 className="h-4 w-4 text-emerald-300" />
+              <span>Lihat Dokumentasi Tiang Hardware</span>
+            </button>
           </div>
         </div>
       </section>
@@ -187,6 +205,110 @@ export default function MopsShowcase({
       </section>
 
 
+
+      {/* ========================================================================= */}
+      {/* DOKUMENTASI FISIK TIANG PEMANTAU MOPS */}
+      {/* ========================================================================= */}
+      <section id="hardware-section" className="space-y-6 pt-2">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <span className="text-xs font-mono font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase">
+              Dokumentasi & Desain Teknis
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
+              Instalasi Fisik Tiang Pemantau MOPS
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-2xl mt-1">
+              Struktur modular tiang baja galvanis yang dipasang pada bibir Tempat Pembuangan Sementara (TPS) untuk mengintegrasikan kamera, sensor jarak ToF laser, edge computing box, dan catu daya listrik PLN.
+            </p>
+          </div>
+
+          <button
+            onClick={() => setModalImage(hardwareImageUrl)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 text-slate-700 dark:text-slate-300 text-xs font-bold border border-slate-200 dark:border-slate-800 transition-all cursor-pointer shadow-2xs"
+          >
+            <Maximize2 className="h-3.5 w-3.5 text-emerald-600" />
+            <span>Perbesar Gambar Lengkap</span>
+          </button>
+        </div>
+
+        {/* Hardware Infographic Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm">
+          
+          {/* Left: The uploaded Image Diagram */}
+          <div className="lg:col-span-7 flex flex-col items-center">
+            <div 
+              onClick={() => setModalImage(hardwareImageUrl)}
+              className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-2 shadow-sm cursor-pointer group hover:border-emerald-500 transition-all"
+            >
+              <img
+                src={hardwareImageUrl}
+                alt="Instalasi Fisik Tiang Hardware MOPS (Tampak Depan, Tampak Samping, Tampak Atas)"
+                className="w-full h-auto object-contain rounded-xl group-hover:scale-[1.01] transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-emerald-950/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-900/90 text-white text-xs font-bold border border-white/20 shadow-lg">
+                  <Maximize2 className="h-4 w-4 text-emerald-400" />
+                  Klik untuk Memperbesar Resolusi Penuh
+                </span>
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-500 font-mono mt-3 text-center">
+              Dokumentasi Teknis Tiang Pemantau MOPS: Tampak Depan, Tampak Samping, dan Tampak Atas Lapangan TPS.
+            </p>
+          </div>
+
+          {/* Right: Component Descriptions matching the diagram */}
+          <div className="lg:col-span-5 space-y-4">
+            
+            {/* Item 1: IP Camera */}
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 transition-all space-y-1">
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                <Camera className="h-4 w-4" />
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">IP Camera Outdoor (TP-Link VIGI C340)</h4>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Monitoring visual TPS beresolusi tinggi, memantau aktivitas pembuangan warga, kedisiplinan petugas, serta pencatatan plat dan durasi kedatangan kendaraan pengangkut.
+              </p>
+            </div>
+
+            {/* Item 2: Sensor Node ToF */}
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-amber-500 transition-all space-y-1">
+              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                <Ruler className="h-4 w-4" />
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Sensor Node ToF (TOF400F)</h4>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Sensor jarak laser Time-of-Flight presisi tinggi untuk mengukur jarak permukaan timbunan sampah ke sensor, menghasilkan estimasi persentase tingkat kepenuhan volume TPS secara continuous.
+              </p>
+            </div>
+
+            {/* Item 3: Control Box */}
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 transition-all space-y-1">
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                <Cpu className="h-4 w-4" />
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Control Box & Edge Gateway</h4>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Pusat pemrosesan komputasi edge di lapangan, modul komunikasi data (4G/Wi-Fi) ke cloud backend, manajemen power supply, dan pengaman korsleting listrik.
+              </p>
+            </div>
+
+            {/* Item 4: Sumber Daya Listrik */}
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-teal-500 transition-all space-y-1">
+              <div className="flex items-center gap-2 text-teal-700 dark:text-teal-400">
+                <Zap className="h-4 w-4" />
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Sumber Daya Listrik (Kabel PLN)</h4>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Pasokan daya utama kabel PLN dengan kabel standar outdoor dan surge protector untuk menjamin pengoperasian sistem nonstop 24 jam 7 hari seminggu di segala cuaca.
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
 
       {/* ========================================================================= */}
       {/* 4 PILAR TEKNOLOGI MOPS */}
@@ -547,6 +669,34 @@ export default function MopsShowcase({
       </section>
 
 
+
+      {/* FULL-SCREEN IMAGE MODAL */}
+      {modalImage && (
+        <div 
+          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setModalImage(null)}
+        >
+          <div 
+            className="relative max-w-5xl max-h-[90vh] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl p-3 shadow-2xl overflow-hidden flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setModalImage(null)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white border border-white/20 transition-all z-20 cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <img
+              src={modalImage}
+              alt="Diagram Instalasi Hardware Tiang MOPS"
+              className="w-full max-h-[82vh] object-contain rounded-2xl"
+            />
+            <div className="py-2 text-center text-xs font-mono text-slate-600 dark:text-slate-400">
+              Dokumentasi Instalasi Tiang Hardware MOPS (Tampak Depan, Samping, dan Atas)
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
