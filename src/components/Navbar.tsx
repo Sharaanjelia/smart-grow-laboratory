@@ -1,6 +1,19 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { PageId } from '../types';
 import Logo from './Logo';
+import { 
+  Menu, 
+  X, 
+  Home, 
+  Newspaper, 
+  FlaskConical, 
+  Info, 
+  LogIn, 
+  UserPlus, 
+  LayoutDashboard,
+  ChevronRight,
+  Sparkles
+} from 'lucide-react';
 
 interface NavbarProps {
   currentPage: PageId;
@@ -19,134 +32,262 @@ export default function Navbar({
   currentUserRole,
   onOpenLogin 
 }: NavbarProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navItems: { id: PageId; label: string }[] = [
-    { id: 'home', label: 'Home' },
-    { id: 'news', label: 'News & Events' },
-    { id: 'project', label: 'Project' },
-    { id: 'about', label: 'About' },
+  // Close drawer on escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    if (isMobileMenuOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
+
+  const navItems: { id: PageId; label: string; icon: React.ElementType }[] = [
+    { id: 'home', label: 'Home', icon: Home },
+    { id: 'news', label: 'News & Events', icon: Newspaper },
+    { id: 'project', label: 'Project', icon: FlaskConical },
+    { id: 'about', label: 'About', icon: Info },
   ];
 
+  const handleNavClick = (id: PageId) => {
+    setCurrentPage(id);
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleLoginClick = () => {
+    setIsMobileMenuOpen(false);
+    if (onOpenLogin) {
+      onOpenLogin();
+    } else {
+      setCurrentPage('login');
+    }
+  };
+
+  const handleJoinClick = () => {
+    setIsMobileMenuOpen(false);
+    onOpenJoin();
+  };
+
+  const handlePortalClick = () => {
+    setIsMobileMenuOpen(false);
+    setCurrentPage('dashboard');
+  };
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-100 bg-white/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:py-4 sm:px-6 lg:px-8">
-        
-        {/* Logo matching exact Smart Grow Laboratory brand emblem */}
-        <div 
-          onClick={() => setCurrentPage('home')}
-          className="cursor-pointer group select-none shrink-0"
-          id="navbar-logo-container"
-        >
-          <Logo variant="navbar" />
-        </div>
+    <>
+      <header className="sticky top-0 z-40 w-full border-b border-slate-100 bg-white/95 backdrop-blur-md transition-shadow duration-200">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:py-4 sm:px-6 lg:px-8">
+          
+          {/* Brand Logo */}
+          <div 
+            onClick={() => handleNavClick('home')}
+            className="cursor-pointer group select-none shrink-0"
+            id="navbar-logo-container"
+          >
+            <Logo variant="navbar" />
+          </div>
 
-        {/* Desktop Navigation — only visible on lg (1024px+) to avoid overlap on tablets/large phones */}
-        <nav className="hidden lg:flex items-center gap-8" id="desktop-navbar-nav">
-          {navItems.map((item) => {
-            const isActive = currentPage === item.id;
-            return (
+          {/* Desktop Navigation Links (Visible on md: 768px+) */}
+          <nav className="hidden md:flex items-center gap-7 lg:gap-8" id="desktop-navbar-nav">
+            {navItems.map((item) => {
+              const isActive = currentPage === item.id;
+              return (
+                <button
+                  key={item.id}
+                  id={`nav-item-${item.id}`}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`relative font-sans text-sm font-semibold tracking-wide transition-all duration-200 cursor-pointer py-1 ${
+                    isActive 
+                      ? 'text-teal-700 font-bold' 
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-teal-500 to-emerald-600 rounded-full"></span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Desktop CTA Action Buttons (Visible on md: 768px+) */}
+          <div className="hidden md:flex items-center gap-2.5 lg:gap-3 shrink-0" id="navbar-cta-container">
+            {isLoggedIn ? (
               <button
-                key={item.id}
-                id={`nav-item-${item.id}`}
-                onClick={() => setCurrentPage(item.id)}
-                className={`font-sans text-sm font-semibold tracking-wide transition-colors duration-200 cursor-pointer ${
-                  isActive ? 'text-teal-600 border-b-2 border-teal-600 pb-1' : 'text-slate-500 hover:text-slate-900 pb-1'
-                }`}
+                onClick={handlePortalClick}
+                id="lab-portal-navbar-button"
+                className="rounded-full bg-[#0A5247] hover:bg-[#073d34] px-4 lg:px-5 py-2 text-xs lg:text-sm font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-md flex items-center gap-2"
               >
-                <span>{item.label}</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Lab Portal</span>
+                {currentUserRole && (
+                  <span className="text-[10px] font-mono uppercase bg-white/20 px-2 py-0.5 rounded-full">
+                    {currentUserRole}
+                  </span>
+                )}
               </button>
-            );
-          })}
-        </nav>
+            ) : (
+              <button
+                onClick={handleLoginClick}
+                id="login-navbar-button"
+                className="rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-700 px-4 lg:px-5 py-2 text-xs lg:text-sm font-semibold text-slate-200 transition-all duration-300 hover:text-white cursor-pointer"
+              >
+                <span>Lab Login</span>
+              </button>
+            )}
 
-        {/* Right CTA Buttons — hidden on mobile (shown in bottom nav instead), visible on sm+ in header */}
-        <div className="hidden sm:flex items-center gap-2 sm:gap-3 shrink-0" id="navbar-cta-container">
-          {isLoggedIn ? (
             <button
-              onClick={() => setCurrentPage('dashboard')}
-              id="lab-portal-navbar-button"
-              className="rounded-full bg-[#0A5247] hover:bg-[#073d34] px-4 sm:px-5 py-1.5 sm:py-2 text-[11px] sm:text-sm font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-md flex items-center gap-1.5 sm:gap-2"
+              onClick={handleJoinClick}
+              id="join-us-navbar-button"
+              className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-4 lg:px-6 py-2 text-xs lg:text-sm font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-md shadow-emerald-600/10 flex items-center gap-1.5"
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>Lab Portal</span>
-              {currentUserRole && (
-                <span className="hidden md:inline-block text-[10px] font-mono uppercase bg-white/20 px-2 py-0.5 rounded-full">
-                  {currentUserRole}
-                </span>
-              )}
+              <span>Join Us!</span>
             </button>
-          ) : (
-            <button
-              onClick={() => onOpenLogin ? onOpenLogin() : setCurrentPage('login')}
-              id="login-navbar-button"
-              className="rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-700 px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold text-slate-200 transition-all duration-300 hover:text-white cursor-pointer"
-            >
-              <span>Lab Login</span>
-            </button>
-          )}
+          </div>
 
-          <button
-            onClick={onOpenJoin}
-            id="join-us-navbar-button"
-            className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-4 sm:px-6 py-1.5 sm:py-2.5 text-[11px] sm:text-sm font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-md shadow-emerald-600/10"
-          >
-            <span>Join Us!</span>
-          </button>
+          {/* Mobile Hamburger Button (Visible on mobile/tablet < 768px) */}
+          <div className="flex md:hidden items-center gap-2">
+            {/* Quick mini-status if logged in on mobile */}
+            {isLoggedIn && (
+              <button
+                onClick={handlePortalClick}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Portal</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="Buka menu navigasi"
+              aria-expanded={isMobileMenuOpen}
+              className="p-2.5 rounded-xl border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all active:scale-95 cursor-pointer shadow-xs bg-white"
+            >
+              <Menu className="w-6 h-6 stroke-[2.2]" />
+            </button>
+          </div>
+
         </div>
+      </header>
 
-      </div>
+      {/* MOBILE SIDEBAR / DRAWER MENU */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* Backdrop overlay */}
+          <div 
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-300 animate-fade-in"
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
 
-      {/* Mobile & Tablet Bottom Nav Rail — visible below lg (< 1024px) */}
-      <div className="lg:hidden flex items-center justify-around border-t border-slate-100 bg-white py-2.5 px-1 fixed bottom-0 left-0 right-0 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-        {navItems.map((item) => {
-          const isActive = currentPage === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setCurrentPage(item.id)}
-              className={`flex flex-col items-center gap-0.5 transition-colors px-2 py-1 rounded-xl ${
-                isActive ? 'text-teal-600 font-bold' : 'text-slate-400 hover:text-slate-700'
-              }`}
-            >
-              <span className="text-[11px] font-sans tracking-wide font-semibold">
-                {item.label === 'News & Events' ? 'News' : item.label}
-              </span>
-              {isActive && (
-                <span className="h-1 w-5 rounded-full bg-teal-600 mt-0.5"></span>
+          {/* Slide-in Sidebar Panel */}
+          <aside 
+            className="fixed inset-y-0 right-0 w-[84%] max-w-sm bg-white shadow-2xl flex flex-col justify-between z-50 border-l border-slate-100 animate-slide-left overflow-y-auto"
+            aria-label="Navigasi Mobile"
+          >
+            {/* Top Drawer Header */}
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div onClick={() => handleNavClick('home')} className="cursor-pointer">
+                <Logo variant="navbar" />
+              </div>
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                aria-label="Tutup menu"
+                className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Middle Nav Links */}
+            <div className="p-5 space-y-2 flex-1 overflow-y-auto">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 pb-1">
+                Menu Utama
+              </p>
+              {navItems.map((item) => {
+                const IconComponent = item.icon;
+                const isActive = currentPage === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleNavClick(item.id)}
+                    className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-left font-sans text-sm font-semibold transition-all duration-200 cursor-pointer ${
+                      isActive
+                        ? 'bg-emerald-50 text-emerald-800 shadow-xs border border-emerald-200/60 font-bold'
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-xl ${isActive ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                        <IconComponent className="w-4 h-4" />
+                      </div>
+                      <span>{item.label}</span>
+                    </div>
+                    <ChevronRight className={`w-4 h-4 ${isActive ? 'text-emerald-600' : 'text-slate-300'}`} />
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Bottom Actions & CTAs */}
+            <div className="p-5 border-t border-slate-100 bg-slate-50/50 space-y-3">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
+                Akses Lab & Keanggotaan
+              </p>
+
+              {isLoggedIn ? (
+                <button
+                  onClick={handlePortalClick}
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#0A5247] hover:bg-[#073d34] text-white font-bold text-sm shadow-md transition-all active:scale-95 cursor-pointer"
+                >
+                  <LayoutDashboard className="w-4 h-4 text-emerald-400" />
+                  <span>Masuk Lab Portal</span>
+                  {currentUserRole && (
+                    <span className="text-[10px] uppercase font-mono bg-white/20 px-2 py-0.5 rounded-full ml-1">
+                      {currentUserRole}
+                    </span>
+                  )}
+                </button>
+              ) : (
+                <button
+                  onClick={handleLoginClick}
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm shadow-sm transition-all active:scale-95 cursor-pointer border border-slate-700"
+                >
+                  <LogIn className="w-4 h-4 text-slate-300" />
+                  <span>Lab Login</span>
+                </button>
               )}
-            </button>
-          );
-        })}
 
-        {/* Divider */}
-        <div className="w-px h-6 bg-slate-200 shrink-0"></div>
+              <button
+                onClick={handleJoinClick}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition-all active:scale-95 cursor-pointer"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>Join Us (Daftar Tim Lab)</span>
+              </button>
 
-        {/* Login / Portal button in bottom nav for mobile */}
-        {isLoggedIn ? (
-          <button
-            onClick={() => setCurrentPage('dashboard')}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-emerald-700"
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-[10px] font-bold tracking-wide">Portal</span>
-          </button>
-        ) : (
-          <button
-            onClick={() => onOpenLogin ? onOpenLogin() : setCurrentPage('login')}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-slate-500 hover:text-slate-800"
-          >
-            <span className="text-[11px] font-semibold tracking-wide">Login</span>
-          </button>
-        )}
-
-        {/* Join Us button in bottom nav for mobile */}
-        <button
-          onClick={onOpenJoin}
-          className="px-3 py-1.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold shadow-sm hover:bg-emerald-700 transition-all active:scale-95 shrink-0"
-        >
-          Join Us!
-        </button>
-      </div>
-    </header>
+              <div className="pt-2 text-center">
+                <p className="text-[10px] text-slate-400 font-medium">
+                  Smart Agriculture & IoT Research • Telkom University
+                </p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
+    </>
   );
 }
