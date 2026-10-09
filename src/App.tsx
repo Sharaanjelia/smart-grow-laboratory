@@ -391,7 +391,7 @@ export default function App() {
         // 4. Fallback: If student was approved in pending_registrations, construct active User record
         if (!matchedUser && pendingRecord && pendingRecord.status === 'Approved') {
           const assignedNim = pendingRecord.nim || pendingRecord.studentId || '';
-          const generatedInternId = pendingRecord.internId || (assignedNim ? `SGL-INT-2026-${assignedNim}` : 'SGL-INT-2026-001');
+          const generatedInternId = pendingRecord.internId || assignedNim || '001';
           matchedUser = {
             id: firebaseUser.uid,
             name: pendingRecord.fullName,
@@ -419,7 +419,7 @@ export default function App() {
 
         if (matchedUser) {
           if (!matchedUser.internId) {
-            matchedUser.internId = matchedUser.studentId ? `SGL-INT-2026-${matchedUser.studentId}` : 'SGL-INT-2026-001';
+            matchedUser.internId = matchedUser.studentId || '001';
           }
           if (!matchedUser.studentId && pendingRecord && pendingRecord.nim) {
             matchedUser.studentId = pendingRecord.nim;
@@ -1024,7 +1024,7 @@ export default function App() {
   const handleApproveRegistration = async (pendingReg: PendingRegistration) => {
     const approvedCount = pendingRegistrations.filter(r => r.status === 'Approved').length + 1;
     const assignedNim = pendingReg.nim || pendingReg.studentId || '';
-    const generatedInternId = pendingReg.internId || (assignedNim ? `SGL-INT-2026-${assignedNim}` : `SGL-INT-2026-${String(approvedCount).padStart(3, '0')}`);
+    const generatedInternId = pendingReg.internId || assignedNim || String(approvedCount).padStart(3, '0');
     const token = `act_token_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
     const updated: PendingRegistration = {

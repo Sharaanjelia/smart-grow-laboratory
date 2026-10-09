@@ -141,7 +141,7 @@ export default function ProfileView({
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    const effectiveInternId = currentUser.internId || (studentId ? `SGL-INT-2026-${studentId}` : '');
+    const effectiveInternId = currentUser.internId || studentId || '';
     const updated: User = {
       ...currentUser,
       name,
@@ -783,7 +783,7 @@ export default function ProfileView({
               </span>
               <span className="flex items-center gap-1.5 font-mono font-bold text-white bg-white/20 px-2.5 py-0.5 rounded-lg border border-white/30 shadow-xs">
                 <Award className="h-3.5 w-3.5 text-amber-300" />
-                <span>ID MAGANG: {currentUser.internId || (studentId || currentUser.studentId ? `SGL-INT-2026-${studentId || currentUser.studentId}` : 'SGL-INT-2026-001')}</span>
+                <span>ID AKUN / NIM: {currentUser.internId || studentId || currentUser.studentId || '-'}</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <Building2 className="h-3.5 w-3.5 text-[#C7D8A8]" />
@@ -829,9 +829,9 @@ export default function ProfileView({
               <div className="flex items-center gap-3">
                 <Award className="h-4 w-4 text-emerald-600 shrink-0" />
                 <div>
-                  <p className="text-[10px] text-slate-400 font-medium">ID Magang Resmi</p>
+                  <p className="text-[10px] text-slate-400 font-medium">NIM / ID Akun</p>
                   <p className="font-mono font-bold text-emerald-700 dark:text-emerald-400">
-                    {currentUser.internId || (studentId || currentUser.studentId ? `SGL-INT-2026-${studentId || currentUser.studentId}` : 'SGL-INT-2026-001')}
+                    {currentUser.internId || studentId || currentUser.studentId || '-'}
                   </p>
                 </div>
               </div>

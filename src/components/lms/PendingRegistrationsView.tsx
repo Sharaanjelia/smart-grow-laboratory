@@ -41,18 +41,17 @@ export default function PendingRegistrationsView({
   const [emailSentSuccess, setEmailSentSuccess] = useState<string | null>(null);
 
   const generateEmailSubject = (reg: PendingRegistration) => {
-    return `[Smart Grow Lab] Selamat! Akun Magang Riset Anda Telah Resmi Diaktifkan (${reg.internId || 'SGL-INT-2026-001'})`;
+    return `[Smart Grow Lab] Selamat! Akun Magang Riset Anda Telah Resmi Diaktifkan (${reg.nim || reg.internId || 'Aktif'})`;
   };
 
   const generateEmailBody = (reg: PendingRegistration) => {
-    const assignedId = reg.internId || (reg.nim ? `SGL-INT-2026-${reg.nim}` : 'SGL-INT-2026-001');
+    const assignedId = reg.nim || reg.internId || '-';
     return `Halo ${reg.fullName},
 
 Pendaftaran magang riset Anda untuk divisi ${reg.division} di Smart Grow Laboratory Telkom University telah DISETUJUI & DIAKTIFKAN secara resmi!
 
 RINCIAN AKUN MAGANG:
-- ID Magang Resmi: ${assignedId}
-- NIM: ${reg.nim || reg.studentId || '-'}
+- NIM / ID Login: ${assignedId}
 - Email Terdaftar: ${reg.email}
 - Asal Universitas: ${reg.university}
 - Program Studi: ${reg.studyProgram}
@@ -60,7 +59,7 @@ RINCIAN AKUN MAGANG:
 Anda sekarang sudah dapat masuk (login) ke Portal LMS Smart Grow Laboratory menggunakan link berikut:
 ${window.location.origin}/#login
 
-Anda dapat login menggunakan ID Magang Resmi Anda (${assignedId}) atau Email (${reg.email}), beserta kata sandi yang Anda daftarkan saat mengisi formulir pendaftaran.
+Anda dapat login langsung menggunakan NIM Anda (${assignedId}) atau Email (${reg.email}), beserta kata sandi yang Anda daftarkan saat mengisi formulir pendaftaran.
 
 Salam hangat,
 Tim Pengelola Smart Grow Laboratory
@@ -131,7 +130,7 @@ Telkom University`;
               Pendaftaran Mahasiswa Magang
             </h1>
             <p className="text-xs sm:text-sm text-emerald-100/80 max-w-2xl leading-relaxed">
-              Daftar mahasiswa magang baru yang mengajukan akun. Setujui untuk menerbitkan ID Magang Resmi (`SGL-INT-2026-xxx`) dan kirimkan tautan aktivasi akun.
+              Daftar mahasiswa magang baru yang mengajukan akun. Setujui untuk aktivasi akun login portal menggunakan NIM atau Email.
             </p>
           </div>
 
@@ -275,9 +274,9 @@ Telkom University`;
                 </div>
 
                 <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 flex items-center justify-between text-xs font-mono font-bold text-emerald-900">
-                  <span>ID MAGANG RESMI:</span>
+                  <span>NIM / ID AKUN:</span>
                   <span className="text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">
-                    {reg.internId || (reg.nim ? `SGL-INT-2026-${reg.nim}` : 'SGL-INT-2026-001')}
+                    {reg.nim || reg.internId || '-'}
                   </span>
                 </div>
               </div>
@@ -366,8 +365,8 @@ Telkom University`;
                     <span className="font-mono font-bold text-slate-900">{selectedReg.nim || selectedReg.studentId || '-'}</span>
                   </div>
                   <div className="flex justify-between items-center bg-emerald-50 p-2 rounded-xl border border-emerald-200">
-                    <span className="text-emerald-700 font-bold">ID Magang Resmi:</span>
-                    <span className="font-mono font-bold text-emerald-900">{selectedReg.internId || (selectedReg.nim ? `SGL-INT-2026-${selectedReg.nim}` : 'SGL-INT-2026-001')}</span>
+                    <span className="text-emerald-700 font-bold">NIM / ID Login:</span>
+                    <span className="font-mono font-bold text-emerald-900">{selectedReg.nim || selectedReg.internId || '-'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Asal Universitas:</span>
@@ -424,7 +423,7 @@ Telkom University`;
                   <div>
                     <h3 className="font-bold text-base text-slate-900 font-display">Notifikasi Aktivasi Akun</h3>
                     <p className="text-xs text-slate-500">
-                      Terbit ID Magang: <span className="font-mono font-bold text-emerald-700">{activeActivationModal.internId || 'SGL-INT-2026-001'}</span>
+                      NIM Akun Login: <span className="font-mono font-bold text-emerald-700">{activeActivationModal.nim || activeActivationModal.internId || '-'}</span>
                     </p>
                   </div>
                 </div>
@@ -498,8 +497,8 @@ Telkom University`;
 
                     <div className="p-3 rounded-xl bg-slate-800/90 border border-slate-700 space-y-1 font-mono text-[11px]">
                       <div className="flex justify-between text-slate-300">
-                        <span>ID Magang Resmi:</span>
-                        <span className="font-bold text-emerald-400">{activeActivationModal.internId || 'SGL-INT-2026-001'}</span>
+                        <span>NIM / ID Login:</span>
+                        <span className="font-bold text-emerald-400">{activeActivationModal.nim || activeActivationModal.internId || '-'}</span>
                       </div>
                       <div className="flex justify-between text-slate-300">
                         <span>Universitas:</span>

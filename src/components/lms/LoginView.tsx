@@ -134,17 +134,18 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
     let matchedInitial: User | null = null;
 
     if (!isDirectEmail) {
-      // Helper function to match user by ID Magang or NIM
+      // Helper function to match user by NIM, ID Magang, or Email
       const matchesUser = (u: User) => {
         const uEmail = (u.email || '').trim().toLowerCase();
         const uStudentId = (u.studentId || '').trim().toLowerCase();
         const uInternId = (u.internId || '').trim().toLowerCase();
 
         if (uEmail === cleanInputLower) return true;
-        if (uInternId && uInternId === cleanInputLower) return true;
         if (uStudentId && uStudentId === cleanInputLower) return true;
+        if (uInternId && uInternId === cleanInputLower) return true;
         if (uStudentId && cleanInputLower === `sgl-int-2026-${uStudentId}`) return true;
         if (uStudentId && cleanInputLower.endsWith(uStudentId)) return true;
+        if (uInternId && (uInternId === `sgl-int-2026-${cleanInputLower}` || uInternId.endsWith(`-${cleanInputLower}`))) return true;
 
         // Special test alias: SGL-INT-2026-001 or 001 maps to Aqila / Shara
         if (cleanInputLower === 'sgl-int-2026-001' || cleanInputLower === '001') {
@@ -159,18 +160,18 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
         cleanEmail = (foundInMemory.email || '').trim().toLowerCase();
       }
 
-      // If not found in memory, query Firestore users collection
+      // If not found in memory, query Firestore users collection (prioritize studentId/NIM)
       if (!cleanEmail) {
         try {
-          const qUsersIntern = query(collection(db, 'users'), where('internId', '==', rawInput));
-          const snapUsersIntern = await getDocs(qUsersIntern);
-          if (!snapUsersIntern.empty) {
-            cleanEmail = ((snapUsersIntern.docs[0].data() as User).email || '').trim().toLowerCase();
+          const qUsersStudent = query(collection(db, 'users'), where('studentId', '==', rawInput));
+          const snapUsersStudent = await getDocs(qUsersStudent);
+          if (!snapUsersStudent.empty) {
+            cleanEmail = ((snapUsersStudent.docs[0].data() as User).email || '').trim().toLowerCase();
           } else {
-            const qUsersStudent = query(collection(db, 'users'), where('studentId', '==', rawInput));
-            const snapUsersStudent = await getDocs(qUsersStudent);
-            if (!snapUsersStudent.empty) {
-              cleanEmail = ((snapUsersStudent.docs[0].data() as User).email || '').trim().toLowerCase();
+            const qUsersIntern = query(collection(db, 'users'), where('internId', '==', rawInput));
+            const snapUsersIntern = await getDocs(qUsersIntern);
+            if (!snapUsersIntern.empty) {
+              cleanEmail = ((snapUsersIntern.docs[0].data() as User).email || '').trim().toLowerCase();
             } else {
               const qUsersPrefixed = query(collection(db, 'users'), where('internId', '==', `SGL-INT-2026-${rawInput}`));
               const snapUsersPrefixed = await getDocs(qUsersPrefixed);
@@ -184,18 +185,18 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
         }
       }
 
-      // If still not found, query Firestore pending_registrations collection
+      // If still not found, query Firestore pending_registrations collection (prioritize nim)
       if (!cleanEmail) {
         try {
-          const qPendingIntern = query(collection(db, 'pending_registrations'), where('internId', '==', rawInput));
-          const snapPendingIntern = await getDocs(qPendingIntern);
-          if (!snapPendingIntern.empty) {
-            cleanEmail = ((snapPendingIntern.docs[0].data() as PendingRegistration).email || '').trim().toLowerCase();
+          const qPendingNim = query(collection(db, 'pending_registrations'), where('nim', '==', rawInput));
+          const snapPendingNim = await getDocs(qPendingNim);
+          if (!snapPendingNim.empty) {
+            cleanEmail = ((snapPendingNim.docs[0].data() as PendingRegistration).email || '').trim().toLowerCase();
           } else {
-            const qPendingNim = query(collection(db, 'pending_registrations'), where('nim', '==', rawInput));
-            const snapPendingNim = await getDocs(qPendingNim);
-            if (!snapPendingNim.empty) {
-              cleanEmail = ((snapPendingNim.docs[0].data() as PendingRegistration).email || '').trim().toLowerCase();
+            const qPendingIntern = query(collection(db, 'pending_registrations'), where('internId', '==', rawInput));
+            const snapPendingIntern = await getDocs(qPendingIntern);
+            if (!snapPendingIntern.empty) {
+              cleanEmail = ((snapPendingIntern.docs[0].data() as PendingRegistration).email || '').trim().toLowerCase();
             } else {
               const qPendingPrefix = query(collection(db, 'pending_registrations'), where('internId', '==', `SGL-INT-2026-${rawInput}`));
               const snapPendingPrefix = await getDocs(qPendingPrefix);
@@ -210,7 +211,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
       }
 
       if (!cleanEmail) {
-        setError(`ID Magang Resmi atau NIM "${rawInput}" tidak ditemukan. Pastikan data ID Magang atau NIM yang Anda masukkan sudah benar.`);
+        setError(`NIM atau Akun "${rawInput}" tidak ditemukan. Pastikan NIM atau Email yang Anda masukkan sudah benar.`);
         setIsLoading(false);
         return;
       }
@@ -316,8 +317,8 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
 
       // If user approved from pending registration but user doc not yet created in Firestore
       if (!foundUser && pendingReg && pendingReg.status === 'Approved') {
-        const generatedInternId = pendingReg.internId || (pendingReg.nim ? `SGL-INT-2026-${pendingReg.nim}` : 'SGL-INT-2026-001');
         const assignedStudentId = pendingReg.nim || pendingReg.studentId || '';
+        const generatedInternId = pendingReg.internId || assignedStudentId || '001';
         foundUser = {
           id: fbUser?.uid || pendingReg.id,
           name: pendingReg.fullName,
@@ -348,7 +349,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
 
       if (foundUser) {
         if (!foundUser.internId) {
-          foundUser.internId = foundUser.studentId ? `SGL-INT-2026-${foundUser.studentId}` : 'SGL-INT-2026-001';
+          foundUser.internId = foundUser.studentId || '001';
         }
         if (!foundUser.studentId && pendingReg && pendingReg.nim) {
           foundUser.studentId = pendingReg.nim;
@@ -468,7 +469,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
 
     const cleanEmail = regEmail.trim().toLowerCase();
     const cleanNim = regNim.trim().replace(/\s+/g, '');
-    const generatedInternId = `SGL-INT-2026-${cleanNim}`;
+    const generatedInternId = cleanNim;
     const selectedDiv = regDivision.trim();
 
     try {
@@ -784,17 +785,17 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
                       <form onSubmit={handleLoginSubmit} className="space-y-4">
                         <div className="space-y-1">
                           <label className="block text-xs font-semibold text-slate-700 flex items-center justify-between">
-                            <span>ID Magang Resmi / Email</span>
-                            <span className="text-[10px] text-emerald-700 font-mono font-medium">Bisa pakai ID Magang / NIM</span>
+                            <span>NIM atau Email</span>
+                            <span className="text-[10px] text-emerald-700 font-mono font-medium">Bisa login pakai NIM</span>
                           </label>
                           <div className="relative">
-                            <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600" />
+                            <GraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600" />
                             <input 
                               type="text"
                               required
                               value={identifier}
                               onChange={e => setIdentifier(e.target.value)}
-                              placeholder="Contoh: SGL-INT-2026-001, 1301220250, atau Email"
+                              placeholder="Masukkan NIM (contoh: 1301220250) atau Email"
                               className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 transition-all font-medium"
                             />
                           </div>
@@ -932,8 +933,8 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
                               <span className="font-bold text-slate-900">{regNim}</span>
                             </div>
                             <div className="flex justify-between items-center py-1 px-2 rounded-lg bg-emerald-50 border border-emerald-200">
-                              <span className="text-emerald-700 font-bold">ID Magang Resmi:</span>
-                              <span className="font-bold text-emerald-900 text-xs">SGL-INT-2026-{regNim.trim()}</span>
+                              <span className="text-emerald-700 font-bold">NIM (ID Akun Login):</span>
+                              <span className="font-bold text-emerald-900 text-xs">{regNim.trim()}</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-slate-500">Email Terdaftar:</span>
@@ -946,7 +947,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
                           </div>
 
                           <p className="text-[11px] text-slate-500 font-sans">
-                            Setelah disetujui, Anda dapat langsung login menggunakan <strong>ID Magang Resmi ({`SGL-INT-2026-${regNim.trim()}`})</strong> atau Email Anda.
+                            Setelah disetujui, Anda dapat langsung login menggunakan <strong>NIM ({regNim.trim()})</strong> atau Email Anda.
                           </p>
 
                           <div className="pt-2">
@@ -993,15 +994,15 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
                             </div>
                           </div>
 
-                          {/* Live Preview ID Magang Resmi */}
+                          {/* Live Preview NIM */}
                           {regNim.trim() && (
-                            <div className="p-2.5 rounded-xl bg-emerald-50/90 border border-emerald-300 text-emerald-900 text-[11px] font-mono flex items-center justify-between shadow-xs animate-fade-in">
+                            <div className="p-2.5 rounded-xl bg-emerald-50/90 border border-emerald-200 text-emerald-900 text-[11px] flex items-center justify-between shadow-xs animate-fade-in">
                               <div className="flex items-center gap-1.5">
-                                <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-                                <span>ID Magang Resmi Otomatis:</span>
+                                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                                <span className="text-slate-600">ID Akun Login:</span>
                               </div>
-                              <span className="font-bold text-[#1b5e20] bg-white px-2 py-0.5 rounded border border-emerald-200 shadow-xs">
-                                SGL-INT-2026-{regNim.trim()}
+                              <span className="font-mono font-bold text-[#1b5e20] bg-white px-2 py-0.5 rounded border border-emerald-200">
+                                {regNim.trim()} (NIM)
                               </span>
                             </div>
                           )}
