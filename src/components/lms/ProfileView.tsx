@@ -32,7 +32,9 @@ import {
   Star,
   ExternalLink,
   ChevronRight,
-  GraduationCap
+  GraduationCap,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 interface ProfileViewProps {
@@ -126,8 +128,11 @@ export default function ProfileView({
 
   // Password Form State
   const [oldPassword, setOldPassword] = useState('');
+  const [showOldPassword, setShowOldPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -655,15 +660,60 @@ export default function ProfileView({
               <form onSubmit={handleChangePassword} className="space-y-3 text-xs">
                 <div>
                   <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Kata Sandi Lama</label>
-                  <input type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                  <div className="relative">
+                    <input 
+                      type={showOldPassword ? 'text' : 'password'} 
+                      value={oldPassword} 
+                      onChange={e => setOldPassword(e.target.value)} 
+                      required 
+                      className="w-full pl-3 pr-10 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowOldPassword(!showOldPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-0.5"
+                    >
+                      {showOldPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Kata Sandi Baru</label>
-                  <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                  <div className="relative">
+                    <input 
+                      type={showNewPassword ? 'text' : 'password'} 
+                      value={newPassword} 
+                      onChange={e => setNewPassword(e.target.value)} 
+                      required 
+                      className="w-full pl-3 pr-10 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-0.5"
+                    >
+                      {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Konfirmasi Kata Sandi Baru</label>
-                  <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                  <div className="relative">
+                    <input 
+                      type={showConfirmPassword ? 'text' : 'password'} 
+                      value={confirmPassword} 
+                      onChange={e => setConfirmPassword(e.target.value)} 
+                      required 
+                      className="w-full pl-3 pr-10 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-0.5"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">
@@ -1118,15 +1168,60 @@ export default function ProfileView({
             <form onSubmit={handleChangePassword} className="space-y-3 text-xs">
               <div>
                 <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Kata Sandi Lama</label>
-                <input type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                <div className="relative">
+                  <input 
+                    type={showOldPassword ? 'text' : 'password'} 
+                    value={oldPassword} 
+                    onChange={e => setOldPassword(e.target.value)} 
+                    required 
+                    className="w-full pl-3 pr-10 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" 
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowOldPassword(!showOldPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-0.5"
+                  >
+                    {showOldPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Kata Sandi Baru</label>
-                <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                <div className="relative">
+                  <input 
+                    type={showNewPassword ? 'text' : 'password'} 
+                    value={newPassword} 
+                    onChange={e => setNewPassword(e.target.value)} 
+                    required 
+                    className="w-full pl-3 pr-10 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" 
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-0.5"
+                  >
+                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Konfirmasi Kata Sandi Baru</label>
-                <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" />
+                <div className="relative">
+                  <input 
+                    type={showConfirmPassword ? 'text' : 'password'} 
+                    value={confirmPassword} 
+                    onChange={e => setConfirmPassword(e.target.value)} 
+                    required 
+                    className="w-full pl-3 pr-10 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700" 
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-0.5"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="flex justify-end gap-2 pt-2">

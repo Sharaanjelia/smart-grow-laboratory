@@ -69,7 +69,9 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
   const [regStudyProgram, setRegStudyProgram] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
+  const [showRegPassword, setShowRegPassword] = useState(false);
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
+  const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
   const [regSuccess, setRegSuccess] = useState(false);
 
   // Email verification resend state
@@ -1064,26 +1066,46 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="space-y-1">
                               <label className="block text-[11px] font-semibold text-slate-700">Password</label>
-                              <input 
-                                type="password"
-                                required
-                                value={regPassword}
-                                onChange={e => setRegPassword(e.target.value)}
-                                placeholder="••••••••"
-                                className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
-                              />
+                              <div className="relative">
+                                <input 
+                                  type={showRegPassword ? 'text' : 'password'}
+                                  required
+                                  value={regPassword}
+                                  onChange={e => setRegPassword(e.target.value)}
+                                  placeholder="••••••••"
+                                  className="w-full pl-3.5 pr-10 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowRegPassword(!showRegPassword)}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                                  aria-label={showRegPassword ? "Sembunyikan password" : "Lihat password"}
+                                >
+                                  {showRegPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                              </div>
                             </div>
 
                             <div className="space-y-1">
                               <label className="block text-[11px] font-semibold text-slate-700">Konfirmasi Password</label>
-                              <input 
-                                type="password"
-                                required
-                                value={regConfirmPassword}
-                                onChange={e => setRegConfirmPassword(e.target.value)}
-                                placeholder="••••••••"
-                                className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
-                              />
+                              <div className="relative">
+                                <input 
+                                  type={showRegConfirmPassword ? 'text' : 'password'}
+                                  required
+                                  value={regConfirmPassword}
+                                  onChange={e => setRegConfirmPassword(e.target.value)}
+                                  placeholder="••••••••"
+                                  className="w-full pl-3.5 pr-10 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                                  aria-label={showRegConfirmPassword ? "Sembunyikan konfirmasi password" : "Lihat konfirmasi password"}
+                                >
+                                  {showRegConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                              </div>
                             </div>
                           </div>
 
