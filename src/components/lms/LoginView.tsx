@@ -1027,7 +1027,7 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
                                 required
                                 value={regStudyProgram}
                                 onChange={e => setRegStudyProgram(e.target.value)}
-                                placeholder="e.g. S1 Informatika / Teknik Komputer"
+                                placeholder="e.g. D3 Sistem Informasi"
                                 className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
                               />
                             </div>
