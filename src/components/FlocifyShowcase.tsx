@@ -71,52 +71,11 @@ export default function FlocifyShowcase({
   const [modalImage, setModalImage] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // Live Telemetry & Deep Learning AI States
-  const [doValue, setDoValue] = useState<number>(6.8);
-  const [ammoniaValue, setAmmoniaValue] = useState<number>(0.08);
-  const [tempValue, setTempValue] = useState<number>(28.5);
-  const [phValue, setPhValue] = useState<number>(7.4);
-  const [flocDensity, setFlocDensity] = useState<number>(15);
-  const [aiSpikeRisk, setAiSpikeRisk] = useState<boolean>(false);
-  const [autoDosingActive, setAutoDosingActive] = useState<boolean>(false);
-  const [autoAerationActive, setAutoAerationActive] = useState<boolean>(true);
-
   // Comment Form States
   const [nameInput, setNameInput] = useState('');
   const [emailInput, setEmailInput] = useState('');
   const [textInput, setTextInput] = useState('');
   const [commentSuccess, setCommentSuccess] = useState(false);
-
-  // Real-time telemetry fluctuation simulation
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (!aiSpikeRisk) {
-        setDoValue(prev => parseFloat((prev + (Math.random() - 0.5) * 0.1).toFixed(2)));
-        setAmmoniaValue(prev => parseFloat((prev + (Math.random() - 0.5) * 0.01).toFixed(3)));
-        setTempValue(prev => parseFloat((prev + (Math.random() - 0.5) * 0.05).toFixed(1)));
-        setPhValue(prev => parseFloat((prev + (Math.random() - 0.5) * 0.03).toFixed(2)));
-        setFlocDensity(prev => parseFloat((prev + (Math.random() - 0.5) * 0.4).toFixed(1)));
-      } else {
-        setAmmoniaValue(prev => parseFloat((prev + Math.random() * 0.04).toFixed(3)));
-        setDoValue(prev => parseFloat((prev - Math.random() * 0.08).toFixed(2)));
-      }
-    }, 2500);
-    return () => clearInterval(timer);
-  }, [aiSpikeRisk]);
-
-  const handleToggleAmmoniaSpike = () => {
-    if (!aiSpikeRisk) {
-      setAiSpikeRisk(true);
-      setAmmoniaValue(0.32);
-      setDoValue(4.2);
-      setAutoDosingActive(true);
-    } else {
-      setAiSpikeRisk(false);
-      setAmmoniaValue(0.08);
-      setDoValue(6.8);
-      setAutoDosingActive(false);
-    }
-  };
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -179,12 +138,6 @@ export default function FlocifyShowcase({
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
             <span>Kembali ke Daftar Proyek</span>
           </button>
-          
-          <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 font-mono">
-            <span>Projek R&D</span>
-            <ChevronRight className="h-3 w-3" />
-            <span className="text-indigo-700 dark:text-indigo-400 font-bold">FLOCIFY Biofloc AI</span>
-          </div>
         </div>
 
         <div className="flex items-center gap-2.5">
@@ -238,16 +191,6 @@ export default function FlocifyShowcase({
 
           {/* Primary Action Buttons */}
           <div className="pt-3 flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => {
-                const el = document.getElementById('telemetry-section');
-                el?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs shadow-xl transition-all hover:scale-105"
-            >
-              <Eye className="h-4 w-4 text-slate-950" />
-              <span>Lihat Live Telemetry & AI Simulator</span>
-            </button>
 
             <button
               onClick={() => {
@@ -398,201 +341,7 @@ export default function FlocifyShowcase({
         </div>
       </section>
 
-      {/* ========================================================================= */}
-      {/* SIMULATED LIVE WATER QUALITY TELEMETRY & AI ANALYTICS */}
-      {/* ========================================================================= */}
-      <section id="telemetry-section" className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-indigo-500 animate-ping" />
-              <span className="text-xs font-mono font-bold tracking-widest text-indigo-600 dark:text-indigo-400 uppercase">
-                Interactive Lab Telemetry
-              </span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-              Monitoring Kualitas Air Biofloc & Prediksi Risiko AI
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-2xl mt-1">
-              Simulasi interaktif Deep Learning engine FLOCIFY yang menganalisis tren perubahan kualitas air secara kontinu. Klik tombol simulasi untuk menguji respons AI terhadap lonjakan amonia.
-            </p>
-          </div>
 
-          <button
-            onClick={handleToggleAmmoniaSpike}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-xs shadow-md transition-all cursor-pointer ${
-              aiSpikeRisk
-                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                : 'bg-rose-600 hover:bg-rose-700 text-white'
-            }`}
-          >
-            <Brain className="w-4 h-4 animate-bounce" />
-            <span>{aiSpikeRisk ? 'Pulihkan Kondisi Air Biofloc' : 'Simulasi Lonjakan Amonia (AI Risk)'}</span>
-          </button>
-        </div>
-
-        {/* Telemetry Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          
-          {/* Left Panel: Real-Time Water Quality Gauges */}
-          <div className="lg:col-span-7 bg-slate-950 rounded-3xl p-6 sm:p-8 text-white border-4 border-slate-800 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${aiSpikeRisk ? 'bg-rose-500 animate-ping' : 'bg-emerald-400 animate-pulse'}`}></div>
-                <span className="font-mono text-sm font-bold tracking-wider text-indigo-300">
-                  Telemetry Tank [FLOCIFY-Node-01]
-                </span>
-              </div>
-              <span className="text-[10px] font-mono text-slate-400 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">
-                Biofloc Aquaculture
-              </span>
-            </div>
-
-            {/* 5 Primary Water Quality Meters */}
-            <div className="grid grid-cols-2 gap-4">
-              
-              {/* Ammonia Meter */}
-              <div className={`p-4 rounded-2xl border transition-all ${
-                aiSpikeRisk 
-                  ? 'bg-rose-950/60 border-rose-500/80 animate-pulse' 
-                  : 'bg-slate-900 border-indigo-500/20'
-              }`}>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Ammonia (NH3/NH4+)</span>
-                  <AlertTriangle className={`w-4 h-4 ${aiSpikeRisk ? 'text-rose-400' : 'text-slate-600'}`} />
-                </div>
-                <p className={`text-3xl font-mono font-black ${aiSpikeRisk ? 'text-rose-400' : 'text-emerald-400'}`}>
-                  {ammoniaValue}
-                </p>
-                <span className="text-[10px] font-mono text-slate-400">mg/L (Batas Aman: &lt; 0.20)</span>
-              </div>
-
-              {/* Dissolved Oxygen Meter */}
-              <div className="bg-slate-900 p-4 rounded-2xl border border-indigo-500/20">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Dissolved Oxygen (DO)</span>
-                  <Droplet className="w-4 h-4 text-cyan-400" />
-                </div>
-                <p className="text-3xl font-mono font-black text-cyan-300">
-                  {doValue}
-                </p>
-                <span className="text-[10px] font-mono text-slate-400">mg/L (Target: &gt; 5.0)</span>
-              </div>
-
-              {/* Water Temperature */}
-              <div className="bg-slate-900 p-4 rounded-2xl border border-indigo-500/20">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Suhu Air</span>
-                  <Thermometer className="w-4 h-4 text-amber-400" />
-                </div>
-                <p className="text-3xl font-mono font-black text-amber-400">
-                  {tempValue} °C
-                </p>
-                <span className="text-[10px] font-mono text-slate-400">Stabil (Optimal 28-30°C)</span>
-              </div>
-
-              {/* pH Meter */}
-              <div className="bg-slate-900 p-4 rounded-2xl border border-indigo-500/20">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Derajat Keasaman (pH)</span>
-                  <Activity className="w-4 h-4 text-indigo-400" />
-                </div>
-                <p className="text-3xl font-mono font-black text-indigo-300">
-                  {phValue}
-                </p>
-                <span className="text-[10px] font-mono text-slate-400">pH Level (Aman 7.2 - 7.8)</span>
-              </div>
-
-            </div>
-
-            {/* Floc Density + Actuator Status */}
-            <div className="grid grid-cols-3 gap-3 text-[11px] font-mono">
-              <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 flex flex-col items-center justify-center text-center">
-                <span className="text-slate-400">Densitas Flok</span>
-                <span className="text-lg font-black text-indigo-300 mt-0.5">{flocDensity} <span className="text-[10px] text-slate-500">mL/L</span></span>
-                <span className="text-[9px] text-slate-500">Optimal: 15–25 mL/L</span>
-              </div>
-              <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
-                <span className="text-slate-400">Pompa Aerasi VORTEX:</span>
-                <span className="text-emerald-400 font-bold">ACTIVE (100%)</span>
-              </div>
-              <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
-                <span className="text-slate-400">Dosing Molase / Bakteri:</span>
-                <span className={autoDosingActive ? "text-amber-400 font-bold animate-pulse" : "text-slate-500 font-bold"}>
-                  {autoDosingActive ? "DOSING ON" : "STANDBY"}
-                </span>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Right Panel: Deep Learning AI Prediction & Action Recommendations */}
-          <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-2xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
-                  <Brain className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-display font-extrabold text-slate-900 dark:text-white">
-                    Deep Learning Predictive Engine
-                  </h3>
-                  <p className="text-xs font-mono font-bold text-indigo-600">
-                    ANOMALY DETECTION & AUTOMATED CONTROL
-                  </p>
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-sans">
-                Algoritma Deep Learning Flocify menganalisis tren perubahan kualitas air secara kontinu untuk memprediksi risiko penumpukan amonia sebelum berpotensi membahayakan benih ikan. Model ResNet/LSTM dilatih dengan data historis 6 bulan untuk mengenali pola degradasi air.
-              </p>
-
-              {/* Status Box */}
-              {aiSpikeRisk ? (
-                <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 space-y-2 text-xs">
-                  <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-bold">
-                    <AlertTriangle className="w-4 h-4 animate-bounce" />
-                    <span>PREDIKSI RISIKO: Lonjakan Amonia Terdeteksi!</span>
-                  </div>
-                  <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                    Sistem otomatis mengaktifkan penambahan molase karbon (C:N ratio tuning) & menyalakan aerator sekunder untuk mencegah mortalitas ikan. AI confidence: 97.3%.
-                  </p>
-                </div>
-              ) : (
-                <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 space-y-2 text-xs">
-                  <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>STATUS OPTIMAL: Ekosistem Biofloc Sehat</span>
-                  </div>
-                  <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                    Kepadatan bakteri heterotrofik stabil. Konversi limbah pakan menjadi biofloc protein berjalan sempurna. Rasio C:N dalam rentang ideal (12:1 – 15:1).
-                  </p>
-                </div>
-              )}
-
-              <div className="space-y-2.5 pt-1 text-xs">
-                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-slate-800 font-sans">
-                  <span className="text-slate-600 dark:text-slate-300 font-bold">Estimasi Penghematan Pakan (FCR):</span>
-                  <span className="font-mono font-bold text-emerald-600">+28.4% Efficiency</span>
-                </div>
-                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-slate-800 font-sans">
-                  <span className="text-slate-600 dark:text-slate-300 font-bold">Tingkat Kelangsungan Hidup (SR):</span>
-                  <span className="font-mono font-bold text-indigo-600">96.8% Survival</span>
-                </div>
-                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-slate-800 font-sans">
-                  <span className="text-slate-600 dark:text-slate-300 font-bold">Model AI Confidence Level:</span>
-                  <span className="font-mono font-bold text-cyan-600">94.2% Accuracy</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-900 dark:text-indigo-200 text-xs leading-relaxed font-sans">
-              <strong>Solusi Pembudidaya:</strong> FLOCIFY dirancang untuk memperkuat daya saing pembudidaya ikan skala kecil-menengah melalui digitalisasi tambak biofloc modern dengan investasi terjangkau.
-            </div>
-          </div>
-
-        </div>
-      </section>
 
       {/* ========================================================================= */}
       {/* 5 PILAR TEKNOLOGI FLOCIFY */}

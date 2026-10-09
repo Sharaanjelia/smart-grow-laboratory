@@ -1,37 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
-  Maximize2, 
-  X, 
   Send, 
   MessageSquare, 
-  Trash2, 
-  Activity, 
-  AlertTriangle, 
   CheckCircle2,
-  RefreshCw,
-  Camera,
-  Scale,
+  Users, 
+  Building2, 
+  Calendar, 
+  Share2, 
+  ArrowLeft, 
+  ExternalLink, 
+  ShieldCheck, 
+  Check, 
+  Truck, 
+  Eye, 
   Ruler,
-  Zap,
-  MapPin,
-  Users,
-  Building2,
-  Calendar,
-  Share2,
-  ArrowLeft,
-  ExternalLink,
-  ShieldCheck,
-  Clock,
-  Check,
-  Cpu,
-  Radio,
-  FileText,
+  BarChart3,
   HelpCircle,
-  Truck,
-  Eye,
-  ChevronRight,
-  Layers,
-  BarChart3
+  FileText
 } from 'lucide-react';
 import { ProjectItem, Comment } from '../types';
 
@@ -42,70 +27,6 @@ interface MopsShowcaseProps {
   onAddComment?: (name: string, email: string, content: string) => void;
 }
 
-interface TpsLocation {
-  id: string;
-  name: string;
-  district: string;
-  capacity: number;
-  tofDistanceCm: number;
-  weightTon: number;
-  cctvFps: number;
-  status: 'Normal' | 'Hampir Penuh' | 'Kritis';
-  address: string;
-  lastEmptied: string;
-}
-
-const INITIAL_TPS_LIST: TpsLocation[] = [
-  {
-    id: 'tps-baksil',
-    name: 'TPS Babakan Siliwangi',
-    district: 'Kecamatan Coblong',
-    capacity: 74,
-    tofDistanceCm: 124,
-    weightTon: 3.8,
-    cctvFps: 30,
-    status: 'Hampir Penuh',
-    address: 'Jl. Tamansari No. 73, Lb. Siliwangi, Coblong, Kota Bandung',
-    lastEmptied: 'Hari ini, 06:15 WIB'
-  },
-  {
-    id: 'tps-dago',
-    name: 'TPS Dago Elos',
-    district: 'Kecamatan Coblong',
-    capacity: 92,
-    tofDistanceCm: 38,
-    weightTon: 5.4,
-    cctvFps: 29,
-    status: 'Kritis',
-    address: 'Jl. Ir. H. Juanda No. 340, Dago, Coblong, Kota Bandung',
-    lastEmptied: 'Kemarin, 17:30 WIB'
-  },
-  {
-    id: 'tps-pasar-baru',
-    name: 'TPS Pasar Baru Trade Center',
-    district: 'Kecamatan Andir',
-    capacity: 48,
-    tofDistanceCm: 210,
-    weightTon: 2.3,
-    cctvFps: 30,
-    status: 'Normal',
-    address: 'Jl. Otto Iskandardinata No. 70, Kebon Jeruk, Andir, Kota Bandung',
-    lastEmptied: 'Hari ini, 08:45 WIB'
-  },
-  {
-    id: 'tps-gedebage',
-    name: 'TPS Pasar Induk Gedebage',
-    district: 'Kecamatan Panyileukan',
-    capacity: 63,
-    tofDistanceCm: 158,
-    weightTon: 3.2,
-    cctvFps: 30,
-    status: 'Normal',
-    address: 'Jl. Soekarno-Hatta No. 785, Babakan Penghulu, Cinambo / Panyileukan',
-    lastEmptied: 'Hari ini, 05:30 WIB'
-  }
-];
-
 export default function MopsShowcase({ 
   item, 
   comments = [], 
@@ -113,78 +34,14 @@ export default function MopsShowcase({
   onAddComment 
 }: MopsShowcaseProps) {
   
-  const hardwareImageUrl = '/images/mops/mops-hardware-installation.png';
   const officialWebUrl = 'https://mops-5f51b.web.app/';
-
-  const [modalImage, setModalImage] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
-
-  // Active Selected TPS for interactive telemetry simulation
-  const [selectedTpsId, setSelectedTpsId] = useState<string>('tps-baksil');
-  const [tpsState, setTpsState] = useState<TpsLocation[]>(INITIAL_TPS_LIST);
-  const [truckDispatchNotice, setTruckDispatchNotice] = useState<string | null>(null);
 
   // Comment Form States
   const [nameInput, setNameInput] = useState('');
   const [emailInput, setEmailInput] = useState('');
   const [textInput, setTextInput] = useState('');
   const [commentSuccess, setCommentSuccess] = useState(false);
-
-  // Current active TPS data
-  const currentTps = tpsState.find(t => t.id === selectedTpsId) || tpsState[0];
-
-  // Gentle live fluctuation to simulate real IoT telemetry
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTpsState(prev => prev.map(t => {
-        const newDistance = Math.min(280, Math.max(25, Math.round(t.tofDistanceCm + (Math.random() - 0.5) * 3)));
-        const newFps = Math.min(30, Math.max(26, 28 + Math.floor(Math.random() * 3)));
-        return {
-          ...t,
-          tofDistanceCm: newDistance,
-          cctvFps: newFps
-        };
-      }));
-    }, 3500);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Action: Empty TPS (Armada Truk Pengangkut Tiba)
-  const handleEmptyCurrentTps = () => {
-    setTpsState(prev => prev.map(t => {
-      if (t.id === selectedTpsId) {
-        return {
-          ...t,
-          capacity: 12,
-          tofDistanceCm: 285,
-          weightTon: 0.6,
-          status: 'Normal',
-          lastEmptied: 'Baru saja diangkut (Live Update)'
-        };
-      }
-      return t;
-    }));
-    setTruckDispatchNotice(`Truk sampah armada DLH berhasil mengosongkan ${currentTps.name}! Kapasitas kembali normal 12%.`);
-    setTimeout(() => setTruckDispatchNotice(null), 5000);
-  };
-
-  // Action: Trigger Surge / Overflow Alert
-  const handleTriggerOverflowAlert = () => {
-    setTpsState(prev => prev.map(t => {
-      if (t.id === selectedTpsId) {
-        return {
-          ...t,
-          capacity: 96,
-          tofDistanceCm: 22,
-          weightTon: 5.9,
-          status: 'Kritis'
-        };
-      }
-      return t;
-    }));
-    setTruckDispatchNotice(`⚠️ PERINGATAN KRITIS: ${currentTps.name} melebihi kapasitas batas 90%! Sistem mengirim alert dispatching darurat.`);
-    setTimeout(() => setTruckDispatchNotice(null), 6000);
-  };
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -232,19 +89,6 @@ export default function MopsShowcase({
 
   const allComments = comments.length > 0 ? comments : defaultComments;
 
-  const getStatusBadge = (status: 'Normal' | 'Hampir Penuh' | 'Kritis') => {
-    switch (status) {
-      case 'Normal':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-300';
-      case 'Hampir Penuh':
-        return 'bg-amber-100 text-amber-800 border-amber-300';
-      case 'Kritis':
-        return 'bg-rose-100 text-rose-800 border-rose-300 animate-pulse';
-      default:
-        return 'bg-slate-100 text-slate-800 border-slate-300';
-    }
-  };
-
   return (
     <div className="space-y-10 animate-fade-in text-slate-800 dark:text-slate-100 pb-16">
       
@@ -258,12 +102,6 @@ export default function MopsShowcase({
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
             <span>Kembali ke Daftar Proyek</span>
           </button>
-          
-          <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 font-mono">
-            <span>Projek R&D</span>
-            <ChevronRight className="h-3 w-3" />
-            <span className="text-emerald-700 dark:text-emerald-400 font-bold">MOPS Kota Bandung</span>
-          </div>
         </div>
 
         <div className="flex items-center gap-2.5">
@@ -294,20 +132,6 @@ export default function MopsShowcase({
         <div className="absolute bottom-0 left-1/4 -mb-20 w-80 h-80 rounded-full bg-teal-300/15 blur-2xl pointer-events-none" />
 
         <div className="relative z-10 max-w-4xl space-y-4">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/70 border border-emerald-400/40 text-emerald-200 font-mono text-xs font-bold uppercase tracking-wider backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-              Smart City • Kota Bandung
-            </span>
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-mono text-xs font-semibold">
-              <Cpu className="h-3.5 w-3.5 text-emerald-300" />
-              Sensor ToF (TOF400F) & IP Camera (VIGI C340)
-            </span>
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-teal-400/20 border border-teal-300/30 text-teal-200 font-mono text-xs font-semibold">
-              <Radio className="h-3.5 w-3.5 text-cyan-300" />
-              Telemetri Real-Time & Live CCTV
-            </span>
-          </div>
 
           <h1 className="font-display text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight drop-shadow-sm">
             MOPS: Sistem Monitoring & Operasional Persampahan Kota Bandung
@@ -334,17 +158,6 @@ export default function MopsShowcase({
               <span>Buka Website Resmi MOPS (mops-5f51b.web.app)</span>
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
-
-            <button
-              onClick={() => {
-                const el = document.getElementById('hardware-section');
-                el?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs backdrop-blur-md border border-white/20 transition-all cursor-pointer"
-            >
-              <Layers className="h-4 w-4 text-emerald-300" />
-              <span>Lihat Spesifikasi Tiang Hardware</span>
-            </button>
           </div>
         </div>
       </section>
@@ -373,375 +186,7 @@ export default function MopsShowcase({
         </div>
       </section>
 
-      {/* ========================================================================= */}
-      {/* INTERACTIVE TPS MONITORING & SIMULATOR SECTION */}
-      {/* ========================================================================= */}
-      <section className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-              <span className="text-xs font-mono font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase">Interactive Lab Telemetry</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-              Simulasi Monitoring TPS Real-Time
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-2xl mt-1">
-              Pilih salah satu Tempat Pembuangan Sementara di Kota Bandung untuk menguji pembacaan sensor ToF, video CCTV outdoor, dan trigger aksi penjemputan armada truk.
-            </p>
-          </div>
 
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-mono shadow-2xs">
-            <span className="text-slate-500">TPS Aktif:</span>
-            <span className="text-slate-900 dark:text-white font-bold">{currentTps.name}</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadge(currentTps.status)}`}>
-              {currentTps.status}
-            </span>
-          </div>
-        </div>
-
-        {/* Alert Banner if present */}
-        {truckDispatchNotice && (
-          <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-700/50 text-emerald-900 dark:text-emerald-200 text-xs sm:text-sm flex items-center justify-between gap-3 shadow-sm">
-            <div className="flex items-center gap-3">
-              <Truck className="h-5 w-5 text-emerald-600 dark:text-emerald-400 animate-bounce shrink-0" />
-              <span>{truckDispatchNotice}</span>
-            </div>
-            <button 
-              onClick={() => setTruckDispatchNotice(null)} 
-              className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 cursor-pointer"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        )}
-
-        {/* TPS Selector Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {tpsState.map((tps) => {
-            const isSelected = tps.id === selectedTpsId;
-            return (
-              <div
-                key={tps.id}
-                onClick={() => setSelectedTpsId(tps.id)}
-                className={`p-5 rounded-3xl border transition-all cursor-pointer text-left ${
-                  isSelected
-                    ? 'bg-white dark:bg-slate-900 border-emerald-500 ring-2 ring-emerald-500/20 shadow-md scale-[1.02]'
-                    : 'bg-white dark:bg-slate-900/60 border-slate-200/90 dark:border-slate-800 hover:border-slate-300 hover:shadow-xs'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <span className="text-[10px] font-mono text-slate-400 block">{tps.district}</span>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-tight mt-0.5">{tps.name}</h4>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${getStatusBadge(tps.status)}`}>
-                    {tps.status}
-                  </span>
-                </div>
-
-                {/* Mini Capacity Bar */}
-                <div className="mt-4 space-y-1.5">
-                  <div className="flex justify-between text-[11px] font-mono">
-                    <span className="text-slate-500">Volume Terisi:</span>
-                    <span className="text-slate-900 dark:text-white font-bold">{tps.capacity}%</span>
-                  </div>
-                  <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full transition-all duration-700 rounded-full ${
-                        tps.capacity >= 85 
-                          ? 'bg-rose-500' 
-                          : tps.capacity >= 70 
-                          ? 'bg-amber-500' 
-                          : 'bg-emerald-500'
-                      }`}
-                      style={{ width: `${tps.capacity}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-500 font-mono">
-                  <span>Jarak ToF: {tps.tofDistanceCm} cm</span>
-                  <span>Beban: {tps.weightTon} Ton</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Active TPS Telemetry Detail Dashboard */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm">
-          
-          {/* Left: Live Simulated CCTV Feed (TP-Link VIGI C340) */}
-          <div className="lg:col-span-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-mono text-slate-700 dark:text-slate-300">
-                <Camera className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                <span className="font-bold">LIVE FEED: TP-Link VIGI C340 Outdoor</span>
-              </div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-500/40 text-rose-700 dark:text-rose-400 text-[10px] font-mono font-bold">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
-                REC • {currentTps.cctvFps} FPS
-              </span>
-            </div>
-
-            {/* Camera Viewport */}
-            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-inner group">
-              <img
-                src={hardwareImageUrl}
-                alt="TP-Link VIGI Camera Surveillance"
-                className="w-full h-full object-cover opacity-90 filter contrast-105 group-hover:scale-105 transition-transform duration-700"
-              />
-
-              {/* CCTV Overlays */}
-              <div className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md px-3 py-1 rounded-md border border-white/10 text-[10px] font-mono text-emerald-400 space-y-0.5">
-                <div className="font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  CAM_01 • {currentTps.name.toUpperCase()}
-                </div>
-                <div className="text-slate-400 text-[9px]">{new Date().toLocaleDateString('id-ID')} • REAL-TIME RTSP</div>
-              </div>
-
-              {/* Top Right ToF Target Overlay */}
-              <div className="absolute top-3 right-3 bg-slate-950/80 backdrop-blur-md px-3 py-1 rounded-md border border-white/10 text-[10px] font-mono text-right text-slate-300">
-                <span className="text-slate-400 block text-[9px]">TOF400F RAY</span>
-                <span className="text-cyan-400 font-bold">{currentTps.tofDistanceCm} cm to debris</span>
-              </div>
-
-              {/* Center Reticle / Bounding Box */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className={`w-40 h-28 border-2 rounded-lg transition-all duration-500 flex flex-col justify-between p-1.5 ${
-                  currentTps.status === 'Kritis' 
-                    ? 'border-rose-500/80 bg-rose-500/10' 
-                    : 'border-cyan-400/60 bg-cyan-500/5'
-                }`}>
-                  <div className="flex justify-between text-[8px] font-mono text-cyan-300">
-                    <span>DEBRIS_VOLUME</span>
-                    <span>{currentTps.capacity}%</span>
-                  </div>
-                  <div className="text-[8px] font-mono text-right text-emerald-400">
-                    TRACKING OK
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Bar in Camera View */}
-              <div className="absolute bottom-3 left-3 right-3 bg-slate-950/85 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 flex items-center justify-between text-[11px] font-mono">
-                <span className="text-slate-300 truncate max-w-[60%]">{currentTps.address}</span>
-                <span className="text-emerald-400 font-bold">PLN 220V STABLE</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-xs text-slate-500 font-mono pt-1">
-              <span>Terakhir dikosongkan: <strong className="text-slate-800 dark:text-slate-200">{currentTps.lastEmptied}</strong></span>
-              <span className="text-slate-400">Node ID: {currentTps.id.toUpperCase()}</span>
-            </div>
-          </div>
-
-          {/* Right: Telemetry Gauges & Interactive Actions */}
-          <div className="lg:col-span-6 flex flex-col justify-between space-y-6">
-            
-            <div>
-              <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block font-bold">Live Parameter Analysis</span>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mt-1">
-                Telemetri Sensor Node & Edge Controller
-              </h3>
-            </div>
-
-            {/* 4 Telemetry Metrics Grid */}
-            <div className="grid grid-cols-2 gap-3.5">
-              
-              {/* Metric 1: Capacity */}
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-1">
-                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                  <span className="text-xs font-mono">Kapasitas TPS</span>
-                  <Trash2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
-                  {currentTps.capacity}%
-                </div>
-                <div className="text-[10px] text-slate-500">
-                  Ambang Kritis: &gt; 85%
-                </div>
-              </div>
-
-              {/* Metric 2: ToF Distance */}
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-1">
-                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                  <span className="text-xs font-mono">Jarak Sensor ToF</span>
-                  <Ruler className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-black text-cyan-700 dark:text-cyan-300">
-                  {currentTps.tofDistanceCm} <span className="text-sm font-normal text-slate-500">cm</span>
-                </div>
-                <div className="text-[10px] text-slate-500">
-                  Sensor: TOF400F Laser
-                </div>
-              </div>
-
-              {/* Metric 3: Weight Load */}
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-1">
-                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                  <span className="text-xs font-mono">Beban Timbunan</span>
-                  <Scale className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
-                  {currentTps.weightTon} <span className="text-sm font-normal text-slate-500">Ton</span>
-                </div>
-                <div className="text-[10px] text-slate-500">
-                  Kapasitas Maks: 6.0 Ton
-                </div>
-              </div>
-
-              {/* Metric 4: Power System */}
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-1">
-                <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                  <span className="text-xs font-mono">Catu Daya Listrik</span>
-                  <Zap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-black text-emerald-700 dark:text-emerald-400">
-                  220 <span className="text-sm font-normal text-slate-500">V</span>
-                </div>
-                <div className="text-[10px] text-slate-500">
-                  Kabel PLN + Surge Guard
-                </div>
-              </div>
-
-            </div>
-
-            {/* Action Buttons for Simulation */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
-              <span className="text-xs font-mono font-bold text-slate-500 uppercase tracking-wider block">
-                Uji Skenario Interaktif Lapangan:
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button
-                  onClick={handleEmptyCurrentTps}
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-all hover:scale-[1.02] active:scale-95 cursor-pointer shadow-sm"
-                >
-                  <Truck className="h-4 w-4" />
-                  <span>Truk Angkut Tiba (Kosongkan)</span>
-                </button>
-
-                <button
-                  onClick={handleTriggerOverflowAlert}
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold transition-all hover:scale-[1.02] active:scale-95 cursor-pointer shadow-sm"
-                >
-                  <AlertTriangle className="h-4 w-4" />
-                  <span>Simulasi Luberan (96% Kritis)</span>
-                </button>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* HARDWARE POLE INSTALLATION (WHITE THEME BASED ON USER'S DIAGRAM) */}
-      {/* ========================================================================= */}
-      <section id="hardware-section" className="space-y-6 pt-4">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-cyan-600" />
-              <span className="text-xs font-mono font-bold tracking-widest text-cyan-700 dark:text-cyan-400 uppercase">Hardware Architecture</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-              Instalasi Fisik Tiang Pemantau MOPS
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-2xl mt-1">
-              Struktur modular tiang baja galvanis yang dipasang pada bibir Tempat Pembuangan Sementara (TPS) untuk mengintegrasikan kamera, sensor jarak ToF laser, edge computing box, dan catu daya listrik PLN.
-            </p>
-          </div>
-
-          <button
-            onClick={() => setModalImage(hardwareImageUrl)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 text-slate-700 dark:text-slate-300 text-xs font-bold border border-slate-200 dark:border-slate-800 transition-all cursor-pointer shadow-2xs"
-          >
-            <Maximize2 className="h-3.5 w-3.5 text-cyan-600" />
-            <span>Perbesar Diagram Lengkap</span>
-          </button>
-        </div>
-
-        {/* Hardware Infographic Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm">
-          
-          {/* Left: The uploaded Image Diagram */}
-          <div className="lg:col-span-7 flex flex-col items-center">
-            <div 
-              onClick={() => setModalImage(hardwareImageUrl)}
-              className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-2 shadow-sm cursor-pointer group hover:border-cyan-500 transition-all"
-            >
-              <img
-                src={hardwareImageUrl}
-                alt="Instalasi Fisik Tiang Hardware MOPS (Tampak Depan, Tampak Samping, Tampak Atas)"
-                className="w-full h-auto object-contain rounded-xl group-hover:scale-[1.01] transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-cyan-900/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-900/90 text-white text-xs font-bold border border-white/20 shadow-lg">
-                  <Maximize2 className="h-4 w-4 text-cyan-400" />
-                  Klik untuk Memperbesar Resolusi Penuh
-                </span>
-              </div>
-            </div>
-            <p className="text-[11px] text-slate-500 font-mono mt-3 text-center">
-              Gambar 1. Dokumentasi Teknis Tiang Pemantau MOPS: Tampak Depan, Tampak Samping, dan Tampak Atas Lapangan TPS.
-            </p>
-          </div>
-
-          {/* Right: Component Descriptions matching the diagram */}
-          <div className="lg:col-span-5 space-y-4">
-            
-            {/* Item 1: IP Camera */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-cyan-500 transition-all space-y-1">
-              <div className="flex items-center gap-2 text-cyan-700 dark:text-cyan-400">
-                <Camera className="h-4 w-4" />
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">IP Camera Outdoor (TP-Link VIGI C340)</h4>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Monitoring visual TPS beresolusi tinggi, memantau aktivitas pembuangan warga, kedisiplinan petugas, serta pencatatan plat dan durasi kedatangan kendaraan pengangkut.
-              </p>
-            </div>
-
-            {/* Item 2: Sensor Node ToF */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-amber-500 transition-all space-y-1">
-              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
-                <Ruler className="h-4 w-4" />
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Sensor Node ToF (TOF400F)</h4>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Sensor jarak laser Time-of-Flight presisi tinggi untuk mengukur jarak permukaan timbunan sampah ke sensor, menghasilkan estimasi persentase tingkat kepenuhan volume TPS secara continuous.
-              </p>
-            </div>
-
-            {/* Item 3: Control Box */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 transition-all space-y-1">
-              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
-                <Cpu className="h-4 w-4" />
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Control Box & Edge Gateway</h4>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Pusat pemrosesan komputasi edge di lapangan, modul komunikasi data telemetri (4G/Wi-Fi) ke cloud backend, manajemen power supply, dan pengaman korsleting listrik.
-              </p>
-            </div>
-
-            {/* Item 4: Sumber Daya Listrik */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-teal-500 transition-all space-y-1">
-              <div className="flex items-center gap-2 text-teal-700 dark:text-teal-400">
-                <Zap className="h-4 w-4" />
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Sumber Daya Listrik (Kabel PLN)</h4>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Pasokan daya utama kabel PLN dengan kabel standar outdoor dan surge protector untuk menjamin pengoperasian sistem nonstop 24 jam 7 hari seminggu di segala cuaca.
-              </p>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
 
       {/* ========================================================================= */}
       {/* 4 PILAR TEKNOLOGI MOPS */}
@@ -1101,33 +546,7 @@ export default function MopsShowcase({
         </div>
       </section>
 
-      {/* FULL-SCREEN IMAGE MODAL */}
-      {modalImage && (
-        <div 
-          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4"
-          onClick={() => setModalImage(null)}
-        >
-          <div 
-            className="relative max-w-5xl max-h-[90vh] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl p-3 shadow-2xl overflow-hidden flex flex-col items-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setModalImage(null)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white border border-white/20 transition-all z-20 cursor-pointer"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <img
-              src={modalImage}
-              alt="Diagram Instalasi Hardware Tiang MOPS"
-              className="w-full max-h-[82vh] object-contain rounded-2xl"
-            />
-            <div className="py-2 text-center text-xs font-mono text-slate-600 dark:text-slate-400">
-              Dokumentasi Instalasi Tiang Hardware MOPS (Tampak Depan, Samping, dan Atas)
-            </div>
-          </div>
-        </div>
-      )}
+
 
     </div>
   );

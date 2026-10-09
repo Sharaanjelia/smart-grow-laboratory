@@ -1697,79 +1697,6 @@ export default function App() {
             {/* VISI & MISI SECTION */}
             <VisionMissionSection />
 
-            {/* FEATURED RESEARCH PROJECTS SECTION — Dynamically synced from Firestore */}
-            <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10" id="home-featured-projects">
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-                <div>
-                  <h2 className="font-display text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-                    Proyek Riset & Inovasi Unggulan
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-500 mt-1 font-sans">
-                    Pengembangan teknologi terpadu laboratorium Smart Grow yang sedang dan telah diimplementasikan.
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleNavigate('project')}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0A5247] hover:bg-[#073D35] text-white text-xs font-bold transition-all duration-300 hover:scale-105 active:scale-95 shadow-md shadow-emerald-950/20 cursor-pointer self-start sm:self-auto"
-                >
-                  <span>Lihat Semua Proyek ({projectsList.length})</span>
-                  <ArrowUpRight className="h-4 w-4" />
-                </button>
-              </div>
-
-              {/* Dynamic Projects Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {projectsList.slice(0, 3).map((proj) => (
-                  <div
-                    key={proj.id}
-                    onClick={() => {
-                      setSelectedProjectId(proj.id);
-                      handleNavigate('project');
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="group cursor-pointer bg-white border border-slate-100 p-5 rounded-3xl transition-all duration-300 hover:shadow-xl hover:border-emerald-500/30 hover:scale-[1.01] flex flex-col justify-between shadow-xs"
-                  >
-                    <div className="space-y-4">
-                      <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-950">
-                        <img
-                          src={resolveImageUrl(proj.image)}
-                          alt={proj.title}
-                          referrerPolicy="no-referrer"
-                          className={`h-full w-full transition-transform duration-700 group-hover:scale-105 ${
-                            (proj.image || '').includes('logo') || (proj.image || '').includes('poster') || (proj.image || '').includes('brochure') || proj.id === 'smart-tbn' || proj.id === 'proj_1788926059725' || proj.id === 'smart-water'
-                              ? 'object-contain p-2 bg-slate-950'
-                              : 'object-cover object-center'
-                          }`}
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg';
-                          }}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 via-transparent to-transparent" />
-                        <span className="absolute top-3 left-3 rounded-full bg-white/95 backdrop-blur-md border border-slate-100 px-3 py-1 text-[10px] font-sans font-bold tracking-wider text-teal-800 uppercase shadow-xs">
-                          {proj.category}
-                        </span>
-                      </div>
-                      <div>
-                        <h3 className="font-display text-lg font-black text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-1">
-                          {proj.title}
-                        </h3>
-                        <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
-                          {proj.description}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-700 group-hover:underline">
-                      <span>Buka Detail Proyek</span>
-                      <div className="h-7 w-7 rounded-full bg-emerald-50 group-hover:bg-emerald-100 flex items-center justify-center text-emerald-700 transition-all">
-                        <ArrowUpRight className="h-3.5 w-3.5" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
             {/* RESEARCH INTEREST SECTION (Smooth Interactive Slider) */}
             <ResearchInterestSlider />
 
@@ -1815,10 +1742,6 @@ export default function App() {
             {!selectedNewsId ? (
               <>
                 <div className="flex flex-col gap-2 mb-10">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-8 rounded bg-teal-600"></span>
-                    <span className="font-sans text-xs font-bold tracking-widest text-teal-600 uppercase">Updates & Publications</span>
-                  </div>
                   <h1 className="font-display text-4xl font-bold text-slate-900 md:text-5xl">
                     News & Events
                   </h1>
