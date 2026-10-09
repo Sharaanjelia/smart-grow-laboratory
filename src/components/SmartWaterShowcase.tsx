@@ -532,19 +532,19 @@ export default function SmartWaterShowcase({
             </div>
           </div>
 
-          {/* Member 3: M. Chico DwiKasa */}
+          {/* Member 3: Sirvani Cinta Dewi Mudasir */}
           <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800 flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-200 shrink-0 border-2 border-amber-400">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-200 shrink-0 border-2 border-teal-400">
               <img 
-                src="/images/team/chiko.jpg" 
-                alt="M. Chico DwiKasa"
+                src="/images/team/sirvani.jpg" 
+                alt="Sirvani Cinta Dewi Mudasir"
                 className="w-full h-full object-cover"
               />
             </div>
             <div>
-              <h4 className="font-bold text-sm text-slate-900 dark:text-white">M. Chico DwiKasa</h4>
-              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 block">Researcher & Mobile Engineer</span>
-              <p className="text-[11px] text-slate-500 mt-1">Pengembangan Mobile App, Pipeline AI-OCR, dan Cloud Integration.</p>
+              <h4 className="font-bold text-sm text-slate-900 dark:text-white">Sirvani Cinta Dewi Mudasir</h4>
+              <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 block">Researcher & IoT Engineer</span>
+              <p className="text-[11px] text-slate-500 mt-1">Perancangan Arsitektur IoT, Instrumentasi Sensor, dan Telemetri Real-time.</p>
             </div>
           </div>
 
