@@ -1419,6 +1419,14 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Navigate directly to Open Recruitment news article in News & Events
+  const handleOpenRecruitmentNews = () => {
+    setCurrentPage('news');
+    setSelectedNewsId('open-recruitment-magang-2026');
+    setSelectedProjectId(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-white text-slate-800 font-sans selection:bg-teal-500 selection:text-white relative">
       <ToastContainer />
@@ -1431,7 +1439,7 @@ export default function App() {
         <Navbar 
           currentPage={currentPage} 
           setCurrentPage={handleNavigate} 
-          onOpenJoin={() => handleNavigate('join')}
+          onOpenJoin={handleOpenRecruitmentNews}
           isLoggedIn={!authLoading && !!currentUser}
           currentUserRole={currentUser?.role}
           onOpenLogin={() => handleNavigate('login')}
@@ -1716,7 +1724,7 @@ export default function App() {
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-4 shrink-0">
                   <button
-                    onClick={() => handleNavigate('join')}
+                    onClick={handleOpenRecruitmentNews}
                     className="inline-flex items-center gap-2 rounded-full bg-white text-[#0A5247] hover:bg-emerald-50 px-7 py-3.5 text-xs font-extrabold tracking-wider uppercase transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg cursor-pointer"
                   >
                     <span>Daftar Magang Riset</span>
@@ -2445,7 +2453,7 @@ export default function App() {
 
                 <div className="pt-4">
                   <button
-                    onClick={() => handleNavigate('join')}
+                    onClick={handleOpenRecruitmentNews}
                     className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-8 py-3 text-sm font-bold tracking-wider uppercase text-white hover:scale-105 active:scale-95 transition-all shadow-md shadow-emerald-600/10 cursor-pointer"
                   >
                     <span>Join Us!</span>
