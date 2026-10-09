@@ -29,19 +29,19 @@ export default function Navbar({
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-100 bg-white/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:py-4 sm:px-6 lg:px-8">
         
         {/* Logo matching exact Smart Grow Laboratory brand emblem */}
         <div 
           onClick={() => setCurrentPage('home')}
-          className="cursor-pointer group select-none"
+          className="cursor-pointer group select-none shrink-0"
           id="navbar-logo-container"
         >
           <Logo variant="navbar" />
         </div>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-8" id="desktop-navbar-nav">
+        {/* Desktop Navigation — only visible on lg (1024px+) to avoid overlap on tablets/large phones */}
+        <nav className="hidden lg:flex items-center gap-8" id="desktop-navbar-nav">
           {navItems.map((item) => {
             const isActive = currentPage === item.id;
             return (
@@ -59,18 +59,18 @@ export default function Navbar({
           })}
         </nav>
 
-        {/* Right CTA Button & Login / Portal Link */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0" id="navbar-cta-container">
+        {/* Right CTA Buttons — hidden on mobile (shown in bottom nav instead), visible on sm+ in header */}
+        <div className="hidden sm:flex items-center gap-2 sm:gap-3 shrink-0" id="navbar-cta-container">
           {isLoggedIn ? (
             <button
               onClick={() => setCurrentPage('dashboard')}
               id="lab-portal-navbar-button"
-              className="rounded-full bg-[#0A5247] hover:bg-[#073d34] px-3 sm:px-5 py-1.5 sm:py-2 text-[11px] sm:text-sm font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-md flex items-center gap-1.5 sm:gap-2"
+              className="rounded-full bg-[#0A5247] hover:bg-[#073d34] px-4 sm:px-5 py-1.5 sm:py-2 text-[11px] sm:text-sm font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-md flex items-center gap-1.5 sm:gap-2"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>Lab Portal</span>
               {currentUserRole && (
-                <span className="hidden sm:inline-block text-[10px] font-mono uppercase bg-white/20 px-2 py-0.5 rounded-full">
+                <span className="hidden md:inline-block text-[10px] font-mono uppercase bg-white/20 px-2 py-0.5 rounded-full">
                   {currentUserRole}
                 </span>
               )}
@@ -79,7 +79,7 @@ export default function Navbar({
             <button
               onClick={() => onOpenLogin ? onOpenLogin() : setCurrentPage('login')}
               id="login-navbar-button"
-              className="rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-700 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold text-slate-200 transition-all duration-300 hover:text-white cursor-pointer"
+              className="rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-700 px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold text-slate-200 transition-all duration-300 hover:text-white cursor-pointer"
             >
               <span>Lab Login</span>
             </button>
@@ -88,7 +88,7 @@ export default function Navbar({
           <button
             onClick={onOpenJoin}
             id="join-us-navbar-button"
-            className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-3.5 sm:px-6 py-1.5 sm:py-2.5 text-[11px] sm:text-sm font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-md shadow-emerald-600/10"
+            className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-4 sm:px-6 py-1.5 sm:py-2.5 text-[11px] sm:text-sm font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-md shadow-emerald-600/10"
           >
             <span>Join Us!</span>
           </button>
@@ -96,29 +96,57 @@ export default function Navbar({
 
       </div>
 
-      {/* Mobile Nav Rail */}
-      <div className="md:hidden flex justify-around border-t border-slate-100 bg-white/95 py-3.5 px-2 fixed bottom-0 left-0 right-0 z-50 shadow-lg">
+      {/* Mobile & Tablet Bottom Nav Rail — visible below lg (< 1024px) */}
+      <div className="lg:hidden flex items-center justify-around border-t border-slate-100 bg-white py-2.5 px-1 fixed bottom-0 left-0 right-0 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         {navItems.map((item) => {
           const isActive = currentPage === item.id;
           return (
             <button
               key={item.id}
               onClick={() => setCurrentPage(item.id)}
-              className={`flex flex-col items-center gap-1 transition-colors ${
-                isActive ? 'text-teal-600 font-bold' : 'text-slate-500'
+              className={`flex flex-col items-center gap-0.5 transition-colors px-2 py-1 rounded-xl ${
+                isActive ? 'text-teal-600 font-bold' : 'text-slate-400 hover:text-slate-700'
               }`}
             >
-              <span className={`text-[11px] font-sans tracking-wider font-semibold`}>
+              <span className="text-[11px] font-sans tracking-wide font-semibold">
                 {item.label === 'News & Events' ? 'News' : item.label}
               </span>
               {isActive && (
-                <span className="h-1 w-4 rounded-full bg-teal-600"></span>
+                <span className="h-1 w-5 rounded-full bg-teal-600 mt-0.5"></span>
               )}
             </button>
           );
         })}
+
+        {/* Divider */}
+        <div className="w-px h-6 bg-slate-200 shrink-0"></div>
+
+        {/* Login / Portal button in bottom nav for mobile */}
+        {isLoggedIn ? (
+          <button
+            onClick={() => setCurrentPage('dashboard')}
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-emerald-700"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-[10px] font-bold tracking-wide">Portal</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => onOpenLogin ? onOpenLogin() : setCurrentPage('login')}
+            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl text-slate-500 hover:text-slate-800"
+          >
+            <span className="text-[11px] font-semibold tracking-wide">Login</span>
+          </button>
+        )}
+
+        {/* Join Us button in bottom nav for mobile */}
+        <button
+          onClick={onOpenJoin}
+          className="px-3 py-1.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold shadow-sm hover:bg-emerald-700 transition-all active:scale-95 shrink-0"
+        >
+          Join Us!
+        </button>
       </div>
     </header>
   );
 }
-
