@@ -1731,10 +1731,10 @@ export default function App() {
                     <ArrowUpRight className="h-4 w-4 text-[#0A5247]" />
                   </button>
                   <button
-                    onClick={() => handleNavigate('project')}
+                    onClick={() => handleNavigate('join')}
                     className="inline-flex items-center gap-2 rounded-full bg-emerald-900/60 hover:bg-emerald-800/80 border border-emerald-400/30 text-white px-6 py-3.5 text-xs font-bold tracking-wider uppercase transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
                   >
-                    <span>Lihat Semua Proyek</span>
+                    <span>Ajukan Kolaborasi Riset</span>
                   </button>
                 </div>
               </div>
@@ -2453,10 +2453,10 @@ export default function App() {
 
                 <div className="pt-4">
                   <button
-                    onClick={handleOpenRecruitmentNews}
+                    onClick={() => handleNavigate('join')}
                     className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-8 py-3 text-sm font-bold tracking-wider uppercase text-white hover:scale-105 active:scale-95 transition-all shadow-md shadow-emerald-600/10 cursor-pointer"
                   >
-                    <span>Join Us!</span>
+                    <span>Ajukan Kolaborasi Riset</span>
                   </button>
                 </div>
               </div>

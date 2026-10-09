@@ -40,7 +40,7 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
   // Form states
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('IoT Specialist / Hardware Engineer');
+  const [role, setRole] = useState('Kemitraan Industri & Hilirisasi Produk');
   const [motivation, setMotivation] = useState('');
   const [github, setGithub] = useState('');
   const [instagram, setInstagram] = useState('');
@@ -288,23 +288,23 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
                 <span className="text-[11px] font-mono font-extrabold tracking-wider text-emerald-400 uppercase">
-                  🚀 Join Smart Grow Laboratory
+                  🤝 Kolaborasi & Kemitraan Riset
                 </span>
               </div>
 
               {/* Large Display Heading */}
               <div className="space-y-4">
                 <h1 className="font-display text-4xl sm:text-5xl xl:text-6xl font-extrabold tracking-tight text-white leading-[1.08]">
-                  Build the Future <br />
-                  of Smart Agriculture <br />
+                  Jalin Kemitraan & <br />
+                  Kolaborasi Riset <br />
                   <span className="bg-gradient-to-r from-[#22C55E] via-[#10B981] to-[#2E86FF] bg-clip-text text-transparent">
-                    with AI & IoT
+                    Smart Agriculture AIoT
                   </span>
                 </h1>
                 
                 {/* Subtitle */}
                 <p className="text-sm sm:text-base lg:text-lg text-slate-300 font-sans leading-relaxed max-w-2xl font-medium">
-                  Join a multidisciplinary research laboratory focused on Artificial Intelligence, Internet of Things, Smart Farming, Automation, Robotics, and Sustainable Agriculture. Collaborate with researchers, lecturers, and students to develop real-world innovations.
+                  Smart Grow Laboratory Telkom University membuka kemitraan industri, kolaborasi riset bersama, pengujian teknologi cerdas (AI & IoT), studi banding institusi, dan implementasi lapangan solusi pertanian cerdas berkelanjutan.
                 </p>
               </div>
 
@@ -330,14 +330,14 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                   href="#application-form-card"
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 px-6 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                 >
-                  <span>Apply Now</span>
+                  <span>Isi Formulir Kolaborasi</span>
                   <ArrowRight className="h-4 w-4" />
                 </a>
                 <button 
                   onClick={() => setActiveTab('showcase')}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-200 hover:text-white transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                 >
-                  <span>Explore Our Research</span>
+                  <span>Lihat Proyek Riset</span>
                 </button>
               </div>
 
@@ -388,8 +388,8 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                     {/* Form header inside card */}
                     <div className="border-b border-white/5 pb-4 mb-2 flex items-center justify-between">
                       <div>
-                        <h2 className="font-display text-base font-bold text-white">Application Form</h2>
-                        <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mt-0.5">Secure Cloud Database Sync</p>
+                        <h2 className="font-display text-base font-bold text-white">Formulir Pengajuan Kolaborasi</h2>
+                        <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mt-0.5">Kemitraan Riset & Industri Telkom University</p>
                       </div>
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400">
                         <FileText className="h-4 w-4" />
@@ -401,7 +401,7 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                       <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-300 uppercase flex items-center justify-between px-0.5">
                         <span className="flex items-center gap-1.5">
                           <User className="h-3.5 w-3.5 text-emerald-400" />
-                          <span>Full Name</span>
+                          <span>Nama Lengkap / PIC Mitra</span>
                         </span>
                         <span className="text-emerald-400 font-extrabold text-[9px] lowercase bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-500/30">*wajib</span>
                       </label>
@@ -409,7 +409,7 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                         <input 
                           type="text"
                           required
-                          placeholder="e.g. Shara Anjelia"
+                          placeholder="e.g. Ir. Budi Santoso, M.T. / PT Agro Cerdas"
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                           className="w-full rounded-[14px] border border-white/10 bg-slate-950/40 hover:bg-slate-950/60 focus:bg-slate-950 px-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-300 font-medium"
@@ -448,12 +448,12 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                       </div>
                     </div>
 
-                    {/* Role field */}
+                    {/* Role / Collaboration field */}
                     <div className="space-y-1.5">
                       <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-300 uppercase flex items-center justify-between px-0.5">
                         <span className="flex items-center gap-1.5">
                           <Briefcase className="h-3.5 w-3.5 text-emerald-400" />
-                          <span>Role of Interest</span>
+                          <span>Bentuk Kerja Sama / Kolaborasi</span>
                         </span>
                         <span className="text-emerald-400 font-extrabold text-[9px] lowercase bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-500/30">*wajib</span>
                       </label>
@@ -463,11 +463,12 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                           onChange={(e) => setRole(e.target.value)}
                           className="w-full appearance-none rounded-[14px] border border-white/10 bg-slate-950/40 hover:bg-slate-950/60 focus:bg-slate-950 px-4 py-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-300 font-medium cursor-pointer pr-10"
                         >
-                          <option value="IoT Specialist / Hardware Engineer" className="bg-slate-900 text-white">IoT Specialist / Hardware Engineer</option>
-                          <option value="Machine Learning / AI Developer" className="bg-slate-900 text-white">Machine Learning / AI Developer</option>
-                          <option value="Smart Agriculture & Agronomy Researcher" className="bg-slate-900 text-white">Smart Agriculture & Agronomy Researcher</option>
-                          <option value="Full-stack Cyber-Physical Web Developer" className="bg-slate-900 text-white">Full-stack Cyber-Physical Web Developer</option>
-                          <option value="Hardware Instrumentation Engineer" className="bg-slate-900 text-white">Hardware Instrumentation Engineer</option>
+                          <option value="Kemitraan Industri & Hilirisasi Produk" className="bg-slate-900 text-white">Kemitraan Industri & Hilirisasi Produk</option>
+                          <option value="Riset Bersama & Hibah Kolaboratif (Joint Research)" className="bg-slate-900 text-white">Riset Bersama & Hibah Kolaboratif (Joint Research)</option>
+                          <option value="Implementasi Lapangan / Pilot Project (Smart City / Smart Agriculture)" className="bg-slate-900 text-white">Implementasi Lapangan / Pilot Project (Smart City / Smart Agriculture)</option>
+                          <option value="Studi Banding, Kunjungan Lab & Edukasi" className="bg-slate-900 text-white">Studi Banding, Kunjungan Lab & Edukasi</option>
+                          <option value="Dosen Tamu / Workshop & Pelatihan Teknis" className="bg-slate-900 text-white">Dosen Tamu / Workshop & Pelatihan Teknis</option>
+                          <option value="Lainnya" className="bg-slate-900 text-white">Lainnya</option>
                         </select>
                         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400 text-[9px]">
                           ▼
@@ -480,14 +481,14 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                       <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-400 uppercase flex items-center justify-between px-0.5">
                         <span className="flex items-center gap-1.5">
                           <Heart className="h-3.5 w-3.5 text-emerald-400" />
-                          <span>Motivation Statement</span>
+                          <span>Rincian Usulan / Topik Kolaborasi</span>
                         </span>
                         <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-800 px-1.5 py-0.5 rounded">opsional</span>
                       </label>
                       <div className="relative">
                         <textarea
                           rows={3}
-                          placeholder="Briefly describe your skillsets and why you want to collaborate on smart agricultural solutions."
+                          placeholder="Jelaskan secara ringkas usulan kemitraan, latar belakang instansi Anda, dan harapan hasil kerja sama bersama Smart Grow Laboratory."
                           value={motivation}
                           onChange={(e) => setMotivation(e.target.value)}
                           className="w-full rounded-[14px] border border-white/10 bg-slate-950/40 hover:bg-slate-950/60 focus:bg-slate-950 px-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-300 font-medium leading-relaxed"
@@ -547,11 +548,11 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                         {isSubmitting ? (
                           <>
                             <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                            <span>Registering Profile...</span>
+                            <span>Mengirim Usulan...</span>
                           </>
                         ) : (
                           <>
-                            <span>Submit Application</span>
+                            <span>Kirim Usulan Kolaborasi</span>
                             <Send className="h-3.5 w-3.5 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform" />
                           </>
                         )}

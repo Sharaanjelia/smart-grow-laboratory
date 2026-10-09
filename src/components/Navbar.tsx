@@ -9,7 +9,7 @@ import {
   FlaskConical, 
   Info, 
   LogIn, 
-  UserPlus, 
+  Handshake, 
   LayoutDashboard,
   ChevronRight,
   Sparkles
@@ -18,7 +18,7 @@ import {
 interface NavbarProps {
   currentPage: PageId;
   setCurrentPage: (page: PageId) => void;
-  onOpenJoin: () => void;
+  onOpenJoin?: () => void;
   isLoggedIn?: boolean;
   currentUserRole?: string;
   onOpenLogin?: () => void;
@@ -58,6 +58,7 @@ export default function Navbar({
     { id: 'news', label: 'News & Events', icon: Newspaper },
     { id: 'project', label: 'Project', icon: FlaskConical },
     { id: 'about', label: 'About', icon: Info },
+    { id: 'join', label: 'Kolaborasi', icon: Handshake },
   ];
 
   const handleNavClick = (id: PageId) => {
@@ -122,7 +123,7 @@ export default function Navbar({
             })}
           </nav>
 
-          {/* Desktop CTA Action Buttons (Visible on md: 768px+) */}
+            {/* Desktop CTA Action Buttons (Visible on md: 768px+) */}
           <div className="hidden md:flex items-center gap-2.5 lg:gap-3 shrink-0" id="navbar-cta-container">
             {isLoggedIn ? (
               <button
@@ -147,14 +148,6 @@ export default function Navbar({
                 <span>Lab Login</span>
               </button>
             )}
-
-            <button
-              onClick={handleJoinClick}
-              id="join-us-navbar-button"
-              className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-4 lg:px-6 py-2 text-xs lg:text-sm font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-md shadow-emerald-600/10 flex items-center gap-1.5"
-            >
-              <span>Join Us!</span>
-            </button>
           </div>
 
           {/* Mobile Hamburger Button (Visible on mobile/tablet < 768px) */}
@@ -270,14 +263,6 @@ export default function Navbar({
                   <span>Lab Login</span>
                 </button>
               )}
-
-              <button
-                onClick={handleJoinClick}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition-all active:scale-95 cursor-pointer"
-              >
-                <UserPlus className="w-4 h-4" />
-                <span>Join Us (Daftar Tim Lab)</span>
-              </button>
 
               <div className="pt-2 text-center">
                 <p className="text-[10px] text-slate-400 font-medium">
