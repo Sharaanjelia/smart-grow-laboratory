@@ -53,8 +53,8 @@ export const initialUsers: User[] = [
     paperSubtitle: 'Q1 & Q2 Smart Precision Farming',
     totalPaten: '5 Hak Cipta',
     patenSubtitle: 'Sistem Algoritma & Hardware',
-    totalMahasiswaOverride: '8 Mahasiswa Magang',
-    mahasiswaSubtitle: '8 Mahasiswa Magang & 6 Alumni Riset'
+    totalMahasiswaOverride: '9 Mahasiswa Magang',
+    mahasiswaSubtitle: '9 Mahasiswa Magang & 6 Alumni Riset'
   },
   {
     id: 'user_assistant',
@@ -258,6 +258,23 @@ export const initialUsers: User[] = [
     status: 'active',
     joinedDate: '2026-02-01',
     bio: 'Menangani kalibrasi sensor nirkabel telemetry, komunikasi data mikro, serta optimalisasi komunikasi antar modul IoT.'
+  },
+  {
+    id: 'user_student_chiko',
+    name: 'M. Chiko Dwi Kasa',
+    email: 'mchikodwikasa@student.telkomuniversity.ac.id',
+    role: 'student',
+    title: 'Hardware & Systems Engineer',
+    studentId: '1301210009',
+    internId: 'SGL-INT-2026-009',
+    institution: 'Telkom University',
+    major: 'Teknik Elektro',
+    semester: 'Semester 6',
+    specialty: 'System Design, Power Electronics & Hydroponic Hardware',
+    avatar: '/images/team/chiko.jpg',
+    status: 'active',
+    joinedDate: '2026-02-01',
+    bio: 'Mengembangkan infrastruktur fisik laboratorium, integrasi kelistrikan instrumen pencahayaan LED, serta kalibrasi mekanik hydroponics.'
   },
   // ================= 6 ALUMNI RISET =================
   {

@@ -2526,14 +2526,14 @@ export default function App() {
               );
             })()}
 
-            {/* Mahasiswa Magang Riset (8 Mahasiswa) */}
+            {/* Mahasiswa Magang Riset (9 Mahasiswa) */}
             <div className="mb-14">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 border-b border-slate-200 pb-3">
                 <div>
                   <h2 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2.5">
                     <span>Mahasiswa Magang Riset</span>
                     <span className="rounded-full bg-teal-100 text-teal-800 text-xs font-mono font-bold px-2.5 py-0.5">
-                      8 Mahasiswa
+                      {teamList.filter(m => m.role !== 'Pembina Lab' && m.role !== 'Mentor' && !m.role.toLowerCase().includes('asisten') && !m.role.toLowerCase().includes('alumni')).length} Mahasiswa
                     </span>
                   </h2>
                   <p className="text-xs text-slate-500 font-sans mt-0.5">
@@ -2594,7 +2594,7 @@ export default function App() {
                   <h2 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2.5">
                     <span>Alumni Riset Smart Grow Lab</span>
                     <span className="rounded-full bg-emerald-100 text-emerald-800 text-xs font-mono font-bold px-2.5 py-0.5">
-                      6 Alumni
+                      {teamList.filter(m => m.role.toLowerCase().includes('alumni')).length} Alumni
                     </span>
                   </h2>
                   <p className="text-xs text-slate-500 font-sans mt-0.5">

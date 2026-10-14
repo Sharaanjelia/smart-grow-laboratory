@@ -109,11 +109,11 @@ export default function ProfileView({
   const [paperSubtitle, setPaperSubtitle] = useState(currentUser.paperSubtitle || 'Q1 & Q2 Smart Precision Farming');
   const [totalPaten, setTotalPaten] = useState(currentUser.totalPaten || '5 Hak Cipta');
   const [patenSubtitle, setPatenSubtitle] = useState(currentUser.patenSubtitle || 'Sistem Algoritma & Hardware');
-  const [totalMahasiswaOverride, setTotalMahasiswaOverride] = useState(currentUser.totalMahasiswaOverride || '8 Mahasiswa Magang');
-  const [mahasiswaSubtitle, setMahasiswaSubtitle] = useState(currentUser.mahasiswaSubtitle || '8 Mahasiswa Magang & 6 Alumni Riset');
+  const [totalMahasiswaOverride, setTotalMahasiswaOverride] = useState(currentUser.totalMahasiswaOverride || '9 Mahasiswa Magang');
+  const [mahasiswaSubtitle, setMahasiswaSubtitle] = useState(currentUser.mahasiswaSubtitle || '9 Mahasiswa Magang & 6 Alumni Riset');
 
   // Dynamic values calculated from system database
-  const activeStudentsCount = users && users.length > 0 ? users.filter(u => u.role === 'student' && u.status === 'active').length : 8;
+  const activeStudentsCount = users && users.length > 0 ? users.filter(u => u.role === 'student' && u.status === 'active').length : 9;
   const alumniCount = users && users.length > 0 ? users.filter(u => u.status === 'alumni' || u.id === 'user_assistant_alfachri' || u.id === 'user_alumni_alfachri').length : 6;
   const totalProjectsCount = (projects?.length || 0) + (publicProjects?.length || 0);
 
@@ -126,8 +126,8 @@ export default function ProfileView({
   const displayPaten = totalPaten.trim() || '5 Hak Cipta';
   const displayPatenSub = patenSubtitle.trim() || 'Sistem Algoritma & Hardware';
 
-  const displayMahasiswa = totalMahasiswaOverride.trim() || (activeStudentsCount > 0 ? `${activeStudentsCount} Mahasiswa Magang` : '8 Mahasiswa Magang');
-  const displayMahasiswaSub = mahasiswaSubtitle.trim() || (activeStudentsCount > 0 ? `${activeStudentsCount} Mahasiswa Magang & ${alumniCount} Alumni Riset` : '8 Mahasiswa Magang & 6 Alumni Riset');
+  const displayMahasiswa = totalMahasiswaOverride.trim() || (activeStudentsCount > 0 ? `${activeStudentsCount} Mahasiswa Magang` : '9 Mahasiswa Magang');
+  const displayMahasiswaSub = mahasiswaSubtitle.trim() || (activeStudentsCount > 0 ? `${activeStudentsCount} Mahasiswa Magang & ${alumniCount} Alumni Riset` : '9 Mahasiswa Magang & 6 Alumni Riset');
 
   // Password Form State
   const [oldPassword, setOldPassword] = useState('');

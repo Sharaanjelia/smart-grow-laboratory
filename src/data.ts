@@ -665,6 +665,15 @@ export const teamData: TeamMember[] = [
     skills: ['IoT Sensors', 'Wireless Protocols', 'Telemetry Monitoring', 'Data Analytics']
   },
   {
+    id: 'member-chiko',
+    name: 'M. Chiko Dwi Kasa',
+    role: 'Hardware & Systems Engineer',
+    image: 'member-chiko',
+    email: 'mchikodwikasa@student.telkomuniversity.ac.id',
+    bio: 'Mengembangkan infrastruktur fisik laboratorium, integrasi kelistrikan instrumen pencahayaan LED, serta kalibrasi mekanik hydroponics.',
+    skills: ['System Design', 'Power Electronics', 'Hydroponic Hardware', 'Embedded Control']
+  },
+  {
     id: 'member-daffa',
     name: 'Daffa Zyaa Ulhaq',
     role: 'Alumni - Firmware Developer',
