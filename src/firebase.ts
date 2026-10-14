@@ -78,19 +78,26 @@ export async function compressImageFile(file: File, maxDimension = 1280, quality
  * Automatically falls back to client-compressed DataURL if Firebase Storage bucket is not enabled.
  */
 export async function uploadFileToFirebaseStorage(file: File, folder: string = 'uploads'): Promise<string> {
+  // Avatars are immediately compressed client-side to an optimized DataURL (~25-35KB, 400px, 0.78 quality).
+  // This takes ~20ms and completely avoids Firebase Storage network retry freezes / bucket setup issues.
+  if (folder === 'avatars') {
+    return await compressImageFile(file, 400, 0.78);
+  }
+
   try {
     const timestamp = Date.now();
     const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const storageRef = ref(storage, `${folder}/${timestamp}_${safeName}`);
-    await uploadBytes(storageRef, file);
-    const downloadUrl = await getDownloadURL(storageRef);
+    const uploadTask = uploadBytes(storageRef, file).then(() => getDownloadURL(storageRef));
+    const timeoutTask = new Promise<string>((_, reject) => 
+      setTimeout(() => reject(new Error('Firebase Storage timeout (3s)')), 3000)
+    );
+    const downloadUrl = await Promise.race([uploadTask, timeoutTask]);
     return downloadUrl;
   } catch (err: any) {
     console.warn('Firebase Storage upload notice (compressing & falling back to optimized DataURL):', err?.message);
     try {
-      const maxDim = folder === 'avatars' ? 500 : 1280;
-      const qual = folder === 'avatars' ? 0.8 : 0.75;
-      return await compressImageFile(file, maxDim, qual);
+      return await compressImageFile(file, 1280, 0.75);
     } catch (_) {
       return new Promise((resolve) => {
         const reader = new FileReader();

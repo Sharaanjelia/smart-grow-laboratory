@@ -1065,12 +1065,20 @@ export default function App() {
   };
 
   const handleUpdateUser = async (updatedUser: User) => {
-    setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
-    if (currentUser?.id === updatedUser.id) {
-      setCurrentUser(updatedUser);
+    setUsers(prev => prev.map(u => (u.id === updatedUser.id || (u.email && updatedUser.email && u.email.toLowerCase() === updatedUser.email.toLowerCase())) ? { ...u, ...updatedUser } : u));
+    if (currentUser?.id === updatedUser.id || (currentUser?.email && updatedUser.email && currentUser.email.toLowerCase() === updatedUser.email.toLowerCase())) {
+      setCurrentUser(prev => prev ? { ...prev, ...updatedUser } : updatedUser);
+      try {
+        localStorage.setItem('smartgrow_session_user', JSON.stringify({ ...currentUser, ...updatedUser }));
+      } catch (_) {}
     }
     try {
-      await setDoc(doc(db, 'users', updatedUser.id), JSON.parse(JSON.stringify(updatedUser)), { merge: true });
+      if (updatedUser.id) {
+        await setDoc(doc(db, 'users', updatedUser.id), JSON.parse(JSON.stringify(updatedUser)), { merge: true });
+      }
+      if (auth.currentUser?.uid && auth.currentUser.uid !== updatedUser.id) {
+        await setDoc(doc(db, 'users', auth.currentUser.uid), JSON.parse(JSON.stringify(updatedUser)), { merge: true });
+      }
     } catch (e: any) {
       console.warn('Firestore update user notice:', e?.message);
     }
@@ -1278,7 +1286,11 @@ export default function App() {
             list.push(enforceStrictUserRole(raw));
           });
           setUsers(list);
-          setCurrentUser(prev => prev ? enforceStrictUserRole(prev) : null);
+          setCurrentUser(prev => {
+            if (!prev) return null;
+            const updatedFromDb = list.find(u => u.id === prev.id || (u.email && prev.email && u.email.toLowerCase() === prev.email.toLowerCase()));
+            return updatedFromDb ? enforceStrictUserRole({ ...prev, ...updatedFromDb }) : enforceStrictUserRole(prev);
+          });
         }
       }, (err) => console.warn('Users listener notice:', err));
 

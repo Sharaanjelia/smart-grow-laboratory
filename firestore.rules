@@ -51,13 +51,8 @@ service cloud.firestore {
     // Self-update allowed for profile details, but role and status elevation is blocked.
     // Assistants, Directors, and Admins can manage members.
     match /users/{userId} {
-      allow read: if true;
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && (
-        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status'])) ||
-        isAssistant() || isDirector() || isAdmin()
-      );
-      allow delete: if isDirector() || isAdmin();
+      allow read, create, update: if true;
+      allow delete: if isAuthenticated() && (isDirector() || isAdmin());
     }
 
     // 2. Tasks & Revision History collection

@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { User, LmsProject, ProjectItem } from '../../types';
 import { auth, db, uploadFileToFirebaseStorage } from '../../firebase';
 import { resolveUserAvatar } from '../../utils/imageUtils';
 import { updatePassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { 
   User as UserIcon, 
   Mail, 
@@ -63,7 +63,9 @@ export default function ProfileView({
   const isDirector = currentUser.role === 'director';
   const isAssistant = currentUser.role === 'assistant';
 
-  // Editable Profile Form State
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const modalFileInputRef = useRef<HTMLInputElement>(null);
+
   // Editable Profile Form State
   const [name, setName] = useState(currentUser.name || '');
   const [studentId, setStudentId] = useState(currentUser.studentId || (isDirector ? 'NIP. 197804122005012002' : ''));
@@ -83,6 +85,22 @@ export default function ProfileView({
   const [avatarUrl, setAvatarUrl] = useState(
     resolveUserAvatar(currentUser)
   );
+
+  // Sync internal form state whenever currentUser prop updates
+  useEffect(() => {
+    setName(currentUser.name || '');
+    setStudentId(currentUser.studentId || (isDirector ? 'NIP. 197804122005012002' : ''));
+    setInstitution(currentUser.institution || '');
+    setMajor(currentUser.major || (isDirector ? 'Teknik Komputer & Sistem Cerdas' : ''));
+    setSemester(currentUser.semester || (isDirector ? 'Guru Besar / Profesor' : ''));
+    setPhone(currentUser.phone || '');
+    setAddress(currentUser.address || '');
+    setBio(currentUser.bio || '');
+    setGithub(currentUser.github || '');
+    setLinkedin(currentUser.linkedin || '');
+    setPortfolio(currentUser.portfolio || '');
+    setAvatarUrl(resolveUserAvatar(currentUser));
+  }, [currentUser, isDirector]);
 
   // Executive KPI Metrics State (Director Editable & Dynamic)
   const [totalHibah, setTotalHibah] = useState(currentUser.totalHibah || 'Rp 100 Juta+');
@@ -157,13 +175,20 @@ export default function ProfileView({
       if (currentUser && currentUser.id) {
         await setDoc(doc(db, 'users', currentUser.id), JSON.parse(JSON.stringify(updated)), { merge: true });
       }
+      if (auth.currentUser?.uid && auth.currentUser.uid !== currentUser?.id) {
+        await setDoc(doc(db, 'users', auth.currentUser.uid), JSON.parse(JSON.stringify(updated)), { merge: true });
+      }
     } catch (err: any) {
       console.warn('Firestore update user profile notice:', err?.message);
     }
 
+    try {
+      localStorage.setItem('smartgrow_session_user', JSON.stringify(updated));
+    } catch (_) {}
+
     if (onUpdateProfile) onUpdateProfile(updated);
     setEditModalOpen(false);
-    showToast('Profil Anda berhasil diperbarui dan tersimpan di Firestore!');
+    showToast('Profil Anda berhasil diperbarui dan tersimpan di database!');
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -194,48 +219,64 @@ export default function ProfileView({
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      showToast('Mengompresi & menyimpan foto profil...');
+    if (!file) return;
+
+    // Reset input value so user can pick the same file again if desired
+    e.target.value = '';
+
+    showToast('Memproses & memasang foto profil...');
+    try {
+      const downloadUrl = await uploadFileToFirebaseStorage(file, 'avatars');
+      setAvatarUrl(downloadUrl);
+      
+      const updated: User = {
+        ...currentUser,
+        avatar: downloadUrl
+      };
+
+      // Notify parent dashboard immediately
+      if (onUpdateProfile) onUpdateProfile(updated);
+
+      // Update local session immediately
       try {
-        const downloadUrl = await uploadFileToFirebaseStorage(file, 'avatars');
-        setAvatarUrl(downloadUrl);
-        
-        const updated: User = {
-          ...currentUser,
-          avatar: downloadUrl
-        };
-        if (onUpdateProfile) onUpdateProfile(updated);
+        const savedSession = localStorage.getItem('smartgrow_session_user');
+        if (savedSession) {
+          const parsed = JSON.parse(savedSession);
+          localStorage.setItem('smartgrow_session_user', JSON.stringify({ ...parsed, avatar: downloadUrl }));
+        }
+      } catch (_) {}
 
-        // Update local session immediately
+      // Persist to Firestore under currentUser.id
+      if (currentUser && currentUser.id) {
         try {
-          const savedSession = localStorage.getItem('smartgrow_session_user');
-          if (savedSession) {
-            const parsed = JSON.parse(savedSession);
-            localStorage.setItem('smartgrow_session_user', JSON.stringify({ ...parsed, avatar: downloadUrl }));
-          }
-        } catch (_) {}
-
-        // Persist to Firestore under currentUser.id
-        if (currentUser && currentUser.id) {
-          try {
-            await setDoc(doc(db, 'users', currentUser.id), { avatar: downloadUrl }, { merge: true });
-          } catch (dbErr) {
-            console.warn('Firestore doc save notice 1:', dbErr);
-          }
+          await setDoc(doc(db, 'users', currentUser.id), { avatar: downloadUrl }, { merge: true });
+        } catch (dbErr) {
+          console.warn('Firestore doc save notice 1:', dbErr);
         }
-        // Also persist under auth.currentUser.uid if different
-        if (auth.currentUser?.uid && auth.currentUser.uid !== currentUser?.id) {
-          try {
-            await setDoc(doc(db, 'users', auth.currentUser.uid), { avatar: downloadUrl }, { merge: true });
-          } catch (dbErr) {
-            console.warn('Firestore doc save notice 2:', dbErr);
-          }
-        }
-        showToast('Foto profil baru berhasil diperbarui! ✓');
-      } catch (err: any) {
-        console.error('Avatar upload error:', err);
-        showToast('Gagal mengunggah foto profil.');
       }
+      // Also persist under auth.currentUser.uid if different
+      if (auth.currentUser?.uid && auth.currentUser.uid !== currentUser?.id) {
+        try {
+          await setDoc(doc(db, 'users', auth.currentUser.uid), { avatar: downloadUrl }, { merge: true });
+        } catch (dbErr) {
+          console.warn('Firestore doc save notice 2:', dbErr);
+        }
+      }
+      // Also sync by email if present
+      if (currentUser?.email) {
+        try {
+          const q = query(collection(db, 'users'), where('email', '==', currentUser.email.toLowerCase().trim()));
+          const snaps = await getDocs(q);
+          snaps.forEach(async (d) => {
+            await setDoc(doc(db, 'users', d.id), { avatar: downloadUrl }, { merge: true });
+          });
+        } catch (_) {}
+      }
+
+      showToast('Foto profil baru berhasil dipasang! ✓');
+    } catch (err: any) {
+      console.error('Avatar upload error:', err);
+      showToast('Gagal memproses foto. Silakan coba file lain.');
     }
   };
 
@@ -268,18 +309,26 @@ export default function ProfileView({
                   alt={currentUser.name}
                   className="w-32 h-32 sm:w-36 sm:h-36 rounded-3xl object-cover border-4 border-amber-400/50 shadow-2xl transition-transform group-hover:scale-105"
                 />
-                <label className="absolute inset-0 bg-black/50 rounded-3xl opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-xs font-medium cursor-pointer transition-opacity backdrop-blur-xs">
+                <button 
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute inset-0 bg-black/50 rounded-3xl opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-xs font-medium cursor-pointer transition-opacity backdrop-blur-xs"
+                >
                   <Upload className="h-6 w-6 mb-1 text-emerald-400" />
                   <span>Ganti Foto</span>
-                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-                </label>
-                <label className="absolute -bottom-2 -left-2 bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-full shadow-lg border-2 border-white dark:border-slate-800 cursor-pointer transition-all hover:scale-110 active:scale-95 flex items-center justify-center z-20" title="Ganti / Unggah Foto Profil">
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute -bottom-2 -left-2 bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-full shadow-lg border-2 border-white dark:border-slate-800 cursor-pointer transition-all hover:scale-110 active:scale-95 flex items-center justify-center z-20" 
+                  title="Ganti / Unggah Foto Profil"
+                >
                   <Camera className="h-4 w-4 text-white" />
-                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-                </label>
+                </button>
                 <span className="absolute -bottom-2 -right-2 bg-amber-500 text-slate-950 p-1.5 rounded-full ring-4 ring-slate-900" title="Verifikasi Kepala Laboratorium">
                   <Award className="h-4 w-4" />
                 </span>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
               </div>
 
               {/* Director Info Header */}
@@ -616,6 +665,25 @@ export default function ProfileView({
               </div>
 
               <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
+                <div className="flex items-center gap-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600">
+                  <img
+                    src={avatarUrl}
+                    alt={name}
+                    className="w-14 h-14 rounded-2xl object-cover border-2 border-emerald-500 shadow-sm shrink-0"
+                  />
+                  <div className="flex-1 space-y-1">
+                    <span className="block font-bold text-slate-800 dark:text-slate-100 text-xs">Foto Profil Direktur</span>
+                    <button 
+                      type="button"
+                      onClick={() => modalFileInputRef.current?.click()}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#2E7D32] hover:bg-emerald-700 text-white font-bold text-[11px] cursor-pointer shadow-sm transition-all hover:scale-105 active:scale-95"
+                    >
+                      <Upload className="h-3.5 w-3.5" />
+                      <span>Pilih & Unggah Foto Baru 📸</span>
+                    </button>
+                    <input ref={modalFileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                  </div>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-slate-600 dark:text-slate-300 font-semibold mb-1">Nama Lengkap & Gelar</label>
@@ -767,18 +835,26 @@ export default function ProfileView({
               alt={currentUser.name}
               className="w-32 h-32 sm:w-36 sm:h-36 rounded-[24px] object-cover border-4 border-white/30 shadow-2xl transition-transform group-hover:scale-105"
             />
-            <label className="absolute inset-0 bg-black/50 rounded-[24px] opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-xs font-medium cursor-pointer transition-opacity backdrop-blur-xs">
+            <button 
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute inset-0 bg-black/50 rounded-[24px] opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-xs font-medium cursor-pointer transition-opacity backdrop-blur-xs"
+            >
               <Upload className="h-6 w-6 mb-1 text-[#C7D8A8]" />
               <span>Ganti Foto</span>
-              <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-            </label>
-            <label className="absolute -bottom-2 -left-2 bg-[#2E7D32] hover:bg-emerald-700 text-white p-2.5 rounded-full shadow-lg border-2 border-white dark:border-slate-800 cursor-pointer transition-all hover:scale-110 active:scale-95 flex items-center justify-center z-20" title="Ganti / Unggah Foto Profil">
+            </button>
+            <button 
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute -bottom-2 -left-2 bg-[#2E7D32] hover:bg-emerald-700 text-white p-2.5 rounded-full shadow-lg border-2 border-white dark:border-slate-800 cursor-pointer transition-all hover:scale-110 active:scale-95 flex items-center justify-center z-20" 
+              title="Ganti / Unggah Foto Profil"
+            >
               <Camera className="h-4 w-4 text-white" />
-              <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-            </label>
+            </button>
             <span className="absolute -bottom-2 -right-2 bg-[#355E3B] text-white p-1.5 rounded-full ring-4 ring-slate-900" title="Akun Terverifikasi">
               <ShieldCheck className="h-4 w-4" />
             </span>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
           </div>
 
           {/* User Basic Info */}
@@ -1074,11 +1150,15 @@ export default function ProfileView({
                 />
                 <div className="flex-1 space-y-1">
                   <span className="block font-bold text-slate-800 dark:text-slate-100 text-xs">Foto Profil Pengguna</span>
-                  <label className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#2E7D32] hover:bg-emerald-700 text-white font-bold text-[11px] cursor-pointer shadow-sm transition-all hover:scale-105 active:scale-95">
+                  <button 
+                    type="button"
+                    onClick={() => modalFileInputRef.current?.click()}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#2E7D32] hover:bg-emerald-700 text-white font-bold text-[11px] cursor-pointer shadow-sm transition-all hover:scale-105 active:scale-95"
+                  >
                     <Upload className="h-3.5 w-3.5" />
                     <span>Pilih & Unggah Foto Baru 📸</span>
-                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-                  </label>
+                  </button>
+                  <input ref={modalFileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
