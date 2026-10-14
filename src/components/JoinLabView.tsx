@@ -49,9 +49,11 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [submissionCount, setSubmissionCount] = useState(0);
+  // Form completion progress trackers for field checkmarks
+  const isNameFilled = fullName.trim().length > 0;
+  const isEmailFilled = email.trim().length > 0 && email.includes('@');
+  const isMotivationFilled = motivation.trim().length > 15;
 
-
-  // Local storage persistence of applications
   useEffect(() => {
     const count = localStorage.getItem('smart_grow_apps_count');
     if (count) setSubmissionCount(parseInt(count));
