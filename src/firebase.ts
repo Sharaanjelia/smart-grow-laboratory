@@ -88,7 +88,9 @@ export async function uploadFileToFirebaseStorage(file: File, folder: string = '
   } catch (err: any) {
     console.warn('Firebase Storage upload notice (compressing & falling back to optimized DataURL):', err?.message);
     try {
-      return await compressImageFile(file, 1280, 0.75);
+      const maxDim = folder === 'avatars' ? 500 : 1280;
+      const qual = folder === 'avatars' ? 0.8 : 0.75;
+      return await compressImageFile(file, maxDim, qual);
     } catch (_) {
       return new Promise((resolve) => {
         const reader = new FileReader();
