@@ -34,7 +34,18 @@ export default function CheckInCameraModal({
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
-  const [isMirrored, setIsMirrored] = useState(false);
+  const [isMirrored, setIsMirrored] = useState<boolean>(() => {
+    const saved = localStorage.getItem('smart_grow_camera_mirrored');
+    return saved !== null ? saved === 'true' : true;
+  });
+
+  const toggleMirror = () => {
+    setIsMirrored((prev) => {
+      const next = !prev;
+      localStorage.setItem('smart_grow_camera_mirrored', String(next));
+      return next;
+    });
+  };
   
   const [locationAddress, setLocationAddress] = useState<string>('Mendeteksi lokasi GPS...');
   const [coords, setCoords] = useState<{ lat: number; lng: number; accuracy: number; distance: number } | null>(null);
@@ -354,7 +365,11 @@ export default function CheckInCameraModal({
                     el.play().catch(() => {});
                   }
                 }}
-                className={`w-full h-full object-cover transition-transform duration-200 ${isMirrored ? '-scale-x-100' : ''}`}
+                style={{
+                  transform: isMirrored ? 'scaleX(-1)' : 'none',
+                  WebkitTransform: isMirrored ? 'scaleX(-1)' : 'none',
+                }}
+                className="w-full h-full object-cover transition-transform duration-200"
                 autoPlay 
                 playsInline 
                 muted 
@@ -364,12 +379,16 @@ export default function CheckInCameraModal({
               {cameraActive && (
                 <button
                   type="button"
-                  onClick={() => setIsMirrored(prev => !prev)}
-                  className="absolute top-3 right-3 z-30 px-3 py-1.5 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white text-[11px] font-bold border border-white/20 backdrop-blur-md flex items-center gap-1.5 transition-all shadow-md cursor-pointer hover:scale-105 active:scale-95"
-                  title="Klik untuk membalik/mirror kamera (Mode Normal vs Cermin)"
+                  onClick={toggleMirror}
+                  className={`absolute top-3 right-3 z-30 px-3 py-1.5 rounded-full text-white text-[11px] font-bold border backdrop-blur-md flex items-center gap-1.5 transition-all shadow-md cursor-pointer hover:scale-105 active:scale-95 ${
+                    isMirrored 
+                      ? 'bg-emerald-700/90 hover:bg-emerald-700 border-emerald-400/50 text-white' 
+                      : 'bg-slate-900/90 hover:bg-slate-900 border-white/20 text-slate-200'
+                  }`}
+                  title="Klik untuk membalik posisi kamera kiri/kanan (Flip Horizontal)"
                 >
                   <FlipHorizontal className="h-3.5 w-3.5 text-emerald-400" />
-                  <span>{isMirrored ? 'Mode Cermin (Mirror)' : 'Mode Normal'}</span>
+                  <span>{isMirrored ? '🔄 Flip Aktif (Cermin)' : '📷 Mode Asli (Tanpa Flip)'}</span>
                 </button>
               )}
               
@@ -492,12 +511,24 @@ export default function CheckInCameraModal({
                 <span>Ambil Foto</span>
               </button>
 
+              {cameraActive && (
+                <button
+                  type="button"
+                  onClick={toggleMirror}
+                  className="px-4 py-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold cursor-pointer transition-all flex items-center gap-1.5 text-xs border border-slate-200 dark:border-slate-700"
+                  title="Balik posisi kamera kiri/kanan (Flip Horizontal)"
+                >
+                  <FlipHorizontal className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="hidden sm:inline font-semibold">{isMirrored ? 'Balik Arah' : 'Mode Cermin'}</span>
+                </button>
+              )}
+
               <button
                 type="button"
                 disabled={!locationValid || isDetectingGps}
                 onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold cursor-pointer hover:bg-slate-200 transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-                title="Buka Kamera Perangkat"
+                className="px-4 py-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold cursor-pointer hover:bg-slate-200 transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed border border-slate-200 dark:border-slate-700"
+                title="Buka Kamera Perangkat / Galeri"
               >
                 <Upload className="h-4 w-4" />
               </button>
