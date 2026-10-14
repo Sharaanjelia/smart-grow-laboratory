@@ -20,7 +20,6 @@ import {
   HelpCircle,
   Vote,
   Newspaper,
-  ChevronRight,
   TrendingUp,
   Award,
   Lock,
@@ -220,12 +219,6 @@ export default function SapaJamiyyahShowcase({
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
             <span>Kembali ke Daftar Proyek</span>
           </button>
-          
-          <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 font-mono">
-            <span>Projek Unggulan</span>
-            <ChevronRight className="h-3 w-3" />
-            <span className="text-emerald-700 dark:text-emerald-400 font-bold">SAPA Jam'iyyah Al Azhar 36</span>
-          </div>
         </div>
 
         <div className="flex items-center gap-2.5">

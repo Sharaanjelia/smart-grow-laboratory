@@ -1230,16 +1230,15 @@ export default function App() {
       if (!snapshot.empty) {
         snapshot.forEach(docSnap => {
           const data = docSnap.data() as ProjectItem;
-          if (data && data.id && data.id !== 'sapa-jamiyyah') {
+          if (data && data.id) {
             projectMap.set(data.id, data);
           }
         });
       }
-      projectMap.delete('sapa-jamiyyah');
       setProjectsList(Array.from(projectMap.values()));
     }, (err) => console.warn('Projects listener notice:', err));
 
-    // Auto-sync smart-tbn, smart-water, and mops to Firestore
+    // Auto-sync smart-tbn, smart-water, mops, and sapa-jamiyyah to Firestore
     const smartTbnProject = projectsData.find(p => p.id === 'smart-tbn');
     if (smartTbnProject) {
       setDoc(doc(db, 'projects', 'smart-tbn'), JSON.parse(JSON.stringify(smartTbnProject)), { merge: true }).catch(() => {});
@@ -1252,8 +1251,10 @@ export default function App() {
     if (mopsProject) {
       setDoc(doc(db, 'projects', 'mops'), JSON.parse(JSON.stringify(mopsProject)), { merge: true }).catch(() => {});
     }
-    // Ensure sapa-jamiyyah is removed from Firestore
-    deleteDoc(doc(db, 'projects', 'sapa-jamiyyah')).catch(() => {});
+    const sapaJamiyyahProject = projectsData.find(p => p.id === 'sapa-jamiyyah');
+    if (sapaJamiyyahProject) {
+      setDoc(doc(db, 'projects', 'sapa-jamiyyah'), JSON.parse(JSON.stringify(sapaJamiyyahProject)), { merge: true }).catch(() => {});
+    }
 
     // 2. News listener: Merge Firestore docs with built-in newsData
     const unsubNews = onSnapshot(collection(db, 'news'), (snapshot) => {
@@ -2050,7 +2051,7 @@ export default function App() {
                                 alt={project.title}
                                 referrerPolicy="no-referrer"
                                 className={`h-full w-full transition-transform duration-700 group-hover:scale-105 ${
-                                  (project.image || '').includes('logo') || (project.image || '').includes('poster') || (project.image || '').includes('brochure') || (project.image || '').includes('mops') || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water' || project.id === 'mops'
+                                  (project.image || '').includes('logo') || (project.image || '').includes('poster') || (project.image || '').includes('brochure') || (project.image || '').includes('mops') || (project.image || '').includes('sapa') || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water' || project.id === 'mops' || project.id === 'sapa-jamiyyah'
                                     ? 'object-contain p-2 bg-slate-950' 
                                     : 'object-cover object-center'
                                 }`}
@@ -2068,9 +2069,9 @@ export default function App() {
                               </div>
 
                               {/* Direct Website / App Badge if liveUrl exists */}
-                              {(project.liveUrl || project.id === 'flocify' || project.id === 'mops' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
+                              {(project.liveUrl || project.id === 'sapa-jamiyyah' || project.id === 'flocify' || project.id === 'mops' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
                                 <a
-                                  href={project.liveUrl || (project.id === 'flocify' ? 'https://ppmtelkom.vercel.app/' : project.id === 'mops' ? 'https://mops-5f51b.web.app/' : project.id === 'smart-tbn' ? 'https://smarttrash.devtbn.tech/' : project.id === 'smart-water' ? 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing' : 'https://htci.netlify.app/')}
+                                  href={project.liveUrl || (project.id === 'sapa-jamiyyah' ? 'https://www.sapajamiyyah.com/' : project.id === 'flocify' ? 'https://ppmtelkom.vercel.app/' : project.id === 'mops' ? 'https://mops-5f51b.web.app/' : project.id === 'smart-tbn' ? 'https://smarttrash.devtbn.tech/' : project.id === 'smart-water' ? 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing' : 'https://htci.netlify.app/')}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   onClick={(e) => e.stopPropagation()}
@@ -2109,9 +2110,9 @@ export default function App() {
                               Lihat Spesifikasi & Diagnostik
                             </span>
                             <div className="flex items-center gap-2">
-                              {(project.liveUrl || project.id === 'flocify' || project.id === 'mops' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
+                              {(project.liveUrl || project.id === 'sapa-jamiyyah' || project.id === 'flocify' || project.id === 'mops' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
                                 <a
-                                  href={project.liveUrl || (project.id === 'flocify' ? 'https://ppmtelkom.vercel.app/' : project.id === 'mops' ? 'https://mops-5f51b.web.app/' : project.id === 'smart-tbn' ? 'https://smarttrash.devtbn.tech/' : project.id === 'smart-water' ? 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing' : 'https://htci.netlify.app/')}
+                                  href={project.liveUrl || (project.id === 'sapa-jamiyyah' ? 'https://www.sapajamiyyah.com/' : project.id === 'flocify' ? 'https://ppmtelkom.vercel.app/' : project.id === 'mops' ? 'https://mops-5f51b.web.app/' : project.id === 'smart-tbn' ? 'https://smarttrash.devtbn.tech/' : project.id === 'smart-water' ? 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing' : 'https://htci.netlify.app/')}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   onClick={(e) => e.stopPropagation()}
