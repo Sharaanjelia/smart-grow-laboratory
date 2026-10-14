@@ -1398,12 +1398,12 @@ export default function StudentDashboard({
                 <p className="text-xs text-slate-500 font-medium">Mahasiswa aktif dalam satu angkatan program magang laboratorium</p>
               </div>
               <span className="text-xs font-mono font-bold text-[#355E3B] dark:text-emerald-400">
-                {initialUsers.filter(u => u.role === 'student').length} Mahasiswa Magang
+                {initialUsers.filter(u => u.role === 'student' && u.status !== 'alumni').length} Mahasiswa Magang
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {initialUsers.filter(u => u.role === 'student').map((student) => (
+              {initialUsers.filter(u => u.role === 'student' && u.status !== 'alumni').map((student) => (
                 <div key={student.id} className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 flex items-center gap-3.5 hover:border-emerald-500/40 hover:bg-white dark:hover:bg-slate-800 transition-all">
                   <img
                     src={student.avatar || '/images/team/placeholder.jpg'}
@@ -1419,6 +1419,36 @@ export default function StudentDashboard({
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Alumni Riset Sub-section */}
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>Alumni Riset Smart Grow Lab</span>
+                    <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-600 dark:text-slate-400 font-mono font-semibold">
+                      {initialUsers.filter(u => u.status === 'alumni').length} Alumni
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-slate-500 font-medium">Alumni peneliti dan pengembang sistem laboratorium angkatan terdahulu</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {initialUsers.filter(u => u.status === 'alumni').map((alumnus) => (
+                  <div key={alumnus.id} className="p-3 rounded-xl bg-slate-50/50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 flex items-center gap-3">
+                    <img
+                      src={alumnus.avatar || '/images/team/placeholder.jpg'}
+                      alt={alumnus.name}
+                      className="w-10 h-10 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{alumnus.name}</h4>
+                      <p className="text-[10px] text-slate-500 font-medium truncate">{alumnus.title}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
 

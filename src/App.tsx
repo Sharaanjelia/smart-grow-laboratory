@@ -2495,46 +2495,152 @@ export default function App() {
               );
             })()}
 
-            {/* Students & Researchers Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-              {teamList.filter(m => m.role !== 'Pembina Lab' && m.role !== 'Mentor').map((member) => (
-                <div 
-                  key={member.id}
-                  className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-100 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-teal-500/20"
-                >
-                  <div className="space-y-4">
-                    {/* Member customized avatar matching uploaded photo features */}
-                    <div className="relative aspect-4/3 w-full rounded-2xl overflow-hidden shadow-xs">
-                      <TeamAvatar id={member.id} name={member.name} className="w-full h-full" />
-                      <div className="absolute top-2.5 left-2.5 z-10 max-w-[85%]">
-                        <span className="inline-block rounded-full bg-slate-950/85 backdrop-blur-md border border-slate-700/60 px-2.5 py-0.5 font-sans text-[9px] font-bold text-teal-300 uppercase tracking-wider shadow-md truncate">
-                          {member.role}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="font-display text-lg font-bold text-slate-900 group-hover:text-teal-600 transition-colors">
-                        {member.name}
-                      </h3>
-                      <p className="font-sans text-xs text-slate-400 mt-0.5 break-all font-semibold">{member.email}</p>
-                    </div>
-
-                    <p className="text-xs text-slate-500 leading-relaxed font-sans">
-                      {member.bio}
-                    </p>
+            {/* Asisten Utama Laboratorium */}
+            {(() => {
+              const assistant = teamList.find(m => m.id === 'member-azliny' || m.role.toLowerCase().includes('asisten'));
+              if (!assistant) return null;
+              return (
+                <div className="mx-auto max-w-3xl bg-white border border-slate-100 p-5 sm:p-6 rounded-3xl mb-12 flex flex-col sm:flex-row items-center gap-6 relative overflow-hidden shadow-sm">
+                  <div className="relative w-36 h-44 shrink-0 rounded-2xl overflow-hidden shadow-md">
+                    <TeamAvatar id={assistant.id} name={assistant.name} className="w-full h-full" />
                   </div>
-
-                  {/* Member Skill Sub-tag row */}
-                  <div className="mt-6 pt-3 border-t border-slate-100 flex flex-wrap gap-1.5">
-                    {member.skills.map(skill => (
-                      <span key={skill} className="text-[10px] font-sans text-teal-700 bg-teal-50/80 px-2 py-0.5 rounded-md font-semibold">
-                        #{skill.toLowerCase().replace(/\s+/g, '')}
+                  <div className="flex-1 space-y-2 text-left">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="rounded bg-amber-50 border border-amber-200 px-2.5 py-0.5 font-sans text-[10px] font-bold text-amber-700 uppercase tracking-wider">
+                        {assistant.role}
                       </span>
-                    ))}
+                      <span className="text-slate-400 font-sans text-[9px] font-bold">KOORDINATOR RISET & OPERASIONAL</span>
+                    </div>
+                    <h3 className="font-display text-xl font-bold text-slate-900">{assistant.name}</h3>
+                    <p className="font-sans text-xs font-bold text-teal-600">{assistant.email}</p>
+                    <p className="text-xs text-slate-600 leading-relaxed font-sans">{assistant.bio}</p>
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {assistant.skills.map(s => (
+                        <span key={s} className="rounded-full bg-slate-50 border border-slate-200 px-2.5 py-0.5 font-sans text-[9px] text-slate-600 font-medium">
+                          #{s.toLowerCase()}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              ))}
+              );
+            })()}
+
+            {/* Mahasiswa Magang Riset (8 Mahasiswa) */}
+            <div className="mb-14">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 border-b border-slate-200 pb-3">
+                <div>
+                  <h2 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2.5">
+                    <span>Mahasiswa Magang Riset</span>
+                    <span className="rounded-full bg-teal-100 text-teal-800 text-xs font-mono font-bold px-2.5 py-0.5">
+                      8 Mahasiswa
+                    </span>
+                  </h2>
+                  <p className="text-xs text-slate-500 font-sans mt-0.5">
+                    Mahasiswa multidisiplin aktif dalam program riset dan pengembangan inovasi Smart Grow Laboratory
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {teamList.filter(m => 
+                  m.role !== 'Pembina Lab' && 
+                  m.role !== 'Mentor' && 
+                  !m.role.toLowerCase().includes('asisten') && 
+                  !m.role.toLowerCase().includes('alumni')
+                ).map((member) => (
+                  <div 
+                    key={member.id}
+                    className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:border-teal-500/20"
+                  >
+                    <div className="space-y-3">
+                      <div className="relative aspect-4/3 w-full rounded-xl overflow-hidden shadow-xs">
+                        <TeamAvatar id={member.id} name={member.name} className="w-full h-full" />
+                        <div className="absolute top-2 left-2 z-10 max-w-[88%]">
+                          <span className="inline-block rounded-full bg-slate-950/85 backdrop-blur-md border border-slate-700/60 px-2 py-0.5 font-sans text-[9px] font-bold text-teal-300 uppercase tracking-wider shadow-md truncate">
+                            {member.role}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 className="font-display text-base font-bold text-slate-900 group-hover:text-teal-600 transition-colors">
+                          {member.name}
+                        </h3>
+                        <p className="font-sans text-[11px] text-slate-400 mt-0.5 break-all font-semibold">{member.email}</p>
+                      </div>
+
+                      <p className="text-xs text-slate-500 leading-relaxed font-sans line-clamp-3">
+                        {member.bio}
+                      </p>
+                    </div>
+
+                    <div className="mt-4 pt-2.5 border-t border-slate-100 flex flex-wrap gap-1">
+                      {member.skills.slice(0, 4).map(skill => (
+                        <span key={skill} className="text-[9px] font-sans text-teal-700 bg-teal-50/80 px-1.5 py-0.5 rounded font-semibold">
+                          #{skill.toLowerCase().replace(/\s+/g, '')}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Alumni Riset (6 Alumni) */}
+            <div className="mb-16">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 border-b border-slate-200 pb-3">
+                <div>
+                  <h2 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2.5">
+                    <span>Alumni Riset Smart Grow Lab</span>
+                    <span className="rounded-full bg-emerald-100 text-emerald-800 text-xs font-mono font-bold px-2.5 py-0.5">
+                      6 Alumni
+                    </span>
+                  </h2>
+                  <p className="text-xs text-slate-500 font-sans mt-0.5">
+                    Alumni peneliti dan pengembang sistem inovasi pertanian cerdas di Smart Grow Laboratory
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {teamList.filter(m => m.role.toLowerCase().includes('alumni')).map((member) => (
+                  <div 
+                    key={member.id}
+                    className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:border-emerald-500/20"
+                  >
+                    <div className="space-y-3">
+                      <div className="relative aspect-4/3 w-full rounded-xl overflow-hidden shadow-xs">
+                        <TeamAvatar id={member.id} name={member.name} className="w-full h-full" />
+                        <div className="absolute top-2 left-2 z-10 max-w-[88%]">
+                          <span className="inline-block rounded-full bg-emerald-950/85 backdrop-blur-md border border-emerald-700/60 px-2 py-0.5 font-sans text-[9px] font-bold text-emerald-300 uppercase tracking-wider shadow-md truncate">
+                            {member.role}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 className="font-display text-base font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
+                          {member.name}
+                        </h3>
+                        <p className="font-sans text-[11px] text-slate-400 mt-0.5 break-all font-semibold">{member.email}</p>
+                      </div>
+
+                      <p className="text-xs text-slate-500 leading-relaxed font-sans line-clamp-3">
+                        {member.bio}
+                      </p>
+                    </div>
+
+                    <div className="mt-4 pt-2.5 border-t border-slate-100 flex flex-wrap gap-1">
+                      {member.skills.filter(s => s !== 'Alumni').slice(0, 4).map(skill => (
+                        <span key={skill} className="text-[9px] font-sans text-emerald-700 bg-emerald-50/80 px-1.5 py-0.5 rounded font-semibold">
+                          #{skill.toLowerCase().replace(/\s+/g, '')}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Smart Grow Lab description section (Matches visual in screenshot 8) */}

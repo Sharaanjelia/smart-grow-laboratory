@@ -602,15 +602,6 @@ export const teamData: TeamMember[] = [
     skills: ['React / Vite', 'Node.js', 'Database', 'UI/UX', 'Frontend', 'Backend']
   },
   {
-    id: 'member-chiko',
-    name: 'M. Chiko Dwi Kasa',
-    role: 'Hardware & Systems Engineer',
-    image: 'member-chiko',
-    email: 'mchikodwikasa@student.telkomuniversity.ac.id',
-    bio: 'Mengembangkan infrastruktur fisik laboratorium, integrasi kelistrikan instrumen pencahayaan LED, serta kalibrasi mekanik hydroponics.',
-    skills: ['System Design', 'Power Electronics', 'Hydroponic Hardware', 'Embedded Control']
-  },
-  {
     id: 'member-aqila',
     name: 'Aqila',
     role: 'Full-stack Developer',
@@ -674,13 +665,49 @@ export const teamData: TeamMember[] = [
     skills: ['IoT Sensors', 'Wireless Protocols', 'Telemetry Monitoring', 'Data Analytics']
   },
   {
+    id: 'member-daffa',
+    name: 'Daffa Zyaa Ulhaq',
+    role: 'Alumni - Firmware Developer',
+    image: 'member-daffa',
+    email: 'daffa@student.telkomuniversity.ac.id',
+    bio: 'Mengembangkan sistem firmware dan protokol transmisi data nirkabel mikrokontroler sensor telemetry riset magang sebelumnya.',
+    skills: ['Alumni', 'C/C++', 'ESP32', 'Firmware', 'FreeRTOS', 'IoT Telemetry']
+  },
+  {
+    id: 'member-elyasa',
+    name: 'Elyasa Reva',
+    role: 'Alumni - UI/UX Designer',
+    image: 'member-elyasa',
+    email: 'elyasa@student.telkomuniversity.ac.id',
+    bio: 'Merancang antarmuka visual (UI/UX) dan pengalaman pengguna untuk platform riset Smart Grow Laboratory.',
+    skills: ['Alumni', 'Figma', 'UI/UX Design', 'User Research', 'Prototyping', 'Design Systems']
+  },
+  {
+    id: 'member-humam',
+    name: 'Humam Ibadillah',
+    role: 'Alumni - Agronomist',
+    image: 'member-humam',
+    email: 'humam@student.telkomuniversity.ac.id',
+    bio: 'Menganalisis kebutuhan hara nutrisi tanaman hidroponik dan kalibrasi parameter larutan riset magang sebelumnya.',
+    skills: ['Alumni', 'Agronomy', 'Nutrient Dosage', 'Hydroponic Crops', 'Plant Science']
+  },
+  {
+    id: 'member-hannani',
+    name: 'Hannani Syadzwana',
+    role: 'Alumni - Full-stack Developer',
+    image: 'member-hannani',
+    email: 'hannani@student.telkomuniversity.ac.id',
+    bio: 'Mengembangkan antarmuka portal analitik dan visualisasi telemetry laboratorium riset magang sebelumnya.',
+    skills: ['Alumni', 'Vue.js', 'Node.js', 'WebSockets', 'Frontend', 'Database']
+  },
+  {
     id: 'member-arimbi',
     name: 'Arimbi Dwi',
     role: 'Alumni - Lead Hardware Engineer',
     image: 'member-arimbi',
     email: 'arimbi@student.telkomuniversity.ac.id',
     bio: 'Mengembangkan integrasi arsitektur fisik laboratorium, sistem kelistrikan LED grow light, dan kalibrasi instrumen riset magang sebelumnya.',
-    skills: ['Hardware Design', 'Embedded Systems', 'Power Electronics', 'PCB Layout']
+    skills: ['Alumni', 'Hardware Design', 'Embedded Systems', 'Power Electronics', 'PCB Layout']
   },
   {
     id: 'member-alfachri',
@@ -690,41 +717,5 @@ export const teamData: TeamMember[] = [
     email: 'alfachriakbar@student.telkomuniversity.ac.id',
     bio: 'Alumni & Asisten Peneliti di Smart Grow Laboratory Telkom University. Berfokus pada integrasi Computer Vision, Deep Learning, dan pemrosesan data otomatisasi pertanian cerdas di Research Center.',
     skills: ['Alumni', 'AI & Machine Learning', 'Computer Vision', 'Deep Learning', 'PyTorch / TensorFlow', 'Smart Agriculture']
-  },
-  {
-    id: 'member-daffa',
-    name: 'Daffa Zyaa Ulhaq',
-    role: 'Alumni - Firmware Developer',
-    image: 'member-daffa',
-    email: 'daffa@student.telkomuniversity.ac.id',
-    bio: 'Mengembangkan sistem firmware dan protokol transmisi data nirkabel mikrokontroler sensor telemetry riset magang sebelumnya.',
-    skills: ['C/C++', 'ESP32', 'Firmware', 'FreeRTOS', 'IoT Telemetry']
-  },
-  {
-    id: 'member-hannani',
-    name: 'Hannani Syadzwana',
-    role: 'Alumni - Full-stack Developer',
-    image: 'member-hannani',
-    email: 'hannani@student.telkomuniversity.ac.id',
-    bio: 'Mengembangkan antarmuka portal analitik dan visualisasi telemetry laboratorium riset magang sebelumnya.',
-    skills: ['Vue.js', 'Node.js', 'WebSockets', 'Frontend', 'Database']
-  },
-  {
-    id: 'member-elyasa',
-    name: 'Elyasa Reva',
-    role: 'Alumni - UI/UX Designer',
-    image: 'member-elyasa',
-    email: 'elyasa@student.telkomuniversity.ac.id',
-    bio: 'Merancang antarmuka visual (UI/UX) dan pengalaman pengguna untuk platform riset Smart Grow Laboratory.',
-    skills: ['Figma', 'UI/UX Design', 'User Research', 'Prototyping', 'Design Systems']
-  },
-  {
-    id: 'member-humam',
-    name: 'Humam Ibadillah',
-    role: 'Alumni - Agronomist',
-    image: 'member-humam',
-    email: 'humam@student.telkomuniversity.ac.id',
-    bio: 'Menganalisis kebutuhan hara nutrisi tanaman hidroponik dan kalibrasi parameter larutan riset magang sebelumnya.',
-    skills: ['Agronomy', 'Nutrient Dosage', 'Hydroponic Crops', 'Plant Science']
   }
 ];
