@@ -145,10 +145,8 @@ export default function AdminDashboard({
   // CMS Sub-Tab State
   const [cmsTab, setCmsTab] = useState<'news' | 'projects' | 'team' | 'banner'>('news');
 
-  // Attendance Filters & Simulation State
+  // Attendance Filters State
   const [attendanceSearch, setAttendanceSearch] = useState('');
-  const [selectedScanStudentId, setSelectedScanStudentId] = useState<string>(users.find(u => u.role === 'student')?.id || '');
-  const [rfidSuccessMsg, setRfidSuccessMsg] = useState<string | null>(null);
 
   // New Article Form State
   const [newsTitle, setNewsTitle] = useState('');
@@ -264,30 +262,7 @@ export default function AdminDashboard({
     setProjDesc('');
   };
 
-  const handleRfidScan = () => {
-    const student = users.find(u => u.id === selectedScanStudentId);
-    if (!student) return;
 
-    // Check if student is currently checked in today
-    const today = new Date().toISOString().split('T')[0];
-    const existing = attendance.find(a => a.studentId === student.id && a.date === today);
-
-    if (!existing || !existing.checkInTime) {
-      if (onCheckInStudent) {
-        onCheckInStudent(student.id, student.name);
-        setRfidSuccessMsg(`🪪 Tap RFID Berhasil! Check-In tercatat untuk ${student.name}`);
-      }
-    } else if (!existing.checkOutTime) {
-      if (onCheckOutStudent) {
-        onCheckOutStudent(student.id);
-        setRfidSuccessMsg(`👋 Tap RFID Berhasil! Check-Out tercatat untuk ${student.name}`);
-      }
-    } else {
-      setRfidSuccessMsg(`ℹ️ ${student.name} sudah melakukan Check-In dan Check-Out hari ini.`);
-    }
-
-    setTimeout(() => setRfidSuccessMsg(null), 4000);
-  };
 
   const pendingApplicants = applicants.filter(a => a.status === 'pending');
   const studentUsers = users.filter(u => u.role === 'student');
@@ -876,62 +851,38 @@ export default function AdminDashboard({
             </p>
           </div>
 
-          {/* RFID Tap Simulator Box */}
-          <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 text-white border border-emerald-500/30 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Radio className="h-5 w-5 text-emerald-400 animate-pulse" />
-                <h3 className="text-sm font-bold font-display text-white">Simulator Pindai Kartu Akses RFID Lab (Hardware Door Gate)</h3>
+          {/* Attendance Real-Time Stats Cards */}
+          {(() => {
+            const todayStr = getTodayDateJakarta();
+            const todayAtt = (attendance || []).filter(a => a.date === todayStr);
+            const presentOnTime = todayAtt.filter(a => a.status === 'present').length;
+            const lateAtt = todayAtt.filter(a => a.status === 'late').length;
+            const totalWithStatus = presentOnTime + lateAtt;
+            const punctualityRate = totalWithStatus > 0 ? `${Math.round((presentOnTime / totalWithStatus) * 100)} %` : '-';
+            
+            const completedToday = todayAtt.filter(a => a.durationMinutes && a.durationMinutes > 0);
+            const avgMins = completedToday.length > 0
+              ? Math.round(completedToday.reduce((acc, curr) => acc + (curr.durationMinutes || 0), 0) / completedToday.length)
+              : null;
+            const avgDurationStr = avgMins !== null ? `${(avgMins / 60).toFixed(1)} Jam / Hari` : '-';
+
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Total Presensi Hari Ini</span>
+                  <p className="text-2xl font-black text-slate-900 mt-1">{todayAtt.length} Mahasiswa</p>
+                </div>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Rata-rata Jam Kerja</span>
+                  <p className="text-2xl font-black text-emerald-600 mt-1">{avgDurationStr}</p>
+                </div>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Tingkat Kehadiran Tepat Waktu</span>
+                  <p className="text-2xl font-black text-blue-600 mt-1">{punctualityRate}</p>
+                </div>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-900/60 text-emerald-300 text-[10px] font-mono border border-emerald-500/30">
-                RC522 13.56MHz Active
-              </span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
-              <select
-                value={selectedScanStudentId}
-                onChange={e => setSelectedScanStudentId(e.target.value)}
-                className="w-full sm:w-auto flex-1 bg-slate-900 border border-slate-700 text-white text-xs rounded-xl px-4 py-2.5 outline-none focus:border-emerald-500"
-              >
-                {studentUsers.map(st => (
-                  <option key={st.id} value={st.id}>
-                    {st.name} (NIM: {st.studentId || '1301210000'})
-                  </option>
-                ))}
-              </select>
-
-              <button
-                onClick={handleRfidScan}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 shadow-md shadow-emerald-500/20"
-              >
-                <Radio className="h-4 w-4" />
-                <span>Simulasikan Tap Kartu RFID</span>
-              </button>
-            </div>
-
-            {rfidSuccessMsg && (
-              <div className="p-3 rounded-xl bg-emerald-900/80 border border-emerald-400 text-emerald-200 text-xs font-mono font-bold animate-fade-in">
-                {rfidSuccessMsg}
-              </div>
-            )}
-          </div>
-
-          {/* Attendance Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Total Presensi Hari Ini</span>
-              <p className="text-2xl font-black text-slate-900 mt-1">{attendance.filter(a => a.date === getTodayDateJakarta()).length} Anggota</p>
-            </div>
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Rata-rata Jam Kerja</span>
-              <p className="text-2xl font-black text-emerald-600 mt-1">8.2 Jam / Hari</p>
-            </div>
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Tingkat Kehadiran Tepat Waktu</span>
-              <p className="text-2xl font-black text-blue-600 mt-1">94.5 %</p>
-            </div>
-          </div>
+            );
+          })()}
 
           {/* Attendance Log Table */}
           <div className="space-y-3">

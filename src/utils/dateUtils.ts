@@ -74,8 +74,61 @@ export const determineAttendanceStatus = (checkInDate: Date = new Date()): 'pres
 };
 
 /**
- * Computes work duration from check-in to check-out.
- * Prioritizes numeric timestamps, falling back to time string parsing.
+ * BTP Official Geofence Constants (Smart Grow Laboratory, Bandung Techno Park, Telkom University)
+ * Strict maximum radius: 50 meters.
+ * Reference Coordinates (Google Maps Pin):
+ * Latitude: -6.970460, Longitude: 107.630319
+ */
+export const BTP_OFFICIAL_LAT = -6.970460;
+export const BTP_OFFICIAL_LNG = 107.630319;
+export const BTP_GEOFENCE_RADIUS_METERS = 50;
+
+/**
+ * Calculates geographical Haversine distance in meters between two lat/lng coordinates.
+ */
+export const calculateHaversineDistanceMeters = (
+  lat1: number,
+  lon1: number,
+  lat2: number = BTP_OFFICIAL_LAT,
+  lon2: number = BTP_OFFICIAL_LNG
+): number => {
+  if (typeof lat1 !== 'number' || typeof lon1 !== 'number' || isNaN(lat1) || isNaN(lon1)) {
+    return 999999;
+  }
+  const R = 6371e3; // Earth radius in meters
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return Math.round(R * c);
+};
+
+/**
+ * Calculates work duration in minutes between check-in and check-out timestamps.
+ * Returns 0 if timestamps are invalid or check-out is before check-in.
+ */
+export const calculateWorkDurationMinutes = (
+  checkInTimestamp?: number | string,
+  checkOutTimestamp?: number | string
+): number => {
+  const inTs = typeof checkInTimestamp === 'number' ? checkInTimestamp : Number(checkInTimestamp);
+  const outTs = typeof checkOutTimestamp === 'number' ? checkOutTimestamp : Number(checkOutTimestamp);
+
+  if (inTs && outTs && !isNaN(inTs) && !isNaN(outTs) && outTs >= inTs) {
+    return Math.floor((outTs - inTs) / (1000 * 60));
+  }
+  return 0;
+};
+
+/**
+ * Computes human-readable work duration from check-in to check-out.
+ * Prioritizes numeric timestamps.
  * Returns human-readable duration, e.g., '7 Jam 57 Menit' or '45 Menit'.
  */
 export const calculateWorkDuration = (
@@ -89,7 +142,10 @@ export const calculateWorkDuration = (
   const inTs = typeof checkInTimestamp === 'number' ? checkInTimestamp : Number(checkInTimestamp);
   const outTs = typeof checkOutTimestamp === 'number' ? checkOutTimestamp : Number(checkOutTimestamp);
 
-  if (inTs && outTs && !isNaN(inTs) && !isNaN(outTs) && outTs >= inTs) {
+  if (inTs && outTs && !isNaN(inTs) && !isNaN(outTs)) {
+    if (outTs < inTs) {
+      return '0 Menit';
+    }
     diffMinutes = Math.floor((outTs - inTs) / (1000 * 60));
   } else if (checkInTimeStr && checkOutTimeStr) {
     const parseHM = (s: string) => {
@@ -99,13 +155,13 @@ export const calculateWorkDuration = (
     };
     const inM = parseHM(checkInTimeStr);
     const outM = parseHM(checkOutTimeStr);
-    if (inM !== null && outM !== null) {
-      diffMinutes = Math.max(0, outM - inM);
+    if (inM !== null && outM !== null && outM >= inM) {
+      diffMinutes = outM - inM;
     }
   }
 
   if (diffMinutes <= 0) {
-    return '1 Menit';
+    return '< 1 Menit';
   }
 
   const hours = Math.floor(diffMinutes / 60);

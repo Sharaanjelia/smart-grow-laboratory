@@ -64,7 +64,12 @@ import {
   getTodayDateJakarta, 
   getNowTimeJakarta, 
   determineAttendanceStatus, 
-  calculateWorkDuration 
+  calculateWorkDuration,
+  calculateWorkDurationMinutes,
+  calculateHaversineDistanceMeters,
+  BTP_OFFICIAL_LAT,
+  BTP_OFFICIAL_LNG,
+  BTP_GEOFENCE_RADIUS_METERS
 } from './utils/dateUtils';
 import ToastContainer from './components/common/Toast';
 import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth';
@@ -536,11 +541,13 @@ export default function App() {
   };
 
   // Helper functions for Firestore persistence
-  const saveToFirestore = async (collectionName: string, id: string, data: any) => {
+  const saveToFirestore = async (collectionName: string, id: string, data: any): Promise<boolean> => {
     try {
       await setDoc(doc(db, collectionName, id), JSON.parse(JSON.stringify(data)), { merge: true });
+      return true;
     } catch (e: any) {
-      console.warn(`Firestore save notice for ${collectionName}/${id}:`, e?.message);
+      console.error(`Firestore save error for ${collectionName}/${id}:`, e?.message);
+      return false;
     }
   };
 
@@ -697,12 +704,38 @@ export default function App() {
   // Public data (news, projects) loaded via public listener (always active).
   // Private data loaded via authenticated listener (active only when logged in).
 
-  const handleCheckIn = async (studentId: string, studentName: string, rawPhotoUrl?: string, locationAddress?: string) => {
+  const handleCheckIn = async (
+    studentId: string, 
+    studentName: string, 
+    rawPhotoUrl?: string, 
+    locationAddress?: string,
+    coords?: { lat: number; lng: number; accuracy: number; distance: number }
+  ) => {
     const today = getTodayDateJakarta();
     const nowTime = getNowTimeJakarta();
     const nowTimestamp = Date.now();
 
-    // 1. DUPLICATE CHECK-IN GUARD (Requirement #2)
+    // 1. Mandatory selfie check (No dummy or empty photos allowed)
+    if (!rawPhotoUrl) {
+      console.error('[Check-In Error] Foto selfie kamera langsung wajib diambil.');
+      throw new Error('Foto selfie kamera langsung wajib diambil.');
+    }
+
+    // 2. Strict 50m Geofence Validation against official BTP coordinates
+    if (coords) {
+      const dist = calculateHaversineDistanceMeters(
+        coords.lat,
+        coords.lng,
+        BTP_OFFICIAL_LAT,
+        BTP_OFFICIAL_LNG
+      );
+      if (dist > BTP_GEOFENCE_RADIUS_METERS) {
+        console.error(`[Check-In Error] Lokasi di luar radius BTP (${Math.round(dist)}m > ${BTP_GEOFENCE_RADIUS_METERS}m). Presensi dibatalkan.`);
+        throw new Error(`Lokasi di luar radius BTP (${Math.round(dist)}m > ${BTP_GEOFENCE_RADIUS_METERS}m). Presensi ditolak.`);
+      }
+    }
+
+    // 3. DUPLICATE CHECK-IN GUARD (Requirement #2)
     const alreadyCheckedIn = attendance.some(a => {
       if (a.date !== today) return false;
       if (a.studentId === studentId) return true;
@@ -717,19 +750,15 @@ export default function App() {
 
     if (alreadyCheckedIn) {
       console.warn(`[Duplicate Check-In Guard] Mahasiswa ${studentName} sudah check-in hari ini (${today}).`);
-      return;
+      throw new Error(`Mahasiswa ${studentName} sudah tercatat presensi hari ini (${today}).`);
     }
 
     const calculatedStatus = determineAttendanceStatus(new Date(nowTimestamp));
 
-    // 2. Process selfie photo (Requirement #6: use actual selfie photo)
-    let publicPhotoUrl = rawPhotoUrl || '';
+    // 4. Process selfie photo (Upload to Firebase Storage - throws on failure)
+    let publicPhotoUrl = rawPhotoUrl;
     if (rawPhotoUrl && rawPhotoUrl.startsWith('data:image')) {
-      try {
-        publicPhotoUrl = await uploadAttendancePhotoToStorage(rawPhotoUrl, studentId);
-      } catch (_) {
-        publicPhotoUrl = rawPhotoUrl;
-      }
+      publicPhotoUrl = await uploadAttendancePhotoToStorage(rawPhotoUrl, studentId);
     }
 
     // Get current user details for division & mentor
@@ -739,10 +768,16 @@ export default function App() {
       (u.name && studentName && u.name.toLowerCase().replace(/[^a-z0-9]/g, '') === studentName.toLowerCase().replace(/[^a-z0-9]/g, ''))
     );
 
-    const resolvedPhoto = publicPhotoUrl || rawPhotoUrl || currentStudentObj?.avatar || '/images/team/shara.jpg';
+    const resolvedPhoto = publicPhotoUrl || rawPhotoUrl;
 
     // Deterministic doc ID to enforce SATU STUDENT + SATU TANGGAL = SATU ATTENDANCE RECORD
     const docId = `att_${studentId}_${today}`;
+    const lat = coords?.lat ?? BTP_OFFICIAL_LAT;
+    const lng = coords?.lng ?? BTP_OFFICIAL_LNG;
+    const accuracy = coords?.accuracy ?? 5;
+    const distanceMeters = coords 
+      ? Math.round(calculateHaversineDistanceMeters(lat, lng, BTP_OFFICIAL_LAT, BTP_OFFICIAL_LNG))
+      : 0;
 
     const record: AttendanceRecord = {
       id: docId,
@@ -757,10 +792,11 @@ export default function App() {
       status: calculatedStatus,
       location: locationAddress || 'Smart Grow Laboratory • Area Bandung Techno Park (BTP) Telkom University',
       address: 'Jl. Telekomunikasi No.1, Sukapura, Dayeuhkolot, Bandung, Jawa Barat 40257',
-      latitude: -6.9706,
-      longitude: 107.6297,
-      gpsAccuracy: 8,
-      locationRadius: 100,
+      latitude: lat,
+      longitude: lng,
+      gpsAccuracy: accuracy,
+      locationRadius: BTP_GEOFENCE_RADIUS_METERS,
+      distanceToBtpMeters: distanceMeters,
       deviceName: navigator.userAgent.includes('Windows') ? 'Windows PC' : navigator.userAgent.includes('Mac') ? 'MacBook Pro' : 'Mobile Device',
       browser: navigator.userAgent.includes('Chrome') ? 'Chrome' : 'Browser Web',
       operatingSystem: navigator.platform || 'Desktop',
@@ -772,11 +808,18 @@ export default function App() {
       photoResolution: '640x480',
       gdriveBackupStatus: 'synced',
       dailyNotes: 'Presensi harian riset Smart Grow Laboratory',
+      notes: 'Presensi harian riset Smart Grow Laboratory',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
-    // Update state IMMEDIATELY so UI reflects attendance with zero delay
+    // 5. Save directly to Firestore FIRST (guarantees server persistence)
+    const saveSuccess = await saveToFirestore('attendance', docId, record);
+    if (!saveSuccess) {
+      throw new Error('Gagal menyimpan dokumen presensi ke database Firestore. Periksa koneksi internet.');
+    }
+
+    // 6. Update state ONLY AFTER verified database persistence
     setAttendance(prev => {
       if (prev.some(a => a.id === docId || (a.studentId === studentId && a.date === today))) {
         return prev.map(a => (a.id === docId || (a.studentId === studentId && a.date === today)) ? record : a);
@@ -784,16 +827,13 @@ export default function App() {
       return [record, ...prev];
     });
 
-    // Save directly to Firestore
-    await saveToFirestore('attendance', docId, record);
-
     // Save System Log
     const logObj: SystemLog = {
       id: `log_${Date.now()}`,
       timestamp: new Date().toLocaleString('id-ID'),
       user: studentName,
       action: 'PRESENSI_CHECKIN',
-      details: `Presensi check-in selfie terverifikasi BTP Telkom University (Jam ${nowTime})`
+      details: `Presensi check-in selfie terverifikasi BTP Telkom University (Jam ${nowTime} • Radius: ${distanceMeters}m / ${BTP_GEOFENCE_RADIUS_METERS}m)`
     };
     setSystemLogs(prev => [logObj, ...prev]);
     saveToFirestore('system_logs', logObj.id, logObj);
@@ -802,7 +842,7 @@ export default function App() {
     backupPhotoToGoogleDrive(resolvedPhoto, studentName, today).catch(e => console.info('GDrive sync notice:', e));
   };
 
-  const handleCheckOut = async (studentId: string) => {
+  const handleCheckOut = async (studentId: string, dailyNotes?: string) => {
     const today = getTodayDateJakarta();
     const nowTime = getNowTimeJakarta();
     const nowTimestamp = Date.now();
@@ -815,12 +855,12 @@ export default function App() {
 
     if (!targetRecord) {
       console.warn(`[Check-Out Notice] Tidak ada catatan check-in hari ini (${today}) untuk ${studentId}`);
-      return;
+      throw new Error(`Tidak ditemukan catatan presensi hari ini (${today}) untuk melakukan check-out.`);
     }
 
     if (targetRecord.checkOutTime) {
       console.warn(`[Check-Out Notice] Sudah checkout hari ini (${targetRecord.checkOutTime})`);
-      return;
+      throw new Error(`Anda sudah melakukan check-out hari ini pada pukul ${targetRecord.checkOutTime}.`);
     }
 
     const durationText = calculateWorkDuration(
@@ -829,6 +869,12 @@ export default function App() {
       targetRecord.checkInTime,
       nowTime
     );
+    const durationMinutes = calculateWorkDurationMinutes(
+      targetRecord.checkInTimestamp,
+      nowTimestamp
+    );
+
+    const finalNotes = dailyNotes?.trim() || targetRecord.dailyNotes || 'Presensi harian riset Smart Grow Laboratory';
 
     const updated: AttendanceRecord = { 
       ...targetRecord, 
@@ -836,11 +882,20 @@ export default function App() {
       checkOutTimestamp: nowTimestamp,
       workDuration: durationText,
       duration: durationText,
+      durationMinutes,
+      dailyNotes: finalNotes,
+      notes: finalNotes,
       updatedAt: new Date().toISOString()
     };
 
+    // Save to Firestore FIRST
+    const saveSuccess = await saveToFirestore('attendance', targetRecord.id, updated);
+    if (!saveSuccess) {
+      throw new Error('Gagal menyimpan pembaruan check-out ke Firestore.');
+    }
+
+    // Update state ONLY AFTER verified database update
     setAttendance(prev => prev.map(a => a.id === targetRecord.id ? updated : a));
-    saveToFirestore('attendance', targetRecord.id, updated);
 
     // Save System Log
     const logObj: SystemLog = {
@@ -848,7 +903,7 @@ export default function App() {
       timestamp: new Date().toLocaleString('id-ID'),
       user: targetRecord.studentName || currentUser?.name || 'Mahasiswa',
       action: 'PRESENSI_CHECKOUT',
-      details: `Check-out presensi harian berhasil (Jam ${nowTime} • Durasi: ${durationText})`
+      details: `Check-out presensi harian berhasil (Jam ${nowTime} • Durasi: ${durationText} • Logbook: ${finalNotes.substring(0, 45)}...)`
     };
     setSystemLogs(prev => [logObj, ...prev]);
     saveToFirestore('system_logs', logObj.id, logObj);
@@ -1245,7 +1300,11 @@ export default function App() {
         }
       }, (err) => console.warn('Tasks listener notice:', err));
 
-      const unsubAttendance = onSnapshot(collection(db, 'attendance'), (snapshot) => {
+      const attendanceTarget = currentUser.role === 'student'
+        ? query(collection(db, 'attendance'), where('studentId', '==', currentUser.id))
+        : collection(db, 'attendance');
+
+      const unsubAttendance = onSnapshot(attendanceTarget, (snapshot) => {
         if (!snapshot.empty) {
           const list: AttendanceRecord[] = [];
           snapshot.forEach(docSnap => {
@@ -1253,6 +1312,8 @@ export default function App() {
             list.push({ id: docSnap.id, ...data });
           });
           setAttendance(list);
+        } else {
+          setAttendance([]);
         }
       }, (err) => console.warn('Attendance listener notice:', err));
 

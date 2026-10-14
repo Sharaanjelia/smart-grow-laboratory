@@ -200,6 +200,7 @@ export interface AttendanceRecord {
   longitude?: number;
   gpsAccuracy?: number;
   locationRadius?: number;
+  distanceToBtpMeters?: number;
   ipAddress?: string;
   device?: string;
   deviceName?: string;

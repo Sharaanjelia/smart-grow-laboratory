@@ -14,12 +14,16 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
     
+    function hasUserData() {
+      return isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
     function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return hasUserData() ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data : {};
     }
     
     function getUserRole() {
-      return isAuthenticated() ? getUserData().role : null;
+      return hasUserData() ? getUserData().role : null;
     }
     
     function isAdmin() {
@@ -27,7 +31,7 @@ service cloud.firestore {
     }
     
     function isDirector() {
-      return isAuthenticated() && (getUserRole() == 'director' || isAdmin());
+      return isAuthenticated() && (getUserRole() == 'director' || getUserRole() == 'mentor' || isAdmin());
     }
     
     function isAssistant() {
@@ -43,10 +47,19 @@ service cloud.firestore {
     // =========================================================================
 
     // 1. Users collection
-    // Students can read and update only their own profile.
+    // Authenticated members can read member profiles.
+    // Self-update allowed for profile details, but role and status elevation is blocked.
     // Assistants, Directors, and Admins can manage members.
     match /users/{userId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (
+        isUser(userId) || isAssistant() || isDirector() || isAdmin()
+      );
+      allow update: if isAuthenticated() && (
+        (isUser(userId) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status']))) ||
+        isAssistant() || isDirector() || isAdmin()
+      );
+      allow delete: if isDirector() || isAdmin();
     }
 
     // 2. Tasks & Revision History collection
@@ -69,9 +82,49 @@ service cloud.firestore {
     }
 
     // 3. Attendance & Daily Logbook collection
-    // Accessible by students, assistants, directors, and admins for seamless check-in & photo logging.
+    // Students can only read and create/update their own attendance record.
+    // Assistants, Directors, and Admins can monitor, review, and audit all attendance.
     match /attendance/{attId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated() && (
+        isAssistant() || isDirector() || isAdmin() ||
+        resource.data.studentId == request.auth.uid
+      );
+      allow create: if isAuthenticated() && (
+        isAssistant() || isDirector() || isAdmin() ||
+        (
+          isStudent() && 
+          request.resource.data.studentId == request.auth.uid &&
+          // BTP Geofence Bounding Box around (-6.970460, 107.630319)
+          // Accommodates 50m radius (dLat ~0.00045, dLng ~0.00045) without false rejections
+          request.resource.data.latitude >= -6.9710 && request.resource.data.latitude <= -6.9699 &&
+          request.resource.data.longitude >= 107.6297 && request.resource.data.longitude <= 107.6309 &&
+          request.resource.data.locationRadius == 50 &&
+          request.resource.data.gpsAccuracy is number &&
+          request.resource.data.gpsAccuracy > 0 && request.resource.data.gpsAccuracy <= 100 &&
+          request.resource.data.checkInPhoto is string && request.resource.data.checkInPhoto.size() > 10 &&
+          request.resource.data.status in ['present', 'late']
+        )
+      );
+      allow update: if isAuthenticated() && (
+        isAssistant() || isDirector() || isAdmin() ||
+        (
+          isStudent() && 
+          resource.data.studentId == request.auth.uid && 
+          request.resource.data.studentId == request.auth.uid &&
+          // Cannot checkout twice
+          (!('checkOutTime' in resource.data) || resource.data.checkOutTime == null) &&
+          // Cannot tamper with original check-in parameters
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+            'id', 'studentId', 'date', 'checkInTime', 'checkInTimestamp', 
+            'status', 'latitude', 'longitude', 'checkInPhoto', 'locationRadius'
+          ]) &&
+          // Mandatory checkout fields
+          request.resource.data.checkOutTime is string &&
+          request.resource.data.checkOutTimestamp is number &&
+          request.resource.data.dailyNotes is string && request.resource.data.dailyNotes.size() > 0
+        )
+      );
+      allow delete: if isDirector() || isAdmin();
     }
 
     // 4. Announcements collection

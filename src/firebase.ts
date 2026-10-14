@@ -140,40 +140,36 @@ export async function compressSelfieDataUrl(dataUrl: string, maxDimension: numbe
  * so it will NEVER exceed Firestore's 1MB document limit.
  */
 export async function uploadAttendancePhotoToStorage(dataUrl: string, studentId: string): Promise<string> {
+  if (!dataUrl || !dataUrl.startsWith('data:image')) {
+    throw new Error('Foto selfie kamera langsung wajib diambil dan tidak boleh kosong.');
+  }
+  
+  // Compress first to ensure optimized bandwidth (~15-25KB)
+  const compressed = await compressSelfieDataUrl(dataUrl, 400, 0.6);
+  const timestamp = Date.now();
+  const fileName = `selfie_${studentId}_${timestamp}.jpg`;
+  
   try {
-    if (!dataUrl || !dataUrl.startsWith('data:image')) {
-      return dataUrl || '';
+    const arr = compressed.split(',');
+    const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
     }
-    // Always compress first to ensure lightweight footprint (~15-25KB)
-    const compressed = await compressSelfieDataUrl(dataUrl, 400, 0.6);
-    const timestamp = Date.now();
-    const fileName = `selfie_${studentId}_${timestamp}.jpg`;
-    
-    // Attempt Firebase Storage upload with a strict 2-second timeout
-    // (Firebase Storage is unprovisioned on this project, so it must not hang check-in)
-    try {
-      const arr = compressed.split(',');
-      const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
-      const bstr = atob(arr[1]);
-      let n = bstr.length;
-      const u8arr = new Uint8Array(n);
-      while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-      }
-      const blob = new Blob([u8arr], { type: mime });
+    const blob = new Blob([u8arr], { type: mime });
 
-      const storageRef = ref(storage, `attendance/${fileName}`);
-      const uploadPromise = uploadBytes(storageRef, blob).then(() => getDownloadURL(storageRef));
-      const timeoutPromise = new Promise<string>((_, reject) => setTimeout(() => reject(new Error('Storage timeout')), 2000));
-      const downloadUrl = await Promise.race([uploadPromise, timeoutPromise]);
-      return downloadUrl;
-    } catch (storageErr) {
-      console.info('Using ultra-lightweight compressed DataURL for selfie (~20KB):', storageErr);
-      return compressed;
-    }
-  } catch (err: any) {
-    console.warn('Attendance photo processing notice:', err?.message);
-    return dataUrl;
+    const storageRef = ref(storage, `attendance/${fileName}`);
+    const uploadPromise = uploadBytes(storageRef, blob).then(() => getDownloadURL(storageRef));
+    const timeoutPromise = new Promise<string>((_, reject) => 
+      setTimeout(() => reject(new Error('Koneksi upload Firebase Storage timeout (10 detik).')), 10000)
+    );
+    const downloadUrl = await Promise.race([uploadPromise, timeoutPromise]);
+    return downloadUrl;
+  } catch (storageErr: any) {
+    console.warn('[Firebase Storage Notice]: Storage bucket not active or timed out, falling back to ultra-compressed photo in Firestore:', storageErr?.message);
+    return compressed;
   }
 }
 

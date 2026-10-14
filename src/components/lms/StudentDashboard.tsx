@@ -76,8 +76,8 @@ interface StudentDashboardProps {
   attendance: AttendanceRecord[];
   projects: LmsProject[];
   announcements: Announcement[];
-  onCheckIn: (studentId: string, studentName: string, photoUrl?: string, locationName?: string) => void;
-  onCheckOut: (studentId: string) => void;
+  onCheckIn: (studentId: string, studentName: string, photoUrl?: string, locationName?: string, coords?: any) => void;
+  onCheckOut: (studentId: string, dailyNotes?: string, locationAddress?: string, coords?: any) => void;
   onSubmitTaskProgress: (
     taskId: string, 
     notes: string, 
@@ -151,6 +151,8 @@ export default function StudentDashboard({
 
   // Check-In Photo & BTP Geolocation Modal State
   const [showCheckInModal, setShowCheckInModal] = useState(false);
+  const [showCheckOutModal, setShowCheckOutModal] = useState(false);
+  const [dailyNotesText, setDailyNotesText] = useState('');
 
   // Custom tasks created by student & default tasks fallback
   const [customTasks, setCustomTasks] = useState<Task[]>([]);
@@ -548,7 +550,7 @@ export default function StudentDashboard({
                     </button>
                     {!myTodayAtt.checkOutTime ? (
                       <button
-                        onClick={() => onCheckOut(currentUser.id)}
+                        onClick={() => setShowCheckOutModal(true)}
                         className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all hover:scale-105 active:scale-95"
                         title="Klik untuk Check-Out saat jam pulang"
                       >
@@ -2087,6 +2089,87 @@ export default function StudentDashboard({
           </div>
         </div>
       )}
+
+      {/* CHECK-OUT & DAILY LOGBOOK MODAL */}
+      {showCheckOutModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Clock className="h-5 w-5 text-[#2E7D32]" />
+                <span>Check-Out & Jurnal Aktivitas Harian</span>
+              </h3>
+              <button onClick={() => setShowCheckOutModal(false)} className="p-1 rounded-full hover:bg-slate-100 text-slate-400 cursor-pointer">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const notes = dailyNotesText.trim();
+                if (!notes) return;
+                try {
+                  await onCheckOut(currentUser.id, notes);
+                  setShowCheckOutModal(false);
+                  setDailyNotesText('');
+                } catch (err: any) {
+                  alert(err?.message || 'Gagal menyimpan check-out. Silakan periksa koneksi dan coba lagi.');
+                }
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">
+                  Catatan Aktivitas Hari Ini (Wajib Diisi Sebelum Check-Out, Max 500 Karakter)
+                </label>
+                <textarea
+                  rows={4}
+                  maxLength={500}
+                  required
+                  value={dailyNotesText}
+                  onChange={(e) => setDailyNotesText(e.target.value)}
+                  placeholder="Contoh: Monitoring Smart Farming, Dashboard Development, IoT Sensor Calibration, Database Integration..."
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-[#355E3B]"
+                />
+                <div className="text-[10px] text-right font-mono text-slate-400 pt-1">
+                  {dailyNotesText.length}/500 Karakter
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCheckOutModal(false)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={!dailyNotesText.trim()}
+                  className="px-6 py-2.5 rounded-xl bg-[#2E7D32] hover:bg-emerald-700 text-white font-bold shadow-md uppercase tracking-wider text-[11px] disabled:opacity-50 cursor-pointer"
+                >
+                  Konfirmasi Check-Out Sekarang 🚀
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* CHECK-IN CAMERA & GEOLOCATION MODAL */}
+      <CheckInCameraModal
+        isOpen={showCheckInModal}
+        onClose={() => setShowCheckInModal(false)}
+        studentName={currentUser?.name || 'Mahasiswa Magang'}
+        darkMode={darkMode}
+        onConfirmCheckIn={async (photoUrl, locAddress, coords) => {
+          if (onCheckIn) {
+            await onCheckIn(currentUser.id, currentUser.name, photoUrl, locAddress, coords);
+          }
+        }}
+      />
 
     </div>
   );

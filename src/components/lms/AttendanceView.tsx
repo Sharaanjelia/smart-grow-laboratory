@@ -7,7 +7,9 @@ import {
   getTodayDateJakarta, 
   getNowTimeJakarta, 
   formatIndonesianDate, 
-  getDaysDifference 
+  getDaysDifference,
+  BTP_OFFICIAL_LAT,
+  BTP_OFFICIAL_LNG
 } from '../../utils/dateUtils';
 import { 
   Clock, 
@@ -31,8 +33,9 @@ interface AttendanceViewProps {
   attendance: AttendanceRecord[];
   students?: User[];
   currentUser?: User;
-  onCheckIn?: (studentId: string, studentName: string, photoUrl?: string, locationName?: string) => void;
-  onCheckOut?: (studentId: string) => void;
+  onCheckIn?: (studentId: string, studentName: string, photoUrl?: string, locationName?: string, coords?: { lat: number; lng: number; accuracy: number; distance: number }) => Promise<void> | void;
+  onCheckOut?: (studentId: string, dailyNotes?: string, locationAddress?: string, coords?: any) => Promise<void> | void;
+  onCorrectAttendance?: (recordId: string, updatedData: Partial<AttendanceRecord>, reason: string) => Promise<void> | void;
   darkMode?: boolean;
 }
 
@@ -42,6 +45,7 @@ export default function AttendanceView({
   currentUser,
   onCheckIn,
   onCheckOut,
+  onCorrectAttendance,
   darkMode = false
 }: AttendanceViewProps) {
   const [activeRangeTab, setActiveRangeTab] = useState<'today' | '7days' | '30days' | 'all'>('today');
@@ -137,7 +141,10 @@ export default function AttendanceView({
   const hasCheckedInToday = Boolean(todayRecord);
   const hasCheckedOutToday = Boolean(todayRecord?.checkOutTime);
 
-  // Filter logic based on role, range tab & search query (Requirement #9 & #11)
+  // Status Filter State for Assistant and Pembina Lab monitoring
+  const [statusFilter, setStatusFilter] = useState<'all' | 'present' | 'late' | 'working' | 'unrecorded'>('all');
+
+  // Filter logic based on role, range tab, status filter & search query
   const filteredAttendance = displayAttendance.filter(rec => {
     // If student, only show records belonging to this student
     if (currentUser?.role === 'student' && !isUserMatchingAttendance(rec)) {
@@ -149,18 +156,23 @@ export default function AttendanceView({
 
     if (!matchesSearch) return false;
 
-    if (activeRangeTab === 'today') {
-      return rec.date === todayDateStr;
+    if (activeRangeTab === 'today' && rec.date !== todayDateStr) {
+      return false;
     }
     if (activeRangeTab === '7days') {
       const diff = getDaysDifference(rec.date, todayDateStr);
-      return diff >= 0 && diff <= 7;
+      if (diff < 0 || diff > 7) return false;
     }
     if (activeRangeTab === '30days') {
       const diff = getDaysDifference(rec.date, todayDateStr);
-      return diff >= 0 && diff <= 30;
+      if (diff < 0 || diff > 30) return false;
     }
-    return true; // all
+
+    if (statusFilter === 'present' && rec.status !== 'present') return false;
+    if (statusFilter === 'late' && rec.status !== 'late') return false;
+    if (statusFilter === 'working' && Boolean(rec.checkOutTime)) return false;
+
+    return true;
   });
 
   // Helper to ensure photo always renders properly prioritizing actual check-in selfie
@@ -179,6 +191,15 @@ export default function AttendanceView({
   const relevantAttendanceForStats = currentUser?.role === 'student' 
     ? displayAttendance.filter(a => isUserMatchingAttendance(a))
     : displayAttendance;
+
+  const activeStudentsList = students.filter(s => s.role === 'student' && s.status === 'active');
+  const todayRecords = displayAttendance.filter(a => a.date === todayDateStr);
+  const checkedInStudentIds = new Set(todayRecords.map(a => a.studentId));
+  const unrecordedStudentsToday = activeStudentsList.filter(s => 
+    !checkedInStudentIds.has(s.id) && !checkedInStudentIds.has(s.studentId || '')
+  );
+  const notCheckedInTodayCount = unrecordedStudentsToday.length;
+  const notCheckedOutTodayCount = todayRecords.filter(a => !a.checkOutTime).length;
 
   const presentCount = relevantAttendanceForStats.filter(a => a.status === 'present').length;
   const lateCount = relevantAttendanceForStats.filter(a => a.status === 'late').length;
@@ -277,7 +298,7 @@ export default function AttendanceView({
                 {/* Tombol Check-Out */}
                 {hasCheckedInToday && !hasCheckedOutToday && onCheckOut && (
                   <button
-                    onClick={() => onCheckOut(currentUser.id)}
+                    onClick={() => setShowCheckOutModal(true)}
                     className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs tracking-wider uppercase transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center gap-2 border border-emerald-300"
                   >
                     <Clock className="h-4 w-4 text-white" />
@@ -391,7 +412,7 @@ export default function AttendanceView({
                   <span>{todayRecord.location || 'Smart Grow Laboratory • Area BTP Telkom University'}</span>
                 </span>
                 <a 
-                  href={`https://www.google.com/maps?q=${todayRecord.latitude || -6.9706},${todayRecord.longitude || 107.6297}`}
+                  href={`https://www.google.com/maps?q=${todayRecord.latitude || BTP_OFFICIAL_LAT},${todayRecord.longitude || BTP_OFFICIAL_LNG}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
@@ -404,52 +425,117 @@ export default function AttendanceView({
         </div>
       )}
 
-      {/* SUMMARY STATS CARDS */}
+      {/* SUMMARY STATS CARDS (Interactive Filter for Staff) */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs">
+        <button
+          type="button"
+          onClick={() => setStatusFilter(prev => prev === 'present' ? 'all' : 'present')}
+          className={`p-4 rounded-2xl bg-white dark:bg-slate-800 border transition-all text-left cursor-pointer ${
+            statusFilter === 'present' 
+              ? 'border-emerald-500 ring-2 ring-emerald-500/20 shadow-md' 
+              : 'border-slate-200/80 dark:border-slate-700 shadow-xs hover:border-emerald-300'
+          }`}
+        >
           <div className="flex items-center justify-between text-emerald-600 mb-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Hadir Tepat Waktu</span>
             <CheckCircle2 className="h-4 w-4" />
           </div>
           <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{presentCount}</p>
-          <span className="text-[10px] text-emerald-600 font-semibold">Tepat Waktu (80%)</span>
-        </div>
+          <span className="text-[10px] text-emerald-600 font-semibold">Tepat Waktu (≤ 08:30 WIB)</span>
+        </button>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs">
+        <button
+          type="button"
+          onClick={() => setStatusFilter(prev => prev === 'late' ? 'all' : 'late')}
+          className={`p-4 rounded-2xl bg-white dark:bg-slate-800 border transition-all text-left cursor-pointer ${
+            statusFilter === 'late' 
+              ? 'border-amber-500 ring-2 ring-amber-500/20 shadow-md' 
+              : 'border-slate-200/80 dark:border-slate-700 shadow-xs hover:border-amber-300'
+          }`}
+        >
           <div className="flex items-center justify-between text-amber-600 mb-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Terlambat</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Terlambat Masuk</span>
             <AlertCircle className="h-4 w-4" />
           </div>
           <p className="text-2xl font-extrabold text-amber-600">{lateCount}</p>
-          <span className="text-[10px] text-amber-600 font-semibold">Toleransi 15 Menit</span>
-        </div>
+          <span className="text-[10px] text-amber-600 font-semibold">&gt; 08:30 WIB</span>
+        </button>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs">
-          <div className="flex items-center justify-between text-blue-600 mb-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Izin</span>
-            <Calendar className="h-4 w-4" />
-          </div>
-          <p className="text-2xl font-extrabold text-blue-600">{leaveCount}</p>
-          <span className="text-[10px] text-blue-600 font-semibold">Surat Izin Disetujui</span>
-        </div>
+        {currentUser?.role === 'student' ? (
+          <>
+            <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs">
+              <div className="flex items-center justify-between text-blue-600 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Izin</span>
+                <Calendar className="h-4 w-4" />
+              </div>
+              <p className="text-2xl font-extrabold text-blue-600">{leaveCount}</p>
+              <span className="text-[10px] text-blue-600 font-semibold">Surat Izin Disetujui</span>
+            </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs">
-          <div className="flex items-center justify-between text-purple-600 mb-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Sakit</span>
-            <Clock className="h-4 w-4" />
-          </div>
-          <p className="text-2xl font-extrabold text-purple-600">{sickCount}</p>
-          <span className="text-[10px] text-purple-600 font-semibold">Lampiran Dokter</span>
-        </div>
+            <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs">
+              <div className="flex items-center justify-between text-purple-600 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Sakit</span>
+                <Clock className="h-4 w-4" />
+              </div>
+              <p className="text-2xl font-extrabold text-purple-600">{sickCount}</p>
+              <span className="text-[10px] text-purple-600 font-semibold">Lampiran Dokter</span>
+            </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs col-span-2 sm:col-span-1">
-          <div className="flex items-center justify-between text-red-600 mb-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tanpa Keterangan</span>
-            <XCircle className="h-4 w-4" />
-          </div>
-          <p className="text-2xl font-extrabold text-red-600">{absentCount}</p>
-          <span className="text-[10px] text-red-600 font-semibold">Perlu Pembinaan</span>
-        </div>
+            <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs col-span-2 sm:col-span-1">
+              <div className="flex items-center justify-between text-red-600 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tanpa Keterangan</span>
+                <XCircle className="h-4 w-4" />
+              </div>
+              <p className="text-2xl font-extrabold text-red-600">{absentCount}</p>
+              <span className="text-[10px] text-red-600 font-semibold">Perlu Konfirmasi</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => setStatusFilter(prev => prev === 'working' ? 'all' : 'working')}
+              className={`p-4 rounded-2xl bg-white dark:bg-slate-800 border transition-all text-left cursor-pointer ${
+                statusFilter === 'working' 
+                  ? 'border-amber-500 ring-2 ring-amber-500/20 shadow-md' 
+                  : 'border-slate-200/80 dark:border-slate-700 shadow-xs hover:border-amber-300'
+              }`}
+            >
+              <div className="flex items-center justify-between text-amber-500 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Belum Check-Out</span>
+                <Clock className="h-4 w-4" />
+              </div>
+              <p className="text-2xl font-extrabold text-amber-500">{notCheckedOutTodayCount}</p>
+              <span className="text-[10px] text-amber-600 font-semibold">Sedang Bekerja di Lab</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setStatusFilter(prev => prev === 'unrecorded' ? 'all' : 'unrecorded')}
+              className={`p-4 rounded-2xl bg-white dark:bg-slate-800 border transition-all text-left cursor-pointer ${
+                statusFilter === 'unrecorded' 
+                  ? 'border-rose-500 ring-2 ring-rose-500/20 shadow-md' 
+                  : 'border-slate-200/80 dark:border-slate-700 shadow-xs hover:border-rose-300'
+              }`}
+            >
+              <div className="flex items-center justify-between text-rose-600 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Belum Check-In</span>
+                <AlertCircle className="h-4 w-4" />
+              </div>
+              <p className="text-2xl font-extrabold text-rose-600">{notCheckedInTodayCount}</p>
+              <span className="text-[10px] text-rose-600 font-semibold">Belum Hadir Hari Ini</span>
+            </button>
+
+            <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs col-span-2 sm:col-span-1">
+              <div className="flex items-center justify-between text-blue-600 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Izin / Sakit</span>
+                <Calendar className="h-4 w-4" />
+              </div>
+              <p className="text-2xl font-extrabold text-blue-600">{leaveCount + sickCount}</p>
+              <span className="text-[10px] text-blue-600 font-semibold">Keterangan Resmi</span>
+            </div>
+          </>
+        )}
       </div>
 
       {/* FILTER TABS & SEARCH */}
@@ -460,9 +546,9 @@ export default function AttendanceView({
           {/* Tabs */}
           <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-700/60 text-xs font-semibold overflow-x-auto">
             <button
-              onClick={() => setActiveRangeTab('today')}
+              onClick={() => { setActiveRangeTab('today'); setStatusFilter('all'); }}
               className={`px-4 py-2 rounded-xl transition-all ${
-                activeRangeTab === 'today'
+                activeRangeTab === 'today' && statusFilter === 'all'
                   ? 'bg-white dark:bg-slate-800 text-[#2E7D32] dark:text-emerald-400 font-bold shadow-xs'
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
               }`}
@@ -470,9 +556,9 @@ export default function AttendanceView({
               Hari Ini
             </button>
             <button
-              onClick={() => setActiveRangeTab('7days')}
+              onClick={() => { setActiveRangeTab('7days'); setStatusFilter('all'); }}
               className={`px-4 py-2 rounded-xl transition-all ${
-                activeRangeTab === '7days'
+                activeRangeTab === '7days' && statusFilter === 'all'
                   ? 'bg-white dark:bg-slate-800 text-[#2E7D32] dark:text-emerald-400 font-bold shadow-xs'
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
               }`}
@@ -480,9 +566,9 @@ export default function AttendanceView({
               7 Hari Terakhir
             </button>
             <button
-              onClick={() => setActiveRangeTab('30days')}
+              onClick={() => { setActiveRangeTab('30days'); setStatusFilter('all'); }}
               className={`px-4 py-2 rounded-xl transition-all ${
-                activeRangeTab === '30days'
+                activeRangeTab === '30days' && statusFilter === 'all'
                   ? 'bg-white dark:bg-slate-800 text-[#2E7D32] dark:text-emerald-400 font-bold shadow-xs'
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
               }`}
@@ -490,9 +576,9 @@ export default function AttendanceView({
               30 Hari Terakhir
             </button>
             <button
-              onClick={() => setActiveRangeTab('all')}
+              onClick={() => { setActiveRangeTab('all'); setStatusFilter('all'); }}
               className={`px-4 py-2 rounded-xl transition-all ${
-                activeRangeTab === 'all'
+                activeRangeTab === 'all' && statusFilter === 'all'
                   ? 'bg-white dark:bg-slate-800 text-[#2E7D32] dark:text-emerald-400 font-bold shadow-xs'
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
               }`}
@@ -501,21 +587,102 @@ export default function AttendanceView({
             </button>
           </div>
 
-          {/* Search Field */}
-          <div className="relative min-w-[240px]">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Cari nama atau tanggal..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700/80 text-xs"
-            />
+          {/* Active Filter Pill & Search */}
+          <div className="flex items-center gap-2">
+            {statusFilter !== 'all' && (
+              <button
+                onClick={() => setStatusFilter('all')}
+                className="px-3 py-1.5 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+              >
+                <span>Filter: {statusFilter.toUpperCase()}</span>
+                <span className="text-xs">✕</span>
+              </button>
+            )}
+
+            {/* Search Field */}
+            <div className="relative min-w-[240px]">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari nama atau tanggal..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700/80 text-xs"
+              />
+            </div>
           </div>
         </div>
 
-        {/* ATTENDANCE TABLE */}
-        <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-2xl">
+        {/* CONDITIONAL RENDER: UNRECORDED STUDENTS TABLE */}
+        {statusFilter === 'unrecorded' ? (
+          <div className="overflow-x-auto border border-rose-200 dark:border-rose-900/60 rounded-2xl bg-white dark:bg-slate-800">
+            <div className="p-4 bg-rose-50/80 dark:bg-rose-950/40 border-b border-rose-100 dark:border-rose-900/40 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-rose-600" />
+                <h4 className="text-xs font-bold text-rose-900 dark:text-rose-200">
+                  Daftar Mahasiswa Aktif Belum Melakukan Presensi Hari Ini ({unrecordedStudentsToday.length} Mahasiswa)
+                </h4>
+              </div>
+              <button
+                onClick={() => setStatusFilter('all')}
+                className="text-[11px] font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline cursor-pointer"
+              >
+                ✕ Kembali ke Semua Presensi
+              </button>
+            </div>
+            {unrecordedStudentsToday.length === 0 ? (
+              <div className="p-8 text-center text-xs text-emerald-700 dark:text-emerald-300 font-bold">
+                🎉 Luar biasa! Seluruh mahasiswa aktif telah melakukan presensi hari ini.
+              </div>
+            ) : (
+              <table className="w-full text-left text-xs min-w-[680px]">
+                <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-700">
+                  <tr>
+                    <th className="py-3 px-4">Foto Profil</th>
+                    <th className="py-3 px-4">Mahasiswa & NIM</th>
+                    <th className="py-3 px-4">Divisi Riset</th>
+                    <th className="py-3 px-4">Pembina Lab</th>
+                    <th className="py-3 px-4">Status Hari Ini</th>
+                    <th className="py-3 px-4">Jam Masuk Resmi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+                  {unrecordedStudentsToday.map(st => (
+                    <tr key={st.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30">
+                      <td className="py-3 px-4">
+                        <img
+                          src={st.avatar || '/images/team/shara.jpg'}
+                          alt={st.name}
+                          className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700"
+                        />
+                      </td>
+                      <td className="py-3 px-4 font-bold text-slate-900 dark:text-slate-100">
+                        {st.name}
+                        <span className="block text-[10px] text-slate-400 font-mono font-normal">NIM: {st.studentId || st.internId || '-'}</span>
+                      </td>
+                      <td className="py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">
+                        {st.specialty || st.title || 'IoT & Hardware Engineering'}
+                      </td>
+                      <td className="py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">
+                        {st.advisor || 'Prof. Dr. Indrarini Dyah Irawati'}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                          Belum Presensi
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 font-mono text-slate-500">
+                        08:00 WIB (Batas: 08:30 WIB)
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        ) : (
+          /* NORMAL ATTENDANCE TABLE */
+          <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-2xl">
           {filteredAttendance.length === 0 ? (
             <div className="p-12 text-center space-y-4 bg-slate-50/50 dark:bg-slate-800/50">
               <div className="w-16 h-16 rounded-3xl bg-emerald-100 dark:bg-emerald-950/60 text-[#355E3B] dark:text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
@@ -582,7 +749,7 @@ export default function AttendanceView({
                     </td>
                     <td className="py-3.5 px-3 text-[11px] whitespace-nowrap hidden xl:table-cell">
                       <span className="font-semibold text-slate-700 dark:text-slate-300 block">{rec.division || 'IoT & Hardware'}</span>
-                      <span className="text-[10px] text-slate-400 font-medium">Pembimbing: {rec.mentor || 'Prof. Indrarini'}</span>
+                      <span className="text-[10px] text-slate-400 font-medium">Pembina Lab: {rec.mentor || 'Prof. Dr. Indrarini'}</span>
                     </td>
                     <td className="py-3.5 px-3 text-slate-500 font-mono whitespace-nowrap">
                       {rec.date}
@@ -614,7 +781,7 @@ export default function AttendanceView({
                           <span className="truncate max-w-[140px]">{rec.location || 'Area BTP Telkom'}</span>
                         </span>
                         <a 
-                          href={`https://www.google.com/maps?q=${rec.latitude || -6.9706},${rec.longitude || 107.6297}`}
+                          href={`https://www.google.com/maps?q=${rec.latitude || BTP_OFFICIAL_LAT},${rec.longitude || BTP_OFFICIAL_LNG}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
@@ -641,7 +808,8 @@ export default function AttendanceView({
             </table>
           )}
         </div>
-      </div>
+      )}
+    </div>
 
       {/* LARGE PHOTO PREVIEW MODAL WITH METADATA & DOWNLOAD */}
       {selectedRecord && (
@@ -682,7 +850,7 @@ export default function AttendanceView({
                   {selectedRecord.location || 'Bandung Techno Park (BTP) Telkom University'}
                 </p>
                 <a 
-                  href={`https://www.google.com/maps?q=${selectedRecord.latitude || -6.9706},${selectedRecord.longitude || 107.6297}`}
+                  href={`https://www.google.com/maps?q=${selectedRecord.latitude || BTP_OFFICIAL_LAT},${selectedRecord.longitude || BTP_OFFICIAL_LNG}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[10px] text-emerald-600 font-bold hover:underline inline-flex items-center gap-1 pt-0.5"
@@ -736,19 +904,25 @@ export default function AttendanceView({
             </div>
 
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
-                if (onCheckOut && currentUser) {
-                  onCheckOut(currentUser.id);
+                const notes = dailyNotesText.trim();
+                if (!notes) return;
+                try {
+                  if (onCheckOut && currentUser) {
+                    await onCheckOut(currentUser.id, notes);
+                  }
+                  setShowCheckOutModal(false);
+                  setDailyNotesText('');
+                } catch (err: any) {
+                  alert(err?.message || 'Gagal menyimpan check-out. Silakan periksa koneksi dan coba lagi.');
                 }
-                setShowCheckOutModal(false);
-                setDailyNotesText('');
               }}
               className="space-y-3 text-xs"
             >
               <div>
                 <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">
-                  Catatan Aktivitas Hari Ini (Max 500 Karakter)
+                  Catatan Aktivitas Hari Ini (Wajib Diisi Sebelum Check-Out, Max 500 Karakter)
                 </label>
                 <textarea
                   rows={4}
@@ -774,7 +948,8 @@ export default function AttendanceView({
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-[#2E7D32] hover:bg-emerald-700 text-white font-bold shadow-md uppercase tracking-wider text-[11px]"
+                  disabled={!dailyNotesText.trim()}
+                  className="px-6 py-2.5 rounded-xl bg-[#2E7D32] hover:bg-emerald-700 text-white font-bold shadow-md uppercase tracking-wider text-[11px] disabled:opacity-50 cursor-pointer"
                 >
                   Konfirmasi Check-Out Sekarang 🚀
                 </button>
@@ -790,9 +965,9 @@ export default function AttendanceView({
         onClose={() => setShowCheckInModal(false)}
         studentName={currentUser?.name || 'Mahasiswa Magang'}
         darkMode={darkMode}
-        onConfirmCheckIn={async (photoUrl, locAddress) => {
+        onConfirmCheckIn={async (photoUrl, locAddress, coords) => {
           if (onCheckIn && currentUser) {
-            await onCheckIn(currentUser.id, currentUser.name, photoUrl, locAddress);
+            await onCheckIn(currentUser.id, currentUser.name, photoUrl, locAddress, coords);
           }
         }}
       />
