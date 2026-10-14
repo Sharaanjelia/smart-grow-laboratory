@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, MapPin, CheckCircle2, AlertCircle, X, RefreshCw, Upload } from 'lucide-react';
+import { Camera, MapPin, CheckCircle2, AlertCircle, X, RefreshCw, Upload, FlipHorizontal } from 'lucide-react';
 import { 
   calculateHaversineDistanceMeters, 
   BTP_OFFICIAL_LAT, 
@@ -34,6 +34,7 @@ export default function CheckInCameraModal({
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const [isMirrored, setIsMirrored] = useState(false);
   
   const [locationAddress, setLocationAddress] = useState<string>('Mendeteksi lokasi GPS...');
   const [coords, setCoords] = useState<{ lat: number; lng: number; accuracy: number; distance: number } | null>(null);
@@ -169,14 +170,37 @@ export default function CheckInCameraModal({
 
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        // Direct drawing without horizontal mirroring
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        if (isMirrored) {
+          ctx.translate(canvas.width, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        } else {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        }
         
         const photoDataUrl = canvas.toDataURL('image/jpeg', 0.85);
         setCapturedPhoto(photoDataUrl);
         stopCamera();
       }
     }
+  };
+
+  const handleFlipCapturedPhoto = () => {
+    if (!capturedPhoto) return;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(img, 0, 0);
+        setCapturedPhoto(canvas.toDataURL('image/jpeg', 0.85));
+      }
+    };
+    img.src = capturedPhoto;
   };
 
   const handleRetake = () => {
@@ -330,11 +354,24 @@ export default function CheckInCameraModal({
                     el.play().catch(() => {});
                   }
                 }}
-                className="w-full h-full object-cover" 
+                className={`w-full h-full object-cover transition-transform duration-200 ${isMirrored ? '-scale-x-100' : ''}`}
                 autoPlay 
                 playsInline 
                 muted 
               />
+
+              {/* Mirror Mode Live Toggle */}
+              {cameraActive && (
+                <button
+                  type="button"
+                  onClick={() => setIsMirrored(prev => !prev)}
+                  className="absolute top-3 right-3 z-30 px-3 py-1.5 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white text-[11px] font-bold border border-white/20 backdrop-blur-md flex items-center gap-1.5 transition-all shadow-md cursor-pointer hover:scale-105 active:scale-95"
+                  title="Klik untuk membalik/mirror kamera (Mode Normal vs Cermin)"
+                >
+                  <FlipHorizontal className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>{isMirrored ? 'Mode Cermin (Mirror)' : 'Mode Normal'}</span>
+                </button>
+              )}
               
               {/* Radar Grid Overlay for Camera */}
               {cameraActive ? (
@@ -466,15 +503,26 @@ export default function CheckInCameraModal({
               </button>
             </div>
           ) : (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap sm:flex-nowrap gap-2">
               <button
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleRetake}
-                className="px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-200 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                className="px-3.5 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-200 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 text-xs"
               >
                 <RefreshCw className={`h-4 w-4 ${isSubmitting ? 'animate-spin' : ''}`} />
                 <span>Foto Ulang</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={handleFlipCapturedPhoto}
+                className="px-3.5 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-200 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 text-xs"
+                title="Balik orientasi foto secara horizontal jika tampak terbalik"
+              >
+                <FlipHorizontal className="h-4 w-4 text-emerald-600" />
+                <span>Balik Foto (Flip)</span>
               </button>
 
               <button
