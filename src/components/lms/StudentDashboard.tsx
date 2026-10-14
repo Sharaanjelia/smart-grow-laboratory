@@ -2040,7 +2040,7 @@ export default function StudentDashboard({
 
             <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 text-xs space-y-1">
               <span className="font-bold text-[#355E3B] dark:text-emerald-300 block">Status Presensi: TERVERIFIKASI ✓</span>
-              <p className="text-[10px] text-slate-500">Tersimpan di Database Laboratorium & Google Drive SGL Resmi</p>
+              <p className="text-[10px] text-slate-500">Tersimpan di Database Laboratorium Resmi</p>
             </div>
           </div>
         </div>

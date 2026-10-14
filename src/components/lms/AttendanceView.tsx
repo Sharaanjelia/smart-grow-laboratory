@@ -59,7 +59,6 @@ export default function AttendanceView({
 
   // Check-In Photo & BTP Geolocation Modal State
   const [showCheckInModal, setShowCheckInModal] = useState(false);
-  const GDRIVE_FOLDER_URL = 'https://drive.google.com/drive/folders/1TmJdWNHEaWOY422DFXJ9hcv-HzRcrFwg?usp=drive_link';
 
   // Feature-scoped realtime listener for attendance (query filtered based on role)
   const [realtimeAttendance, setRealtimeAttendance] = useState<AttendanceRecord[]>([]);
@@ -868,7 +867,7 @@ export default function AttendanceView({
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700 text-xs">
+            <div className="flex items-center justify-start pt-2 border-t border-slate-100 dark:border-slate-700 text-xs">
               {(selectedRecord.photoUrl || selectedRecord.checkInPhoto) && (
                 <a 
                   href={selectedRecord.photoUrl || selectedRecord.checkInPhoto} 
@@ -881,10 +880,6 @@ export default function AttendanceView({
                   <span>Download Foto Selfie</span>
                 </a>
               )}
-
-              <a href={GDRIVE_FOLDER_URL} target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-blue-600 hover:underline">
-                Buka Backup GDrive 📁
-              </a>
             </div>
           </div>
         </div>
