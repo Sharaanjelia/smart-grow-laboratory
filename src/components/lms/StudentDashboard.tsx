@@ -1347,48 +1347,6 @@ export default function StudentDashboard({
             </div>
           </section>
 
-          {/* 9-Phase Roadmap Timeline */}
-          <section className="p-6 sm:p-8 rounded-[28px] bg-white dark:bg-slate-900 border border-black/[0.06] dark:border-slate-800 shadow-[0_20px_60px_rgba(0,0,0,0.05)] space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
-              <div>
-                <h2 className="font-display text-lg font-extrabold text-slate-900 dark:text-white">Internship 9-Phase Roadmap</h2>
-                <p className="text-xs text-slate-500 font-medium">Tahapan resmi program magang riset laboratorium dari orientasi hingga sertifikasi</p>
-              </div>
-              <span className="text-xs font-mono font-bold text-[#355E3B] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-                Phase 4 of 9
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-9 gap-2.5">
-              {[
-                { step: '1', title: 'Pendaftaran', date: 'Jan 2026', status: 'completed' },
-                { step: '2', title: 'Penerimaan', date: 'Feb 2026', status: 'completed' },
-                { step: '3', title: 'Orientasi Lab', date: 'Feb 2026', status: 'completed' },
-                { step: '4', title: 'Riset & Desain', date: 'Mar 2026', status: 'active' },
-                { step: '5', title: 'Implementasi', date: 'Mei 2026', status: 'active' },
-                { step: '6', title: 'Uji Validasi', date: 'Jun 2026', status: 'upcoming' },
-                { step: '7', title: 'Laporan Akhir', date: 'Jul 2026', status: 'upcoming' },
-                { step: '8', title: 'Seminar Riset', date: 'Agu 2026', status: 'upcoming' },
-                { step: '9', title: 'Sertifikasi', date: 'Agu 2026', status: 'upcoming' }
-              ].map((item, idx) => (
-                <div key={idx} className={`flex flex-col items-center text-center p-3.5 rounded-2xl border transition-all ${
-                  item.status === 'completed' ? 'bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800' :
-                  item.status === 'active' ? 'bg-white dark:bg-slate-800 border-emerald-500 shadow-md ring-2 ring-emerald-500/20' :
-                  'bg-slate-50/70 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-700'
-                }`}>
-                  <span className={`w-8 h-8 rounded-full text-xs font-black font-mono flex items-center justify-center mb-1.5 ${
-                    item.status === 'completed' ? 'bg-[#355E3B] text-white' :
-                    item.status === 'active' ? 'bg-emerald-500 text-white ring-4 ring-emerald-200 dark:ring-emerald-900 animate-pulse' : 
-                    'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
-                  }`}>
-                    {item.status === 'completed' ? '✓' : item.step}
-                  </span>
-                  <h4 className="text-[11px] font-bold text-slate-900 dark:text-white leading-tight">{item.title}</h4>
-                  <span className="text-[9px] font-mono text-slate-400 mt-1 font-semibold">{item.date}</span>
-                </div>
-              ))}
-            </div>
-          </section>
 
           {/* Rekan Mahasiswa Magang SGL (Fellow Cohort) */}
           <section className="p-6 sm:p-8 rounded-[28px] bg-white dark:bg-slate-900 border border-black/[0.06] dark:border-slate-800 shadow-[0_20px_60px_rgba(0,0,0,0.05)] space-y-6">
