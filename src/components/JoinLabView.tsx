@@ -50,10 +50,6 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
   const [isSuccess, setIsSuccess] = useState(false);
   const [submissionCount, setSubmissionCount] = useState(0);
 
-  // Form completion progress trackers for checklist UI
-  const isNameFilled = fullName.trim().length > 0;
-  const isEmailFilled = email.trim().length > 0 && email.includes('@');
-  const isMotivationFilled = motivation.trim().length > 15;
 
   // Local storage persistence of applications
   useEffect(() => {
@@ -232,13 +228,7 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
               <span className="group-hover:-translate-x-0.5 transition-transform">←</span>
               <span>Back to Laboratory</span>
             </button>
-            <span className="text-slate-700 font-mono text-sm">|</span>
-            <div className="flex items-center gap-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span className="text-[10px] font-mono font-extrabold text-emerald-400 tracking-widest uppercase">
-                RECRUITMENT PORTAL
-              </span>
-            </div>
+
           </div>
 
           {/* Glassmorphism Navigation Tab Bar */}
@@ -281,16 +271,6 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
             {/* ============================================== */}
             <div className="lg:col-span-7 space-y-8 text-left animate-fade-in">
               
-              {/* Small Glowing Badge */}
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-950/80 to-teal-950/80 backdrop-blur-md border border-emerald-500/20 rounded-full px-4 py-1.5 shadow-lg select-none">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                <span className="text-[11px] font-mono font-extrabold tracking-wider text-emerald-400 uppercase">
-                  🤝 Kolaborasi & Kemitraan Riset
-                </span>
-              </div>
 
               {/* Large Display Heading */}
               <div className="space-y-4">
@@ -559,15 +539,6 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                       </button>
                     </div>
 
-                    {/* Progress micro checklist indicator */}
-                    <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[9px] font-mono text-slate-400">
-                      <div className="flex gap-2">
-                        <span className={isNameFilled ? 'text-emerald-400' : ''}>[NAME]</span>
-                        <span className={isEmailFilled ? 'text-emerald-400' : ''}>[EMAIL]</span>
-                        <span className={isMotivationFilled ? 'text-emerald-400' : ''}>[MOTIVATION]</span>
-                      </div>
-                      <span className="animate-pulse text-cyan-400 font-bold">● ACTIVE SYNC</span>
-                    </div>
 
                   </form>
                 )}
