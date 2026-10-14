@@ -1043,7 +1043,7 @@ export default function StudentDashboard({
                     className="inline-flex items-center gap-1 text-[11px] font-bold text-[#355E3B] dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/80 hover:bg-emerald-200 px-2 py-0.5 rounded-lg border border-emerald-300 dark:border-emerald-700 cursor-pointer transition-colors"
                   >
                     <Plus className="h-3 w-3" />
-                    <span>+ Tambah</span>
+                    <span>Tambah</span>
                   </button>
                   <span className="px-2 py-0.5 rounded-lg bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-mono text-xs font-bold border border-amber-200 dark:border-amber-800">
                     {allDisplayTasks.filter(t => t.status === 'in_progress' || t.status === 'not_started').length}
@@ -1064,7 +1064,7 @@ export default function StudentDashboard({
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-[#355E3B] dark:text-emerald-400 hover:underline cursor-pointer"
                     >
                       <Plus className="h-3.5 w-3.5" />
-                      <span>+ Tambah Progres Baru</span>
+                      <span>Tambah Progres Baru</span>
                     </button>
                   </div>
                 ) : (
@@ -1126,7 +1126,7 @@ export default function StudentDashboard({
                     className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100/80 dark:bg-blue-950/80 hover:bg-blue-200 px-2 py-0.5 rounded-lg border border-blue-300 dark:border-blue-700 cursor-pointer transition-colors"
                   >
                     <Plus className="h-3 w-3" />
-                    <span>+ Tambah</span>
+                    <span>Tambah</span>
                   </button>
                   <span className="px-2 py-0.5 rounded-lg bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 font-mono text-xs font-bold border border-blue-200 dark:border-blue-800">
                     {allDisplayTasks.filter(t => t.status === 'review' || t.status === 'revision').length}
@@ -1147,7 +1147,7 @@ export default function StudentDashboard({
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                     >
                       <Plus className="h-3.5 w-3.5" />
-                      <span>+ Tambah Progres Review</span>
+                      <span>Tambah Progres Review</span>
                     </button>
                   </div>
                 ) : (
@@ -1210,7 +1210,7 @@ export default function StudentDashboard({
                     className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/80 hover:bg-emerald-200 px-2 py-0.5 rounded-lg border border-emerald-300 dark:border-emerald-700 cursor-pointer transition-colors"
                   >
                     <Plus className="h-3 w-3" />
-                    <span>+ Tambah</span>
+                    <span>Tambah</span>
                   </button>
                   <span className="px-2 py-0.5 rounded-lg bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-mono text-xs font-bold border border-emerald-200 dark:border-emerald-800">
                     {allDisplayTasks.filter(t => t.status === 'completed').length}
@@ -1231,7 +1231,7 @@ export default function StudentDashboard({
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-[#355E3B] dark:text-emerald-400 hover:underline cursor-pointer"
                     >
                       <Plus className="h-3.5 w-3.5" />
-                      <span>+ Tambah Tugas Selesai</span>
+                      <span>Tambah Tugas Selesai</span>
                     </button>
                   </div>
                 ) : (

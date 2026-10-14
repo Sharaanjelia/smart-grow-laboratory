@@ -776,7 +776,7 @@ export default function AssistantDashboard({
                 className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold flex items-center gap-2 shadow-md transition-all cursor-pointer shrink-0"
               >
                 <Plus className="h-4 w-4" />
-                <span>+ Tambah Proyek Riset Publik</span>
+                <span>Tambah Proyek Riset Publik</span>
               </button>
             </div>
 
