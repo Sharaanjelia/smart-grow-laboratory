@@ -20,6 +20,7 @@ import {
   HelpCircle,
   Vote,
   Newspaper,
+  ChevronRight,
   TrendingUp,
   Award,
   Lock,
