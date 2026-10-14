@@ -81,7 +81,7 @@ export const determineAttendanceStatus = (checkInDate: Date = new Date()): 'pres
  */
 export const BTP_OFFICIAL_LAT = -6.970460;
 export const BTP_OFFICIAL_LNG = 107.630319;
-export const BTP_GEOFENCE_RADIUS_METERS = 50;
+export const BTP_GEOFENCE_RADIUS_METERS = 250;
 
 /**
  * Calculates geographical Haversine distance in meters between two lat/lng coordinates.

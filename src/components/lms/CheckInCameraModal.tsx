@@ -67,7 +67,17 @@ export default function CheckInCameraModal({
     // 1. Request Camera Stream
     startCamera();
 
-    // 2. Request Geolocation (Strict 50m BTP Area Check)
+    // 2. Request Geolocation
+    detectGps();
+
+    return () => {
+      stopCamera();
+    };
+  }, [isOpen]);
+
+  const detectGps = () => {
+    setIsDetectingGps(true);
+    setGpsErrorMsg(null);
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -83,7 +93,6 @@ export default function CheckInCameraModal({
             setLocationValid(true);
             setLocationAddress(`Area Laboratorium BTP Telkom University (Jarak: ${dist}m, Akurasi: ${accuracy}m)`);
           } else {
-            // Strict geofence enforcement: OUT OF 50M RADIUS
             setLocationValid(false);
             setGpsErrorMsg(`Di luar radius resmi BTP Telkom University (Jarak: ${dist}m dari lab, batas maksimal: ${BTP_GEOFENCE_RADIUS_METERS}m).`);
             setLocationAddress(`Di luar area lab (${dist}m dari pusat BTP)`);
@@ -111,11 +120,7 @@ export default function CheckInCameraModal({
       setLocationAddress('GPS Tidak Didukung');
       setIsDetectingGps(false);
     }
-
-    return () => {
-      stopCamera();
-    };
-  }, [isOpen]);
+  };
 
   const startCamera = async () => {
     setCameraError(null);
@@ -209,7 +214,7 @@ export default function CheckInCameraModal({
       return;
     }
     if (!locationValid || !coords) {
-      setSubmitError('Lokasi Anda belum tervalidasi di dalam area laboratorium BTP (Maks. 50 meter).');
+      setSubmitError(`Lokasi Anda belum tervalidasi di dalam area laboratorium BTP (Maks. ${BTP_GEOFENCE_RADIUS_METERS} meter).`);
       return;
     }
     if (coords.distance > BTP_GEOFENCE_RADIUS_METERS) {
@@ -248,7 +253,7 @@ export default function CheckInCameraModal({
               <Camera className="h-5 w-5 text-[#2E7D32]" />
               <span>Punch Check-In Presensi Selfie</span>
             </h3>
-            <p className="text-xs text-slate-500 font-medium">Validasi lokasi GPS BTP (Radius 50m) & verifikasi foto selfie langsung</p>
+            <p className="text-xs text-slate-500 font-medium">Validasi lokasi GPS BTP (Radius {BTP_GEOFENCE_RADIUS_METERS}m) & verifikasi foto selfie langsung</p>
           </div>
           <button 
             onClick={() => {
@@ -273,11 +278,23 @@ export default function CheckInCameraModal({
             <MapPin className="h-4 w-4 animate-pulse" />
           </div>
           <div className="flex-1 text-xs space-y-0.5">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-1 flex-wrap">
               <span className="text-[11px] font-extrabold uppercase tracking-wider block font-mono">
                 {isDetectingGps ? '🟡 Memeriksa Geofence GPS...' : locationValid ? '🟢 Di Dalam Area Laboratorium' : '🔴 Di Luar Area Laboratorium'}
               </span>
-              <span className="text-[10px] font-mono text-slate-400">BTP 50m Geofence</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={detectGps}
+                  disabled={isDetectingGps}
+                  className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                  title="Klik untuk deteksi ulang GPS"
+                >
+                  <RefreshCw className={`h-2.5 w-2.5 ${isDetectingGps ? 'animate-spin' : ''}`} />
+                  <span>Cek Ulang GPS</span>
+                </button>
+                <span className="text-[10px] font-mono text-slate-400">BTP {BTP_GEOFENCE_RADIUS_METERS}m Geofence</span>
+              </div>
             </div>
             <p className="font-bold text-slate-800 dark:text-slate-200 text-[11px] leading-tight">
               {locationAddress}
@@ -435,7 +452,7 @@ export default function CheckInCameraModal({
                 className="flex-1 py-3.5 rounded-2xl bg-[#2E7D32] hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Camera className="h-4 w-4" />
-                <span>Ambil Foto Selfie Presensi 📸</span>
+                <span>Ambil Foto</span>
               </button>
 
               <button
@@ -488,7 +505,7 @@ export default function CheckInCameraModal({
 
           {!locationValid && !isDetectingGps && (
             <p className="text-[11px] text-center text-rose-600 dark:text-rose-400 font-bold">
-              ⛔ Presensi terkunci: Anda harus berada di area Smart Grow Lab BTP (Maks. 50m) dan mengizinkan GPS.
+              ⛔ Presensi terkunci: Anda harus berada di area Smart Grow Lab BTP (Maks. {BTP_GEOFENCE_RADIUS_METERS}m) dan mengizinkan GPS.
             </p>
           )}
 

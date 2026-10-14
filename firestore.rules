@@ -95,12 +95,12 @@ service cloud.firestore {
           isStudent() && 
           request.resource.data.studentId == request.auth.uid &&
           // BTP Geofence Bounding Box around (-6.970460, 107.630319)
-          // Accommodates 50m radius (dLat ~0.00045, dLng ~0.00045) without false rejections
-          request.resource.data.latitude >= -6.9710 && request.resource.data.latitude <= -6.9699 &&
-          request.resource.data.longitude >= 107.6297 && request.resource.data.longitude <= 107.6309 &&
-          request.resource.data.locationRadius == 50 &&
+          // Accommodates 250m radius (dLat ~0.0025, dLng ~0.0025) for full BTP building complex
+          request.resource.data.latitude >= -6.9735 && request.resource.data.latitude <= -6.9675 &&
+          request.resource.data.longitude >= 107.6270 && request.resource.data.longitude <= 107.6335 &&
+          request.resource.data.locationRadius <= 300 &&
           request.resource.data.gpsAccuracy is number &&
-          request.resource.data.gpsAccuracy > 0 && request.resource.data.gpsAccuracy <= 100 &&
+          request.resource.data.gpsAccuracy > 0 && request.resource.data.gpsAccuracy <= 250 &&
           request.resource.data.checkInPhoto is string && request.resource.data.checkInPhoto.size() > 10 &&
           request.resource.data.status in ['present', 'late']
         )
