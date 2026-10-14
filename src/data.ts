@@ -603,7 +603,7 @@ export const teamData: TeamMember[] = [
   },
   {
     id: 'member-aqila',
-    name: 'Aqila',
+    name: 'Aqila Rasha Humairah',
     role: 'Full-stack Developer',
     image: 'member-aqila',
     email: 'aqilarashahumairah@student.telkomuniversity.ac.id',

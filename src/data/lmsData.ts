@@ -142,7 +142,7 @@ export const initialUsers: User[] = [
   },
   {
     id: 'user_student_aqila',
-    name: 'Aqila',
+    name: 'Aqila Rasha Humairah',
     email: 'aqilarashahumairah@student.telkomuniversity.ac.id',
     role: 'student',
     title: 'Full-stack Developer',
