@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CheckInCameraModal from './CheckInCameraModal';
 import { AttendanceRecord, User } from '../../types';
+import { resolveUserAvatar } from '../../utils/imageUtils';
 import { db } from '../../firebase';
 import { collection, onSnapshot, query, where, orderBy, limit } from 'firebase/firestore';
 import { 
@@ -183,8 +184,8 @@ export default function AttendanceView({
       s.id === rec.studentId || 
       (s.name && rec.studentName && s.name.toLowerCase().replace(/[^a-z0-9]/g, '') === rec.studentName.toLowerCase().replace(/[^a-z0-9]/g, ''))
     );
-    if (studentObj?.avatar) return studentObj.avatar;
-    return '/images/team/shara.jpg';
+    if (studentObj?.avatar && !studentObj.avatar.includes('unsplash.com')) return studentObj.avatar;
+    return resolveUserAvatar(studentObj || { name: rec.studentName, role: 'student' });
   };
 
   // Summary Counters
@@ -651,7 +652,7 @@ export default function AttendanceView({
                     <tr key={st.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30">
                       <td className="py-3 px-4">
                         <img
-                          src={st.avatar || '/images/team/shara.jpg'}
+                          src={resolveUserAvatar(st)}
                           alt={st.name}
                           className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700"
                         />

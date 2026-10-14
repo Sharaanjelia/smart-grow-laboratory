@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, LmsProject, ProjectItem } from '../../types';
 import { auth, db, uploadFileToFirebaseStorage } from '../../firebase';
+import { resolveUserAvatar } from '../../utils/imageUtils';
 import { updatePassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { 
@@ -78,25 +79,8 @@ export default function ProfileView({
   const [github, setGithub] = useState(currentUser.github || '');
   const [linkedin, setLinkedin] = useState(currentUser.linkedin || '');
   const [portfolio, setPortfolio] = useState(currentUser.portfolio || '');
-  const cName = (currentUser.name || '').toLowerCase();
   const [avatarUrl, setAvatarUrl] = useState(
-    currentUser.avatar && !currentUser.avatar.includes('unsplash.com') 
-      ? currentUser.avatar 
-      : cName.includes('indrarini') ? '/images/team/indrarini.jpg'
-      : cName.includes('azliny') ? '/images/team/azliny.jpg'
-      : cName.includes('shara') ? '/images/team/shara.jpg'
-      : cName.includes('chiko') ? '/images/team/chiko.jpg'
-      : cName.includes('shella') || cName.includes('shela') ? '/images/team/shela.jpg'
-      : cName.includes('sirvani') ? '/images/team/sirvani.jpg'
-      : cName.includes('tiara') ? '/images/team/tiara.jpg'
-      : cName.includes('nasywa') ? '/images/team/nasywa-zauja-noor.jpg'
-      : cName.includes('divia') ? '/images/team/divia-nuralika-namira.jpg'
-      : cName.includes('arimbi') ? '/images/team/arimbi.jpg'
-      : cName.includes('daffa') ? '/images/team/daffa.jpg'
-      : cName.includes('hannani') ? '/images/team/hannani.jpg'
-      : cName.includes('elyasa') ? '/images/team/elyasa.jpg'
-      : cName.includes('humam') ? '/images/team/humam.jpg'
-      : (currentUser.avatar || '')
+    resolveUserAvatar(currentUser)
   );
 
   // Executive KPI Metrics State (Director Editable & Dynamic)

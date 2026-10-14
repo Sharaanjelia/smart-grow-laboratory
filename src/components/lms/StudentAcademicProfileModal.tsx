@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User, Task, AttendanceRecord, LmsProject } from '../../types';
+import { resolveUserAvatar } from '../../utils/imageUtils';
 import { 
   X, 
   GraduationCap, 
@@ -147,20 +148,7 @@ export default function StudentAcademicProfileModal({
               {/* Large Avatar */}
               <div className="relative group shrink-0">
                 <img
-                  src={
-                    student.avatar && !student.avatar.includes('unsplash.com') 
-                      ? student.avatar 
-                      : sName.includes('shara') ? '/images/team/shara.jpg'
-                      : sName.includes('shella') || sName.includes('shela') ? '/images/team/shela.jpg'
-                      : sName.includes('sirvani') ? '/images/team/sirvani.jpg'
-                      : sName.includes('tiara') ? '/images/team/tiara.jpg'
-                      : sName.includes('nasywa') ? '/images/team/nasywa-zauja-noor.jpg'
-                      : sName.includes('divia') ? '/images/team/divia-nuralika-namira.jpg'
-                      : sName.includes('azliny') ? '/images/team/azliny.jpg'
-                      : sName.includes('chiko') ? '/images/team/chiko.jpg'
-                      : sName.includes('indrarini') ? '/images/team/indrarini.jpg'
-                      : student.avatar || '/images/team/shara.jpg'
-                  }
+                  src={resolveUserAvatar(student)}
                   alt={student.name}
                   className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-3xl object-cover border-4 border-white/20 shadow-xl shrink-0"
                 />

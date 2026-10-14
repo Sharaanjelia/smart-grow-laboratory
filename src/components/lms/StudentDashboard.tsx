@@ -14,6 +14,7 @@ import ProfileView from './ProfileView';
 import CheckInCameraModal from './CheckInCameraModal';
 import RevisionDetailModal from './RevisionDetailModal';
 import AttendanceView from './AttendanceView';
+import { resolveUserAvatar } from '../../utils/imageUtils';
 import { getTodayDateJakarta, formatIndonesianDate } from '../../utils/dateUtils';
 import { 
   Clock, 
@@ -500,16 +501,16 @@ export default function StudentDashboard({
                 <div className="p-3.5 rounded-2xl bg-white/90 dark:bg-slate-800/90 border-2 border-emerald-500/40 shadow-md flex flex-wrap items-center justify-between gap-3 backdrop-blur-md">
                   <div className="flex items-center gap-3">
                     <div 
-                      onClick={() => setSelectedPhoto(myTodayAtt.photoUrl || myTodayAtt.checkInPhoto || currentUser.avatar || '/images/team/shara.jpg')}
+                      onClick={() => setSelectedPhoto(myTodayAtt.photoUrl || myTodayAtt.checkInPhoto || resolveUserAvatar(currentUser))}
                       className="relative w-12 h-12 rounded-xl overflow-hidden border-2 border-emerald-500 shadow-md cursor-pointer group shrink-0"
                       title="Klik untuk memperbesar foto selfie presensi"
                     >
                       <img 
-                        src={myTodayAtt.photoUrl || myTodayAtt.checkInPhoto || currentUser.avatar || '/images/team/shara.jpg'} 
+                        src={myTodayAtt.photoUrl || myTodayAtt.checkInPhoto || resolveUserAvatar(currentUser)} 
                         alt="Selfie Presensi" 
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform"
                         onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src = '/images/team/shara.jpg';
+                          (e.currentTarget as HTMLImageElement).src = resolveUserAvatar(currentUser);
                         }}
                       />
                       <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 flex items-center justify-center transition-all">
@@ -542,7 +543,7 @@ export default function StudentDashboard({
 
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
-                      onClick={() => setSelectedPhoto(myTodayAtt.photoUrl || myTodayAtt.checkInPhoto || currentUser.avatar || '/images/team/shara.jpg')}
+                      onClick={() => setSelectedPhoto(myTodayAtt.photoUrl || myTodayAtt.checkInPhoto || resolveUserAvatar(currentUser))}
                       className="px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 text-xs font-bold border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
                     >
                       <Camera className="h-3.5 w-3.5" />
