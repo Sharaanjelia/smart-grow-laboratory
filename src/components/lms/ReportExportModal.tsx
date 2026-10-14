@@ -38,9 +38,9 @@ export default function ReportExportModal({ darkMode = false }: ReportExportModa
       ['2026-07-18', 'Selada Keriting', '8.5 kg', 'Deep Water Culture C1', 'Grade A', 'Farhan Rizky']
     ],
     attendance: [
-      ['2026-07-22', '1301210042', 'Fathur Rahman', '08:05 WIB', '17:00 WIB', 'Hadir Tepat Waktu', 'Lab FIT Lt.3'],
-      ['2026-07-22', '1301210089', 'Nabila Putri', '08:12 WIB', '17:05 WIB', 'Hadir Tepat Waktu', 'Lab FIT Lt.3'],
-      ['2026-07-22', '1301210104', 'Farhan Rizky', '08:45 WIB', '17:00 WIB', 'Terlambat 15 Mnt', 'Lab FIT Lt.3']
+      ['2026-07-22', '1301210042', 'Fathur Rahman', '08:05 WIB', '16:00 WIB', 'Hadir Tepat Waktu', 'Lab FIT Lt.3'],
+      ['2026-07-22', '1301210089', 'Nabila Putri', '08:12 WIB', '16:05 WIB', 'Hadir Tepat Waktu', 'Lab FIT Lt.3'],
+      ['2026-07-22', '1301210104', 'Farhan Rizky', '08:45 WIB', '16:00 WIB', 'Terlambat 15 Mnt', 'Lab FIT Lt.3']
     ],
     task: [
       ['TGS-2026-001', 'Skematik PCB & Modbus RS485', 'Fathur Rahman', '2026-07-25', 'Menunggu Review', 'v1.1 Revisi'],

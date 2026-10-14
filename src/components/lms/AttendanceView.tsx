@@ -262,10 +262,15 @@ export default function AttendanceView({
       {currentUser && (
         <div className="p-6 sm:p-8 rounded-[28px] bg-gradient-to-r from-[#355E3B] via-[#2A4B2F] to-slate-900 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border border-emerald-700/40">
           <div className="space-y-2 text-center md:text-left">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#C7D8A8]/30 text-[#C7D8A8] text-xs font-mono font-extrabold tracking-wider uppercase">
-              <Clock className="h-3.5 w-3.5" />
-              <span>PRESENSI REAL-TIME • {formatIndonesianDate(todayDateStr)}</span>
-            </span>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#C7D8A8]/30 text-[#C7D8A8] text-xs font-mono font-extrabold tracking-wider uppercase">
+                <Clock className="h-3.5 w-3.5" />
+                <span>PRESENSI REAL-TIME • {formatIndonesianDate(todayDateStr)}</span>
+              </span>
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-mono font-bold border border-emerald-400/30">
+                ⏰ Jam Kerja: 08:00 - 16:00 WIB
+              </span>
+            </div>
             <h3 className="text-xl sm:text-2xl font-bold font-display">
               {currentUser.role === 'student'
                 ? (hasCheckedOutToday ? 'Presensi Hari Ini Selesai' : (hasCheckedInToday ? 'Sesi Riset Aktif' : 'Check-In Kehadiran Laboratorium'))
@@ -302,7 +307,7 @@ export default function AttendanceView({
                     className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs tracking-wider uppercase transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center gap-2 border border-emerald-300"
                   >
                     <Clock className="h-4 w-4 text-white" />
-                    <span>Check-Out 🚪</span>
+                    <span>Check-Out 🚪 (16:00 WIB)</span>
                   </button>
                 )}
 
@@ -890,10 +895,13 @@ export default function AttendanceView({
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100 dark:border-slate-800">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Clock className="h-5 w-5 text-[#2E7D32]" />
-                <span>Check-Out & Jurnal Aktivitas Harian</span>
-              </h3>
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-[#2E7D32]" />
+                  <span>Check-Out & Jurnal Aktivitas Harian</span>
+                </h3>
+                <p className="text-[11px] text-slate-500 font-medium">Jam Pulang Resmi: <span className="font-bold text-emerald-600 dark:text-emerald-400">16:00 WIB</span> (Jam Kerja: 08:00 - 16:00 WIB)</p>
+              </div>
               <button onClick={() => setShowCheckOutModal(false)} className="p-1 rounded-full hover:bg-slate-100 text-slate-400">
                 <XCircle className="h-5 w-5" />
               </button>

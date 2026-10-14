@@ -288,7 +288,7 @@ export default function CheckInCameraModal({
               <Camera className="h-5 w-5 text-[#2E7D32]" />
               <span>Punch Check-In Presensi Selfie</span>
             </h3>
-            <p className="text-xs text-slate-500 font-medium">Validasi lokasi GPS BTP (Radius {BTP_GEOFENCE_RADIUS_METERS}m) & verifikasi foto selfie langsung</p>
+            <p className="text-xs text-slate-500 font-medium">Jam Kerja: <span className="font-bold text-emerald-600 dark:text-emerald-400">08:00 - 16:00 WIB</span> (Batas Masuk: 08:30 WIB) • Radius BTP {BTP_GEOFENCE_RADIUS_METERS}m</p>
           </div>
           <button 
             onClick={() => {

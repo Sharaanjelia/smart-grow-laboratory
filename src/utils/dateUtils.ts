@@ -52,8 +52,19 @@ export const formatIndonesianDate = (dateStr: string): string => {
 };
 
 /**
+ * Official Internship Schedule Constants (Smart Grow Laboratory)
+ * Working Hours: 08:00 - 16:00 WIB (8 Hours / Day)
+ * Late Threshold: 08:30 WIB
+ */
+export const INTERNSHIP_START_TIME = '08:00 WIB';
+export const INTERNSHIP_LATE_THRESHOLD = '08:30 WIB';
+export const INTERNSHIP_END_TIME = '16:00 WIB';
+export const INTERNSHIP_WORKING_HOURS = 8;
+export const INTERNSHIP_SCHEDULE_LABEL = '08:00 - 16:00 WIB';
+
+/**
  * Determines attendance status based on WIB check-in time:
- * - Check-in on or before 08:30 WIB -> 'present' (Hadir)
+ * - Check-in on or before 08:30 WIB -> 'present' (Hadir Tepat Waktu)
  * - Check-in after 08:30 WIB -> 'late' (Terlambat)
  */
 export const determineAttendanceStatus = (checkInDate: Date = new Date()): 'present' | 'late' => {
@@ -71,6 +82,21 @@ export const determineAttendanceStatus = (checkInDate: Date = new Date()): 'pres
     return 'late';
   }
   return 'present';
+};
+
+/**
+ * Checks if check-out time is earlier than official 16:00 WIB closing time.
+ */
+export const isEarlyCheckOut = (checkOutDate: Date = new Date()): boolean => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Jakarta',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: false
+  }).formatToParts(checkOutDate);
+
+  const hour = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
+  return hour < 16;
 };
 
 /**
