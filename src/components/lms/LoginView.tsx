@@ -366,7 +366,27 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
         throw new Error('Akun Anda belum terdaftar atau belum disetujui oleh Pembina Laboratorium.');
       }
 
-      // Strict Status Check: Must be 'active'
+      // Strict Status Check: Must be 'active' (Alumni is automatically non-active)
+      const alumniEmails = [
+        'daffa@student.telkomuniversity.ac.id',
+        'elyasa@student.telkomuniversity.ac.id',
+        'humam@student.telkomuniversity.ac.id',
+        'hannani@student.telkomuniversity.ac.id',
+        'arimbi@student.telkomuniversity.ac.id',
+        'alfachriakbar@student.telkomuniversity.ac.id'
+      ];
+      const isAlumniUser = alumniEmails.includes(cleanEmail) || 
+                           foundUser.status === 'alumni' || 
+                           (foundUser.id && foundUser.id.startsWith('user_alumni_')) ||
+                           (foundUser.title || '').toLowerCase().includes('alumni');
+
+      if (isAlumniUser) {
+        await signOut(auth);
+        setError('Akun Anda berstatus Alumni Riset (Non-Aktif). Akses sistem operasional portal laboratorium saat ini dibatasi khusus untuk mahasiswa magang aktif.');
+        setIsLoading(false);
+        return;
+      }
+
       if (foundUser.status && foundUser.status !== 'active') {
         await signOut(auth);
         setError('Akun Anda belum diaktifkan atau saat ini dinonaktifkan. Silakan hubungi Pembina Lab / Admin Laboratorium.');

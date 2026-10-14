@@ -1445,6 +1445,9 @@ export default function StudentDashboard({
                     <div className="min-w-0 flex-1">
                       <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{alumnus.name}</h4>
                       <p className="text-[10px] text-slate-500 font-medium truncate">{alumnus.title}</p>
+                      <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded bg-slate-200/80 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[9px] font-mono font-bold">
+                        Non-Aktif (Alumni)
+                      </span>
                     </div>
                   </div>
                 ))}

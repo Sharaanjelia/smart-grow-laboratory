@@ -265,7 +265,8 @@ export default function AdminDashboard({
 
 
   const pendingApplicants = applicants.filter(a => a.status === 'pending');
-  const studentUsers = users.filter(u => u.role === 'student');
+  const activeStudents = users.filter(u => u.role === 'student' && u.status === 'active');
+  const alumniUsers = users.filter(u => u.status === 'alumni');
 
   return (
     <div className="space-y-8 font-sans animate-fade-in relative">
@@ -350,10 +351,10 @@ export default function AdminDashboard({
 
             <div className="bg-white border border-slate-200/80 p-5 rounded-3xl shadow-xs flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Mahasiswa Magang (Interns)</span>
-                <p className="text-3xl font-black text-slate-900 font-display mt-1">{studentUsers.length}</p>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Mahasiswa Magang Aktif</span>
+                <p className="text-3xl font-black text-slate-900 font-display mt-1">{activeStudents.length}</p>
                 <span className="text-[11px] font-bold text-blue-600 flex items-center gap-1 mt-1">
-                  <GraduationCap className="h-3 w-3" /> Active research tracks
+                  <GraduationCap className="h-3 w-3" /> {alumniUsers.length} Alumni (Non-Aktif)
                 </span>
               </div>
               <div className="h-12 w-12 rounded-2xl bg-blue-50 border border-blue-100 text-blue-700 flex items-center justify-center">
@@ -567,7 +568,8 @@ export default function AdminDashboard({
               { id: 'ALL', label: 'Semua Akun' },
               { id: 'director', label: 'Director' },
               { id: 'assistant', label: 'Assistant' },
-              { id: 'student', label: 'Student Interns' },
+              { id: 'student', label: `Mahasiswa Magang (${activeStudents.length})` },
+              { id: 'alumni', label: `Alumni (${alumniUsers.length})` },
               { id: 'admin', label: 'Admin' },
             ].map(tab => (
               <button
@@ -600,7 +602,12 @@ export default function AdminDashboard({
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {users
-                  .filter(u => roleFilter === 'ALL' || u.role === roleFilter)
+                  .filter(u => {
+                    if (roleFilter === 'ALL') return true;
+                    if (roleFilter === 'alumni') return u.status === 'alumni';
+                    if (roleFilter === 'student') return u.role === 'student' && u.status !== 'alumni';
+                    return u.role === roleFilter;
+                  })
                   .filter(u => (u.name || '').toLowerCase().includes(userSearch.toLowerCase()) || (u.email || '').toLowerCase().includes(userSearch.toLowerCase()))
                   .map(user => (
                     <tr key={user.id} className="hover:bg-slate-50/80 transition-colors">
@@ -619,20 +626,27 @@ export default function AdminDashboard({
                       </td>
                       <td className="p-3.5">
                         <span className={`px-2.5 py-1 rounded-md font-mono text-[10px] uppercase font-bold border ${
+                          user.status === 'alumni' ? 'bg-slate-100 text-slate-700 border-slate-300' :
                           user.role === 'director' ? 'bg-amber-50 text-amber-800 border-amber-200' :
                           user.role === 'assistant' ? 'bg-blue-50 text-blue-800 border-blue-200' :
-                          user.role === 'admin' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                          user.role === 'admin' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-teal-50 text-teal-800 border-teal-200'
                         }`}>
-                          {user.role}
+                          {user.status === 'alumni' ? 'ALUMNI' : user.role}
                         </span>
                       </td>
                       <td className="p-3.5 font-mono text-slate-700">{user.studentId || '-'}</td>
                       <td className="p-3.5 text-slate-600">{user.institution || 'Telkom University'}</td>
                       <td className="p-3.5 text-slate-600 max-w-xs truncate">{user.specialty || '-'}</td>
                       <td className="p-3.5">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
-                        </span>
+                        {user.status === 'alumni' || user.status === 'inactive' ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-300 text-slate-600 text-[10px] font-bold">
+                            <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Non-Aktif (Alumni)
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                          </span>
+                        )}
                       </td>
                       <td className="p-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">

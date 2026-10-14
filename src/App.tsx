@@ -310,8 +310,32 @@ export default function App() {
     return clean === 'indrarini@telkomuniversity.ac.id' || clean === 'director@smartgrowlab.com';
   };
 
+  const ALUMNI_EMAILS = [
+    'daffa@student.telkomuniversity.ac.id',
+    'elyasa@student.telkomuniversity.ac.id',
+    'humam@student.telkomuniversity.ac.id',
+    'hannani@student.telkomuniversity.ac.id',
+    'arimbi@student.telkomuniversity.ac.id',
+    'alfachriakbar@student.telkomuniversity.ac.id'
+  ];
+
   const enforceStrictUserRole = (user: User): User => {
     const cleanEmail = (user.email || '').trim().toLowerCase();
+
+    // Automatically enforce Alumni accounts as non-active
+    if (
+      ALUMNI_EMAILS.includes(cleanEmail) || 
+      (user.id && user.id.startsWith('user_alumni_')) || 
+      user.status === 'alumni' ||
+      (user.role === 'student' && (user.title || '').toLowerCase().includes('alumni'))
+    ) {
+      return {
+        ...user,
+        role: 'student',
+        status: 'alumni'
+      };
+    }
+
     if (user.role === 'director' && !isDirectorEmail(cleanEmail)) {
       return {
         ...user,
@@ -328,12 +352,11 @@ export default function App() {
       const savedSession = localStorage.getItem('smartgrow_session_user');
       if (savedSession) {
         const parsed = JSON.parse(savedSession);
-        const dummyIds = [
-          'user_assistant_2', 'user_student_shara', 'user_student_aqila', 
-          'user_student_1', 'user_student_farid', 'user_student_sirvani', 
-          'user_student_tiara', 'user_nasywa', 'user_divia'
-        ];
-        if (parsed?.id && dummyIds.includes(parsed.id)) {
+        // Automatically revoke alumni session
+        if (parsed?.status === 'alumni' || ALUMNI_EMAILS.includes((parsed?.email || '').toLowerCase())) {
+          localStorage.removeItem('smartgrow_session_user');
+          setCurrentUser(null);
+        } else if (parsed?.id && ['user_assistant_2', 'user_student_1'].includes(parsed.id)) {
           localStorage.removeItem('smartgrow_session_user');
           setCurrentUser(null);
         } else if (parsed && (parsed.email || parsed.id)) {
@@ -475,12 +498,14 @@ export default function App() {
           const savedSession = localStorage.getItem('smartgrow_session_user');
           if (savedSession) {
             const parsed = JSON.parse(savedSession);
-            const dummyIds = [
-              'user_assistant_2', 'user_student_shara', 'user_student_aqila', 
-              'user_student_1', 'user_student_farid', 'user_student_sirvani', 
-              'user_student_tiara', 'user_nasywa', 'user_divia'
-            ];
-            if (parsed?.id && dummyIds.includes(parsed.id)) {
+            // Automatically revoke alumni session
+            if (parsed?.status === 'alumni' || ALUMNI_EMAILS.includes((parsed?.email || '').toLowerCase())) {
+              localStorage.removeItem('smartgrow_session_user');
+              setCurrentUser(null);
+              setAuthLoading(false);
+              return;
+            }
+            if (parsed?.id && ['user_assistant_2', 'user_student_1'].includes(parsed.id)) {
               localStorage.removeItem('smartgrow_session_user');
               setCurrentUser(null);
               setAuthLoading(false);

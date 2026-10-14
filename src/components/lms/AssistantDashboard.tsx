@@ -136,8 +136,8 @@ export default function AssistantDashboard({
   darkMode = false,
   language = 'id'
 }: AssistantDashboardProps) {
-  const isID = language === 'id';
   const students = (passedStudents || users.filter(u => u.role === 'student')).filter(u => u.status === 'active');
+  const allStudentsAndAlumni = users.filter(u => u.role === 'student' || u.status === 'alumni');
 
   // Modal States
   const [createTaskModalOpen, setCreateTaskModalOpen] = useState(false);
@@ -1111,7 +1111,7 @@ export default function AssistantDashboard({
           ========================================== */}
       {activeTab === 'students' && (
         <InternshipStudentsView
-          students={students}
+          students={allStudentsAndAlumni}
           tasks={tasks}
           attendance={attendance}
           projects={projects}

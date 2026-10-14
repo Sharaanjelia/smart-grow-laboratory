@@ -125,6 +125,7 @@ export default function DirectorDashboard({
   language = 'id'
 }: DirectorDashboardProps) {
   const students = users.filter(u => u.role === 'student' && u.status === 'active');
+  const alumni = users.filter(u => u.status === 'alumni');
   const pendingApprovals = approvalRequests.filter(r => r.status === 'pending');
 
   const [selectedStudent, setSelectedStudent] = useState<User | null>(null);
@@ -593,6 +594,36 @@ export default function DirectorDashboard({
                   </div>
                 );
             })}
+          </div>
+
+          {/* Alumni Riset Section */}
+          <div className="pt-6 border-t border-slate-100 dark:border-slate-700 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <span>Alumni Riset Smart Grow Lab</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-mono font-bold">
+                    {alumni.length} Alumni (Akun Non-Aktif)
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-500">Data alumni peneliti laboratorium angkatan sebelumnya. Akses login sistem berstatus non-aktif secara otomatis.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {alumni.map(alm => (
+                <div key={alm.id} className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-700/20 border border-slate-200/60 dark:border-slate-700 flex items-center gap-3.5">
+                  <img src={alm.avatar} alt={alm.name} className="w-11 h-11 rounded-xl object-cover border border-slate-200 dark:border-slate-600 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate">{alm.name}</h4>
+                    <p className="text-[10px] text-slate-500 font-medium truncate">{alm.title}</p>
+                    <span className="inline-block mt-1 px-2 py-0.5 rounded bg-slate-200/70 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[9px] font-mono font-bold">
+                      Status: Non-Aktif
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

@@ -57,7 +57,8 @@ export default function InternshipStudentsView({
                           (s.institution && s.institution.toLowerCase().includes(search.toLowerCase())) ||
                           (s.major && s.major.toLowerCase().includes(search.toLowerCase()));
     if (!matchesSearch) return false;
-    if (statusFilter !== 'all' && s.status !== statusFilter) return false;
+    if (statusFilter === 'active' && s.status !== 'active') return false;
+    if (statusFilter === 'inactive' && s.status !== 'inactive' && s.status !== 'alumni') return false;
     return true;
   });
 
@@ -165,8 +166,12 @@ export default function InternshipStudentsView({
                         />
                         <div>
                           <h4 className="font-extrabold text-slate-800 dark:text-slate-100 text-sm">{st.name}</h4>
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 text-[10px] font-bold">
-                            {st.internshipStatus || 'Mahasiswa Magang Aktif'}
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            st.status === 'alumni' || st.status === 'inactive'
+                              ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-700'
+                              : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                          }`}>
+                            {st.status === 'alumni' ? 'Alumni (Non-Aktif)' : (st.internshipStatus || 'Mahasiswa Magang Aktif')}
                           </span>
                         </div>
                       </div>
