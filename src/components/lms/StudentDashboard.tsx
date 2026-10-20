@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
 import { 
   User, 
   Task, 
   AttendanceRecord, 
   LmsProject, 
   Announcement, 
-  TaskStatus 
+  TaskStatus,
+  ApprovalRequest
 } from '../../types';
 import { initialUsers } from '../../data/lmsData';
 import ProfileView from './ProfileView';
@@ -57,6 +58,8 @@ import {
   Search,
   Filter,
   Plus,
+  Edit3,
+  Trash2,
   Settings as SettingsIcon,
   Bell,
   Shield,
@@ -77,6 +80,9 @@ interface StudentDashboardProps {
   attendance: AttendanceRecord[];
   projects: LmsProject[];
   announcements: Announcement[];
+  approvalRequests?: ApprovalRequest[];
+  onCreateApprovalRequest?: (req: Omit<ApprovalRequest, 'id' | 'createdAt' | 'status'>) => void;
+  onDeleteApprovalRequest?: (id: string) => void;
   onCheckIn: (studentId: string, studentName: string, photoUrl?: string, locationName?: string, coords?: any) => void;
   onCheckOut: (studentId: string, dailyNotes?: string, locationAddress?: string, coords?: any) => void;
   onSubmitTaskProgress: (
@@ -97,6 +103,9 @@ export default function StudentDashboard({
   attendance,
   projects,
   announcements,
+  approvalRequests = [],
+  onCreateApprovalRequest,
+  onDeleteApprovalRequest,
   onCheckIn,
   onCheckOut,
   onSubmitTaskProgress,
@@ -256,7 +265,74 @@ export default function StudentDashboard({
     ]
   );
   const [newLogbookText, setNewLogbookText] = useState('');
+  const [editingLogbook, setEditingLogbook] = useState<any | null>(null);
   const [showLogbookModal, setShowLogbookModal] = useState(false);
+  const [realtimeLogbooks, setRealtimeLogbooks] = useState<any[]>([]);
+
+  // Persistent Firestore listener for student logbooks
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const q = query(
+      collection(db, 'student_logbooks'),
+      where('studentId', '==', currentUser.id)
+    );
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const entries = snapshot.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        }));
+        setRealtimeLogbooks(entries);
+      } else {
+        setRealtimeLogbooks([]);
+      }
+    }, (err) => {
+      console.warn('Realtime logbook listener notice:', err?.message);
+    });
+
+    return () => unsub();
+  }, [currentUser?.id]);
+
+  const displayLogbooks = realtimeLogbooks.length > 0 ? realtimeLogbooks : logbookEntries;
+
+  // --- Realtime Student Approval Requests State ---
+  const [realtimeStudentRequests, setRealtimeStudentRequests] = useState<ApprovalRequest[]>([]);
+  const [newRequestModalOpen, setNewRequestModalOpen] = useState(false);
+  const [requestCategory, setRequestCategory] = useState<ApprovalRequest['type']>('leave_request');
+  const [requestTitle, setRequestTitle] = useState('');
+  const [requestDescription, setRequestDescription] = useState('');
+  const [requestAmount, setRequestAmount] = useState<string>('');
+  const [requestAttachmentUrl, setRequestAttachmentUrl] = useState('');
+  const [requestStatusFilter, setRequestStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const q = query(
+      collection(db, 'approval_requests'),
+      where('studentId', '==', currentUser.id)
+    );
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const records = snapshot.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        })) as ApprovalRequest[];
+        setRealtimeStudentRequests(records);
+      } else {
+        setRealtimeStudentRequests([]);
+      }
+    }, (err) => {
+      console.warn('Realtime student approval requests listener notice:', err?.message);
+    });
+
+    return () => unsub();
+  }, [currentUser?.id]);
+
+  const displayRequests = realtimeStudentRequests.length > 0 
+    ? realtimeStudentRequests 
+    : (approvalRequests || []).filter(r => r.studentId === currentUser.id);
 
   // Submit Form States
   const [notes, setNotes] = useState('');
@@ -283,21 +359,70 @@ export default function StudentDashboard({
     setDocsUrl('');
   };
 
-  const handleAddLogbook = (e: React.FormEvent) => {
+  const handleSaveLogbook = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newLogbookText.trim()) return;
-    const newEntry = {
-      id: `log_${Date.now()}`,
-      date: new Date().toISOString().split('T')[0],
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' WIB',
-      description: newLogbookText,
-      mentorComment: 'Menunggu peninjauan pembimbing lab.',
-      status: 'Pending Review',
-      image: '/images/harvest-team-bg.jpg'
-    };
-    setLogbookEntries([newEntry, ...logbookEntries]);
+
+    try {
+      if (editingLogbook) {
+        await updateDoc(doc(db, 'student_logbooks', editingLogbook.id), {
+          description: newLogbookText.trim(),
+          updatedAt: new Date().toISOString()
+        });
+      } else {
+        const entryData = {
+          studentId: currentUser.id,
+          studentName: currentUser.name || 'Mahasiswa Magang',
+          date: getTodayDateJakarta(),
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' WIB',
+          description: newLogbookText.trim(),
+          mentorComment: 'Menunggu peninjauan pembimbing lab.',
+          status: 'Pending Review',
+          image: '/images/harvest-team-bg.jpg',
+          createdAt: new Date().toISOString()
+        };
+        await addDoc(collection(db, 'student_logbooks'), entryData);
+        setLogbookEntries(prev => [{ id: `log_${Date.now()}`, ...entryData }, ...prev]);
+      }
+    } catch (err) {
+      console.error('Error saving logbook to firestore:', err);
+    }
+
     setNewLogbookText('');
+    setEditingLogbook(null);
     setShowLogbookModal(false);
+  };
+
+  const handleDeleteLogbook = async (entryId: string) => {
+    if (!confirm('Hapus entri jurnal logbook ini?')) return;
+    try {
+      await deleteDoc(doc(db, 'student_logbooks', entryId));
+      setLogbookEntries(prev => prev.filter(e => e.id !== entryId));
+    } catch (err) {
+      console.error('Error deleting logbook from firestore:', err);
+    }
+  };
+
+  const handleSubmitApprovalRequest = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!requestTitle.trim() || !requestDescription.trim() || !onCreateApprovalRequest) return;
+
+    onCreateApprovalRequest({
+      studentId: currentUser.id,
+      studentName: currentUser.name || 'Mahasiswa Magang',
+      type: requestCategory,
+      title: requestTitle.trim(),
+      description: requestDescription.trim(),
+      amount: requestAmount ? Number(requestAmount) : undefined,
+      attachmentUrl: requestAttachmentUrl.trim() || undefined,
+      date: getTodayDateJakarta()
+    });
+
+    setRequestTitle('');
+    setRequestDescription('');
+    setRequestAmount('');
+    setRequestAttachmentUrl('');
+    setNewRequestModalOpen(false);
   };
 
   // Learning Materials Sample Data
@@ -338,10 +463,6 @@ export default function StudentDashboard({
     { id: 'doc_6', title: 'Sertifikat Magang Riset SGL', status: 'Issued', date: '2026-07-01', type: 'Certificate' }
   ];
 
-  // Render Profile View if profile tab is active
-  if (activeTab === 'profile') {
-    return <ProfileView currentUser={currentUser} darkMode={darkMode} />;
-  }
 
   // Render Attendance View if attendance tab is active
   if (activeTab === 'attendance') {
@@ -417,6 +538,7 @@ export default function StudentDashboard({
   const isOverview = activeTab === 'overview' || !activeTab;
   const isInternship = activeTab === 'internship';
   const isTasks = activeTab === 'tasks';
+  const isRequests = activeTab === 'requests';
   const isAnnouncements = activeTab === 'announcements';
   const isMentor = activeTab === 'mentor';
 
@@ -1295,6 +1417,78 @@ export default function StudentDashboard({
             </div>
           </div>
 
+          {/* OFFICIAL DIRECTOR EVALUATION & GRADE TRANSCRIPT */}
+          {(currentUser.grade || currentUser.finalScore || currentUser.internshipEvaluation) && (
+            <section className="p-6 sm:p-8 rounded-[28px] bg-gradient-to-br from-emerald-50 via-white to-emerald-50/40 dark:from-slate-900 dark:via-emerald-950/20 dark:to-slate-900 border-2 border-emerald-500/40 shadow-xl space-y-6 animate-fade-in">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-100 dark:border-emerald-800/40 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-2xl bg-[#355E3B] text-white shadow-md">
+                    <Award className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono uppercase font-bold text-emerald-700 dark:text-emerald-300 tracking-wider">
+                      Transkrip Akademik Resmi Laboratorium
+                    </span>
+                    <h2 className="font-display text-xl font-black text-slate-900 dark:text-white">
+                      Hasil Evaluasi & Nilai Resmi Pembina Lab
+                    </h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Disahkan oleh {currentUser.internshipEvaluation?.evaluatorName || 'Prof. Dr. Indrarini Dyah Irawati, S.T., M.T.'} (Direktur SGL)
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="px-4 py-2 rounded-2xl bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 text-center shadow-xs">
+                    <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Nilai Akhir</span>
+                    <span className="text-2xl font-black text-[#355E3B] dark:text-emerald-300">
+                      {currentUser.finalScore ?? currentUser.internshipEvaluation?.finalScore ?? 92}/100
+                    </span>
+                  </div>
+                  <div className="px-5 py-2 rounded-2xl bg-[#355E3B] text-white text-center shadow-md">
+                    <span className="text-[10px] font-mono uppercase font-bold text-emerald-200 block">Huruf Mutu</span>
+                    <span className="text-2xl font-black">{currentUser.grade || currentUser.internshipEvaluation?.grade || 'A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-emerald-100 dark:border-slate-700">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Presensi & Kehadiran (25%)</span>
+                  <span className="text-lg font-bold text-slate-800 dark:text-slate-100 font-mono">
+                    {currentUser.internshipEvaluation?.attendanceScore ?? 95}%
+                  </span>
+                  <p className="text-[11px] text-slate-500 mt-1">Disiplin check-in & kehadiran di lab BTP</p>
+                </div>
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-emerald-100 dark:border-slate-700">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Penyelesaian Tugas Riset (50%)</span>
+                  <span className="text-lg font-bold text-slate-800 dark:text-slate-100 font-mono">
+                    {currentUser.internshipEvaluation?.taskScore ?? 92}%
+                  </span>
+                  <p className="text-[11px] text-slate-500 mt-1">Ketuntasan sprint modul & kode program</p>
+                </div>
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-emerald-100 dark:border-slate-700">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Sikap, Inisiatif & Kolaborasi (25%)</span>
+                  <span className="text-lg font-bold text-slate-800 dark:text-slate-100 font-mono">
+                    {currentUser.internshipEvaluation?.attitudeScore ?? 94}%
+                  </span>
+                  <p className="text-[11px] text-slate-500 mt-1">Kerjasama tim riset & kepatuhan SOP lab</p>
+                </div>
+              </div>
+
+              {(currentUser.advisorNotes || currentUser.internshipEvaluation?.advisorNotes) && (
+                <div className="p-4 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-emerald-200/80 dark:border-slate-700">
+                  <span className="text-[10px] font-mono text-[#355E3B] dark:text-emerald-400 uppercase font-bold block mb-1">
+                    Catatan Pembina Laboratorium:
+                  </span>
+                  <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed italic">
+                    "{currentUser.advisorNotes || currentUser.internshipEvaluation?.advisorNotes}"
+                  </p>
+                </div>
+              )}
+            </section>
+          )}
+
           {/* Featured Project Showcase */}
           <section className="p-6 sm:p-8 rounded-[28px] bg-white dark:bg-slate-900 border border-black/[0.06] dark:border-slate-800 shadow-[0_20px_60px_rgba(0,0,0,0.05)] space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -1373,7 +1567,7 @@ export default function StudentDashboard({
               {initialUsers.filter(u => u.role === 'student' && u.status !== 'alumni').map((student) => (
                 <div key={student.id} className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 flex items-center gap-3.5 hover:border-emerald-500/40 hover:bg-white dark:hover:bg-slate-800 transition-all">
                   <img
-                    src={student.avatar || '/images/team/placeholder.jpg'}
+                    src={resolveUserAvatar(student)}
                     alt={student.name}
                     className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shrink-0"
                   />
@@ -1405,7 +1599,7 @@ export default function StudentDashboard({
                 {initialUsers.filter(u => u.status === 'alumni').map((alumnus) => (
                   <div key={alumnus.id} className="p-3 rounded-xl bg-slate-50/50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 flex items-center gap-3">
                     <img
-                      src={alumnus.avatar || '/images/team/placeholder.jpg'}
+                      src={resolveUserAvatar(alumnus)}
                       alt={alumnus.name}
                       className="w-10 h-10 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0"
                     />
@@ -1440,27 +1634,49 @@ export default function StudentDashboard({
             </div>
 
             <div className="space-y-4">
-              {logbookEntries.length === 0 ? (
+              {displayLogbooks.length === 0 ? (
                 <div className="p-8 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
                   <p className="text-xs text-slate-400 font-medium">Belum ada jurnal logbook yang dicatat. Mulai catat aktivitas lab Anda hari ini!</p>
                 </div>
               ) : (
-                logbookEntries.map(entry => (
+                displayLogbooks.map(entry => (
                   <div key={entry.id} className="p-5 rounded-2xl bg-slate-50/70 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700 flex flex-col md:flex-row items-start gap-5">
-                    <img src={entry.image} alt="Logbook thumbnail" className="w-full md:w-32 h-24 object-cover rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs shrink-0" />
+                    <img src={entry.image || '/images/harvest-team-bg.jpg'} alt="Logbook thumbnail" className="w-full md:w-32 h-24 object-cover rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs shrink-0" />
                     <div className="space-y-2 flex-1">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-mono font-bold text-[#355E3B] dark:text-emerald-400">{entry.date} • {entry.time}</span>
-                        <span className={`text-[10px] font-mono font-extrabold px-2.5 py-0.5 rounded-full ${
-                          entry.status === 'Verified' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300'
-                        }`}>
-                          {entry.status}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-mono font-extrabold px-2.5 py-0.5 rounded-full ${
+                            entry.status === 'Verified' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300'
+                          }`}>
+                            {entry.status}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingLogbook(entry);
+                              setNewLogbookText(entry.description);
+                              setShowLogbookModal(true);
+                            }}
+                            className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                            title="Edit Jurnal"
+                          >
+                            <Edit3 className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteLogbook(entry.id)}
+                            className="p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 text-slate-400 hover:text-red-600 transition-colors"
+                            title="Hapus Jurnal"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </div>
                       <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 leading-relaxed">{entry.description}</p>
                       <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300">
                         <span className="font-bold text-[#355E3B] dark:text-emerald-400">Catatan Pembimbing: </span>
-                        {entry.mentorComment}
+                        {entry.mentorComment || 'Menunggu peninjauan pembimbing lab.'}
                       </div>
                     </div>
                   </div>
@@ -1581,7 +1797,7 @@ export default function StudentDashboard({
                 <div key={asst.id} className="p-6 rounded-2xl bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-emerald-500/40 hover:bg-white dark:hover:bg-slate-800 transition-all shadow-xs">
                   <div className="flex items-start sm:items-center gap-4 flex-1 min-w-0">
                     <img
-                      src={asst.avatar || '/images/team/placeholder.jpg'}
+                      src={resolveUserAvatar(asst)}
                       alt={asst.name}
                       className="w-16 h-16 rounded-2xl object-cover border-2 border-white dark:border-slate-700 shadow-md shrink-0"
                     />
@@ -1745,6 +1961,164 @@ export default function StudentDashboard({
       )}
 
       {/* ========================================================================= */}
+      {/* TAB VIEW: PENGAJUAN & PERIZINAN LAB (isRequests)                          */}
+      {/* ========================================================================= */}
+      {isRequests && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 sm:p-8 rounded-[28px] bg-gradient-to-r from-emerald-950 via-[#355E3B] to-[#203a24] text-white shadow-xl relative overflow-hidden">
+            <div className="relative z-10 space-y-2">
+              <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-200 border border-white/20">
+                Modul Otorisasi & Perizinan Magang
+              </span>
+              <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-white">Pengajuan & Permohonan Laboratorium</h1>
+              <p className="text-xs sm:text-sm text-emerald-100/90 max-w-2xl leading-relaxed">
+                Ajukan permohonan izin tidak hadir/sakit, dispensasi jadwal kuliah, anggaran komponen sensor IoT, izin riset lapangan, atau klaim sertifikat langsung ke Direktur Laboratorium.
+              </p>
+            </div>
+            <div className="relative z-10 shrink-0">
+              <button
+                onClick={() => {
+                  setRequestTitle('');
+                  setRequestDescription('');
+                  setRequestAmount('');
+                  setRequestAttachmentUrl('');
+                  setRequestCategory('leave_request');
+                  setNewRequestModalOpen(true);
+                }}
+                className="px-5 py-3 rounded-2xl bg-white hover:bg-emerald-50 text-[#355E3B] font-bold text-xs flex items-center gap-2 shadow-lg transition-all active:scale-95 cursor-pointer"
+              >
+                <Plus className="h-4 w-4 text-[#355E3B]" />
+                <span>+ Ajukan Permohonan Baru</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Filter Bar */}
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-slate-400" />
+              <span className="font-semibold text-slate-600 dark:text-slate-300">Filter Status:</span>
+              <div className="flex gap-1.5">
+                {(['all', 'pending', 'approved', 'rejected'] as const).map(st => (
+                  <button
+                    key={st}
+                    onClick={() => setRequestStatusFilter(st)}
+                    className={`px-3 py-1.5 rounded-xl font-bold uppercase text-[10px] transition-all cursor-pointer ${
+                      requestStatusFilter === st
+                        ? 'bg-[#355E3B] text-white shadow-xs'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    {st === 'all' ? 'Semua' : st === 'pending' ? 'Menunggu' : st === 'approved' ? 'Disetujui' : 'Ditolak'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <span className="text-slate-400 font-mono text-[11px]">
+              Total: {displayRequests.length} Permohonan
+            </span>
+          </div>
+
+          {/* Requests List */}
+          <div className="space-y-4">
+            {displayRequests.filter(r => requestStatusFilter === 'all' || r.status === requestStatusFilter).length === 0 ? (
+              <div className="p-12 text-center rounded-[28px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
+                <FileCheck className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto" />
+                <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">Belum Ada Pengajuan</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Anda belum memiliki pengajuan atau izin pada filter ini. Klik tombol di atas untuk mengajukan permohonan baru kepada Direktur Lab.
+                </p>
+              </div>
+            ) : (
+              displayRequests
+                .filter(r => requestStatusFilter === 'all' || r.status === requestStatusFilter)
+                .map(req => (
+                  <div
+                    key={req.id}
+                    className="p-6 rounded-[24px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-emerald-500/30 transition-all space-y-3"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase ${
+                          req.type === 'leave_request' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
+                          req.type === 'iot_budget' ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' :
+                          req.type === 'academic_dispensation' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' :
+                          req.type === 'certificate_claim' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
+                          'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                        }`}>
+                          {req.type === 'leave_request' ? 'Izin Tidak Hadir / Sakit' :
+                           req.type === 'academic_dispensation' ? 'Dispensasi Akademik' :
+                           req.type === 'iot_budget' ? 'Pengadaan Alat / Anggaran IoT' :
+                           req.type === 'field_research' ? 'Izin Riset Lapangan' :
+                           req.type === 'journal_submission' ? 'Publikasi Jurnal / Paper' :
+                           req.type === 'certificate_claim' ? 'Klaim Sertifikat Magang' : req.type}
+                        </span>
+                        <span className="text-[11px] font-mono text-slate-400">{req.date}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1 ${
+                          req.status === 'approved' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
+                          req.status === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300' :
+                          'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                        }`}>
+                          {req.status === 'approved' ? '✓ Disetujui Direktur' :
+                           req.status === 'rejected' ? '✕ Ditolak' :
+                           '⏳ Menunggu Review Pembina'}
+                        </span>
+
+                        {req.status === 'pending' && onDeleteApprovalRequest && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm('Batalkan pengajuan ini?')) {
+                                onDeleteApprovalRequest(req.id);
+                              }
+                            }}
+                            className="p-1 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
+                            title="Batalkan Permohonan"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">{req.title}</h3>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{req.description}</p>
+                    </div>
+
+                    {(req.amount || req.attachmentUrl) && (
+                      <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-slate-500">
+                        {req.amount && (
+                          <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
+                            Biaya yang Diajukan: Rp {Number(req.amount).toLocaleString('id-ID')}
+                          </span>
+                        )}
+                        {req.attachmentUrl && (
+                          <a
+                            href={req.attachmentUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-[#355E3B] dark:text-emerald-400 font-bold hover:underline"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            <span>Lihat Berkas Lampiran</span>
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
       {/* MODALS: TASK PROGRESS SUBMIT MODAL */}
       {/* ========================================================================= */}
       {submitTaskModal && (
@@ -1815,18 +2189,27 @@ export default function StudentDashboard({
         </div>
       )}
 
-      {/* MODAL: LOGBOOK ADD ENTRY */}
+      {/* MODAL: LOGBOOK ADD / EDIT ENTRY */}
       {showLogbookModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-white dark:bg-slate-900 rounded-[28px] border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full p-6 space-y-5">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="font-display font-bold text-base text-slate-900 dark:text-white">Tambah Jurnal Harian Logbook</h3>
-              <button onClick={() => setShowLogbookModal(false)} className="text-slate-400 hover:text-slate-600 p-1">
+              <h3 className="font-display font-bold text-base text-slate-900 dark:text-white">
+                {editingLogbook ? 'Edit Jurnal Harian Logbook' : 'Tambah Jurnal Harian Logbook'}
+              </h3>
+              <button 
+                onClick={() => {
+                  setEditingLogbook(null);
+                  setNewLogbookText('');
+                  setShowLogbookModal(false);
+                }} 
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={handleAddLogbook} className="space-y-4">
+            <form onSubmit={handleSaveLogbook} className="space-y-4">
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Deskripsi Riset & Aktivitas Lab Hari Ini:</label>
                 <textarea
@@ -1835,23 +2218,136 @@ export default function StudentDashboard({
                   value={newLogbookText}
                   onChange={(e) => setNewLogbookText(e.target.value)}
                   placeholder="Tuliskan aktivitas laboratorium hari ini secara mendalam..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#F6F8F2] dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-[#355E3B]"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#F6F8F2] dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-[#355E3B] text-slate-800 dark:text-slate-100"
                 />
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowLogbookModal(false)}
-                  className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl"
+                  onClick={() => {
+                    setEditingLogbook(null);
+                    setNewLogbookText('');
+                    setShowLogbookModal(false);
+                  }}
+                  className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#355E3B] text-white text-xs font-bold shadow-md"
+                  className="px-5 py-2 rounded-xl bg-[#355E3B] hover:bg-[#2A4B2F] text-white text-xs font-bold shadow-md cursor-pointer transition-all active:scale-95"
                 >
-                  Simpan Jurnal Logbook
+                  {editingLogbook ? 'Simpan Perubahan' : 'Simpan Jurnal Logbook'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: NEW APPROVAL REQUEST */}
+      {newRequestModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+              <h3 className="font-display font-bold text-base text-slate-900 dark:text-slate-100">
+                Formulir Pengajuan & Perizinan Baru
+              </h3>
+              <button onClick={() => setNewRequestModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitApprovalRequest} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 font-semibold mb-1">
+                  Kategori Permohonan
+                </label>
+                <select
+                  value={requestCategory}
+                  onChange={(e) => setRequestCategory(e.target.value as any)}
+                  required
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold"
+                >
+                  <option value="leave_request">Izin Tidak Hadir / Sakit / Kendala Darurat</option>
+                  <option value="academic_dispensation">Dispensasi Jadwal Akademik Kampus / Ujian</option>
+                  <option value="iot_budget">Pengajuan Anggaran / Pengadaan Komponen IoT</option>
+                  <option value="field_research">Izin Pengujian Lapangan Smart Agriculture</option>
+                  <option value="journal_submission">Pengajuan Publikasi Paper / Jurnal</option>
+                  <option value="certificate_claim">Klaim Sertifikat Selesai Magang Riset</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 font-semibold mb-1">
+                  Subjek / Judul Pengajuan
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={requestTitle}
+                  onChange={(e) => setRequestTitle(e.target.value)}
+                  placeholder="Contoh: Izin Sakit Tanggal 20 Oktober 2026 / Pengadaan Sensor EC"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 font-semibold mb-1">
+                  Alasan & Keterangan Rinci
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  value={requestDescription}
+                  onChange={(e) => setRequestDescription(e.target.value)}
+                  placeholder="Jelaskan alasan pengajuan secara komprehensif kepada Direktur Lab..."
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100"
+                />
+              </div>
+
+              {requestCategory === 'iot_budget' && (
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-200 font-semibold mb-1">
+                    Estimasi Anggaran yang Diajukan (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    value={requestAmount}
+                    onChange={(e) => setRequestAmount(e.target.value)}
+                    placeholder="Contoh: 350000"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100 font-mono"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 font-semibold mb-1">
+                  URL Lampiran / Surat Bukti (Google Drive / PDF / Foto Dokter)
+                </label>
+                <input
+                  type="url"
+                  value={requestAttachmentUrl}
+                  onChange={(e) => setRequestAttachmentUrl(e.target.value)}
+                  placeholder="https://drive.google.com/..."
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setNewRequestModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 font-semibold cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#355E3B] hover:bg-emerald-700 text-white font-bold shadow-md cursor-pointer transition-colors"
+                >
+                  Kirim Pengajuan ke Pembina
                 </button>
               </div>
             </form>
@@ -1868,17 +2364,6 @@ export default function StudentDashboard({
           darkMode={darkMode}
         />
       )}
-
-      {/* CHECK-IN CAMERA & GEOLOCATION MODAL */}
-      <CheckInCameraModal
-        isOpen={showCheckInModal}
-        onClose={() => setShowCheckInModal(false)}
-        studentName={currentUser.name}
-        darkMode={darkMode}
-        onConfirmCheckIn={async (photoUrl, locAddress) => {
-          await onCheckIn(currentUser.id, currentUser.name, photoUrl, locAddress);
-        }}
-      />
 
       {/* ADD RESEARCH PROGRESS MODAL */}
       {showAddProgressModal && (

@@ -21,7 +21,12 @@ import {
   X,
   Camera,
   Zap,
-  Cpu
+  Cpu,
+  Download,
+  Sparkles,
+  Layers,
+  Recycle,
+  Leaf
 } from 'lucide-react';
 import { ProjectItem, Comment } from '../types';
 
@@ -40,8 +45,11 @@ export default function MopsShowcase({
 }: MopsShowcaseProps) {
   
   const hardwareImageUrl = '/images/mops/mops-hardware-installation.png';
+  const logoImageUrl = '/images/mops/mops-logo.png';
+  const logoBadgeUrl = '/images/mops/mops-logo-badge.jpg';
   const officialWebUrl = 'https://mops-5f51b.web.app/';
   const [modalImage, setModalImage] = useState<string | null>(null);
+  const [modalTitle, setModalTitle] = useState<string>('');
   const [copiedLink, setCopiedLink] = useState(false);
 
   // Comment Form States
@@ -112,16 +120,6 @@ export default function MopsShowcase({
         </div>
 
         <div className="flex items-center gap-2.5">
-          <a
-            href={officialWebUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm hover:scale-105 cursor-pointer"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            <span>Kunjungi Website Resmi MOPS</span>
-          </a>
-
           <button
             onClick={handleShare}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
@@ -138,45 +136,74 @@ export default function MopsShowcase({
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-emerald-400/15 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/4 -mb-20 w-80 h-80 rounded-full bg-teal-300/15 blur-2xl pointer-events-none" />
 
-        <div className="relative z-10 max-w-4xl space-y-4">
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          
+          {/* Left Column: Headlines & Actions */}
+          <div className="lg:col-span-8 space-y-4">
+            <h1 className="font-display text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight drop-shadow-sm">
+              MOPS: Sistem Monitoring & Operasional Persampahan Kota Bandung
+            </h1>
 
-          <h1 className="font-display text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight drop-shadow-sm">
-            MOPS: Sistem Monitoring & Operasional Persampahan Kota Bandung
-          </h1>
+            <p className="text-base sm:text-lg text-emerald-50/95 font-medium leading-relaxed max-w-2xl">
+              Platform Smart City berbasis IoT dan Web yang dirancang secara komprehensif untuk memantau kondisi volume sampah di Tempat Pembuangan Sementara (TPS) se-Kota Bandung secara real-time, mencegah terjadinya luberan sampah, dan mengefisiensikan rute logistik armada truk sampah Dinas Lingkungan Hidup (DLH).
+            </p>
 
-          <p className="text-base sm:text-lg text-emerald-50/95 font-medium leading-relaxed max-w-3xl">
-            Platform Smart City berbasis IoT dan Web yang dirancang secara komprehensif untuk memantau kondisi volume sampah di Tempat Pembuangan Sementara (TPS) se-Kota Bandung secara real-time, mencegah terjadinya luberan sampah, dan mengefisiensikan rute logistik armada truk sampah Dinas Lingkungan Hidup (DLH).
-          </p>
+            <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-emerald-200 font-mono">
+              <span>Riset & Inovasi: <strong>Smart Grow Laboratory</strong> (Telkom University)</span>
+              <span>Target Wilayah: <strong>TPS Prioritas Kota Bandung</strong></span>
+            </div>
 
-          <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-emerald-200 font-mono">
-            <span>Riset & Inovasi: <strong>Smart Grow Laboratory</strong> (Telkom University)</span>
-            <span>Target Wilayah: <strong>TPS Prioritas Kota Bandung</strong></span>
+            {/* Primary Action Button */}
+            <div className="pt-3 flex flex-wrap items-center gap-3">
+              <a
+                href={officialWebUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs shadow-xl transition-all hover:scale-105"
+              >
+                <Eye className="h-4 w-4 text-slate-950" />
+                <span>Buka Website Resmi MOPS (mops-5f51b.web.app)</span>
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </div>
           </div>
 
-          {/* Primary Action Buttons */}
-          <div className="pt-3 flex flex-wrap items-center gap-3">
-            <a
-              href={officialWebUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs shadow-xl transition-all hover:scale-105"
-            >
-              <Eye className="h-4 w-4 text-slate-950" />
-              <span>Buka Website Resmi MOPS (mops-5f51b.web.app)</span>
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-
-            <button
-              onClick={() => {
-                const el = document.getElementById('hardware-section');
-                el?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs backdrop-blur-md border border-white/20 transition-all cursor-pointer"
-            >
-              <Maximize2 className="h-4 w-4 text-emerald-300" />
-              <span>Lihat Dokumentasi Tiang Hardware</span>
-            </button>
+          {/* Right Column: Smart City Telemetry Specs Card (Replaces duplicate logo) */}
+          <div className="lg:col-span-4 bg-slate-950/40 backdrop-blur-md rounded-3xl p-6 text-white border border-emerald-400/25 shadow-xl space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
+                <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                Smart City Specs
+              </span>
+              <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-400/30">
+                Live Active
+              </span>
+            </div>
+            
+            <div className="space-y-3 pt-1 text-xs">
+              <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                <span className="text-slate-300">Hardware Node:</span>
+                <span className="font-bold text-white">Tiang Baja Galvanis TPS</span>
+              </div>
+              <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                <span className="text-slate-300">Sensor Utama:</span>
+                <span className="font-bold text-emerald-300">Laser ToF (TOF400F)</span>
+              </div>
+              <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                <span className="text-slate-300">Visual Feed:</span>
+                <span className="font-bold text-teal-300">CCTV Outdoor IP67</span>
+              </div>
+              <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                <span className="text-slate-300">Akses Sistem:</span>
+                <span className="font-bold text-white">Role-Based (Admin/Spv/Ops)</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-300">Fokus Kota:</span>
+                <span className="font-bold text-amber-300">Bandung Bebas Sampah</span>
+              </div>
+            </div>
           </div>
+
         </div>
       </section>
 
@@ -201,6 +228,136 @@ export default function MopsShowcase({
           <span className="text-[11px] font-mono text-slate-400 uppercase block">Pencegahan Luberan</span>
           <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">78%</div>
           <span className="text-[11px] text-slate-500">Reduksi Sampah Meluap</span>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* IDENTITAS VISUAL & FILOSOFI LOGO MOPS */}
+      {/* ========================================================================= */}
+      <section id="logo-section" className="space-y-6 pt-2">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
+              Logo Resmi & Filosofi MOPS
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-2xl mt-1">
+              Identitas visual resmi yang dirancang untuk mewakili visi Bandung Smart City: integrasi teknologi telemetri IoT dengan kelestarian lingkungan dan optimalisasi armada kebersihan kota.
+            </p>
+          </div>
+        </div>
+
+        {/* Logo Cards & Philosophy Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          
+          {/* Left: Main Logo Card */}
+          <div className="lg:col-span-5 flex flex-col">
+            
+            {/* Main Logo Card */}
+            <div 
+              onClick={() => {
+                setModalImage(logoImageUrl);
+                setModalTitle('Logo Resmi MOPS Kota Bandung (Resolusi Penuh)');
+              }}
+              className="group cursor-pointer rounded-3xl bg-white dark:bg-slate-900 border-2 border-emerald-500/20 hover:border-emerald-500 p-6 sm:p-8 shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-between text-center relative overflow-hidden h-full"
+            >
+              <div className="w-full flex items-center justify-between mb-4 text-[11px] font-mono font-bold text-slate-400">
+                <span className="px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                  Logo Primer Resmi
+                </span>
+                <span className="flex items-center gap-1 text-emerald-600 font-bold">
+                  <Maximize2 className="h-3.5 w-3.5" /> Zoom HD
+                </span>
+              </div>
+
+              <div className="w-full aspect-square max-w-[280px] bg-white rounded-2xl p-6 flex items-center justify-center my-auto">
+                <img
+                  src={logoImageUrl}
+                  alt="Logo Resmi MOPS"
+                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 w-full text-center">
+                <h4 className="text-base font-extrabold text-slate-900 dark:text-white">
+                  Logo Resmi MOPS Kota Bandung
+                </h4>
+                <p className="text-xs text-slate-500 font-mono mt-1">
+                  Format Vektor Resolusi Tinggi • Standar Publikasi & Branding
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Right: 4 Philosophy Cards */}
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            {/* Filosofi 1: Huruf M & Daun Hijau */}
+            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 hover:border-emerald-500/50 transition-all space-y-2.5 shadow-sm">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                <Leaf className="h-5 w-5" />
+              </div>
+              <div className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase">
+                Makna Filosofi 01
+              </div>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                Huruf M Bertunas Daun (Eco-Growth)
+              </h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Menyatukan inisial <em>Monitoring & Operasional</em> dengan siluet daun hijau, merepresentasikan misi riset Smart Grow Laboratory yang berpihak pada keberlanjutan alam dan penghijauan perkotaan.
+              </p>
+            </div>
+
+            {/* Filosofi 2: Siklus Daur Ulang 3R */}
+            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 hover:border-teal-500/50 transition-all space-y-2.5 shadow-sm">
+              <div className="w-10 h-10 rounded-2xl bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                <Recycle className="h-5 w-5" />
+              </div>
+              <div className="text-[10px] font-mono font-bold text-teal-600 dark:text-teal-400 uppercase">
+                Makna Filosofi 02
+              </div>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                Siklus Panah 3R pada Huruf O
+              </h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Tiga panah sirkular pada huruf O mencerminkan implementasi nyata <em>Reduce, Reuse, Recycle</em> serta sirkular ekonomi persampahan di tingkat TPS warga Kota Bandung.
+              </p>
+            </div>
+
+            {/* Filosofi 3: Truk Logistik Armada DLH */}
+            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 hover:border-amber-500/50 transition-all space-y-2.5 shadow-sm">
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                <Truck className="h-5 w-5" />
+              </div>
+              <div className="text-[10px] font-mono font-bold text-amber-600 dark:text-amber-400 uppercase">
+                Makna Filosofi 03
+              </div>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                Truk Armada Pengangkut Cepat
+              </h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Simbol kecepatan pergerakan logistik pengangkutan sampah DLH yang dipandu otomatis oleh telemetri sensor ToF, mencegah TPS penuh meluber ke jalan raya.
+              </p>
+            </div>
+
+            {/* Filosofi 4: Lingkaran Pengawasan 360 */}
+            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 hover:border-emerald-500/50 transition-all space-y-2.5 shadow-sm">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                <Layers className="h-5 w-5" />
+              </div>
+              <div className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase">
+                Makna Filosofi 04
+              </div>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                Lingkaran Sirkular Dinamis 360°
+              </h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Bingkai melingkar mengelilingi inisial melambangkan sistem pengawasan komprehensif 24/7 di seluruh penjuru Bandung menuju target <em>Bandung Bebas Sampah</em>.
+              </p>
+            </div>
+
+          </div>
+
         </div>
       </section>
 
@@ -253,9 +410,6 @@ export default function MopsShowcase({
                 </span>
               </div>
             </div>
-            <p className="text-[11px] text-slate-500 font-mono mt-3 text-center">
-              Dokumentasi Teknis Tiang Pemantau MOPS: Tampak Depan, Tampak Samping, dan Tampak Atas Lapangan TPS.
-            </p>
           </div>
 
           {/* Right: Component Descriptions matching the diagram */}
@@ -673,26 +827,49 @@ export default function MopsShowcase({
       {/* FULL-SCREEN IMAGE MODAL */}
       {modalImage && (
         <div 
-          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setModalImage(null)}
         >
           <div 
-            className="relative max-w-5xl max-h-[90vh] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl p-3 shadow-2xl overflow-hidden flex flex-col items-center"
+            className="relative max-w-4xl w-full max-h-[92vh] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 shadow-2xl overflow-hidden flex flex-col items-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              onClick={() => setModalImage(null)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white border border-white/20 transition-all z-20 cursor-pointer"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <img
-              src={modalImage}
-              alt="Diagram Instalasi Hardware Tiang MOPS"
-              className="w-full max-h-[82vh] object-contain rounded-2xl"
-            />
-            <div className="py-2 text-center text-xs font-mono text-slate-600 dark:text-slate-400">
-              Dokumentasi Instalasi Tiang Hardware MOPS (Tampak Depan, Samping, dan Atas)
+            {/* Modal Header */}
+            <div className="w-full flex items-center justify-between pb-3 mb-2 border-b border-slate-100 dark:border-slate-800">
+              <span className="text-xs sm:text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400 truncate max-w-[80%]">
+                {modalTitle || 'Visual Media MOPS'}
+              </span>
+              <div className="flex items-center gap-2">
+                <a
+                  href={modalImage}
+                  download="mops-asset.png"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 text-slate-700 dark:text-slate-300 hover:text-emerald-600 text-xs font-semibold transition-all cursor-pointer"
+                  title="Unduh Gambar"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Unduh</span>
+                </a>
+                <button
+                  onClick={() => setModalImage(null)}
+                  className="p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950 text-slate-700 dark:text-slate-300 hover:text-rose-600 transition-all cursor-pointer"
+                  title="Tutup (Esc)"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Image Body */}
+            <div className="w-full flex-1 flex items-center justify-center bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-2 sm:p-4 overflow-hidden">
+              <img
+                src={modalImage}
+                alt={modalTitle || "Visual Media MOPS"}
+                className="max-w-full max-h-[72vh] object-contain rounded-xl shadow-xs"
+              />
+            </div>
+
+            <div className="pt-2 text-center text-xs text-slate-500 dark:text-slate-400 font-sans">
+              Smart Grow Laboratory • Inovasi MOPS Bandung Smart City
             </div>
           </div>
         </div>

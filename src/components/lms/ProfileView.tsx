@@ -68,15 +68,15 @@ export default function ProfileView({
 
   // Editable Profile Form State
   const [name, setName] = useState(currentUser.name || '');
-  const [studentId, setStudentId] = useState(currentUser.studentId || (isDirector ? 'NIP. 197804122005012002' : ''));
-  const [institution, setInstitution] = useState(currentUser.institution || '');
-  const [major, setMajor] = useState(currentUser.major || (isDirector ? 'Teknik Komputer & Sistem Cerdas' : ''));
-  const [semester, setSemester] = useState(currentUser.semester || (isDirector ? 'Guru Besar / Profesor' : ''));
-  const [phone, setPhone] = useState(currentUser.phone || '');
-  const [address, setAddress] = useState(currentUser.address || '');
+  const [studentId, setStudentId] = useState(currentUser.studentId || (isDirector ? 'NIP. 197608122003122001' : ''));
+  const [institution, setInstitution] = useState(currentUser.institution || (isDirector ? 'Telkom University' : ''));
+  const [major, setMajor] = useState(currentUser.major || (isDirector ? 'Teknik Elektro / Telekomunikasi' : ''));
+  const [semester, setSemester] = useState(currentUser.semester || (isDirector ? 'Dosen Pembimbing Utama & Guru Besar' : ''));
+  const [phone, setPhone] = useState(currentUser.phone || (isDirector ? '+62 (022) 7564108' : ''));
+  const [address, setAddress] = useState(currentUser.address || (isDirector ? 'Bandung Techno Park (BTP) Lt. 2, Kampus Utama Telkom University, Bandung' : ''));
   const [bio, setBio] = useState(
     currentUser.bio || (isDirector 
-      ? 'Kepala Laboratorium Smart Grow & Profesor Riset bidang Wireless Communications, IoT Sensors, & Precision Smart Agriculture. Berfokus pada penderesan inovasi pertanian pintar berbasis AI & Container Hydroponics.'
+      ? 'Guru Besar dan Peneliti Utama dalam bidang IoT dan Telekomunikasi di Telkom University. Berfokus pada pengembangan riset sistem pertanian cerdas terintegrasi berbasis kecerdasan buatan dan jaringan sensor nirkabel.'
       : '')
   );
   const [github, setGithub] = useState(currentUser.github || '');
@@ -89,13 +89,15 @@ export default function ProfileView({
   // Sync internal form state whenever currentUser prop updates
   useEffect(() => {
     setName(currentUser.name || '');
-    setStudentId(currentUser.studentId || (isDirector ? 'NIP. 197804122005012002' : ''));
-    setInstitution(currentUser.institution || '');
-    setMajor(currentUser.major || (isDirector ? 'Teknik Komputer & Sistem Cerdas' : ''));
-    setSemester(currentUser.semester || (isDirector ? 'Guru Besar / Profesor' : ''));
-    setPhone(currentUser.phone || '');
-    setAddress(currentUser.address || '');
-    setBio(currentUser.bio || '');
+    setStudentId(currentUser.studentId || (isDirector ? 'NIP. 197608122003122001' : ''));
+    setInstitution(currentUser.institution || (isDirector ? 'Telkom University' : ''));
+    setMajor(currentUser.major || (isDirector ? 'Teknik Elektro / Telekomunikasi' : ''));
+    setSemester(currentUser.semester || (isDirector ? 'Dosen Pembimbing Utama & Guru Besar' : ''));
+    setPhone(currentUser.phone || (isDirector ? '+62 (022) 7564108' : ''));
+    setAddress(currentUser.address || (isDirector ? 'Bandung Techno Park (BTP) Lt. 2, Kampus Utama Telkom University, Bandung' : ''));
+    setBio(currentUser.bio || (isDirector 
+      ? 'Guru Besar dan Peneliti Utama dalam bidang IoT dan Telekomunikasi di Telkom University. Berfokus pada pengembangan riset sistem pertanian cerdas terintegrasi berbasis kecerdasan buatan dan jaringan sensor nirkabel.'
+      : ''));
     setGithub(currentUser.github || '');
     setLinkedin(currentUser.linkedin || '');
     setPortfolio(currentUser.portfolio || '');

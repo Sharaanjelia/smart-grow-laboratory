@@ -111,6 +111,19 @@ export interface User {
   patenSubtitle?: string;
   totalMahasiswaOverride?: string;
   mahasiswaSubtitle?: string;
+  finalScore?: number;
+  grade?: string;
+  advisorNotes?: string;
+  internshipEvaluation?: {
+    finalScore?: number;
+    technicalScore?: number;
+    disciplineScore?: number;
+    initiativeScore?: number;
+    grade?: string;
+    evalNotes?: string;
+    evaluatedBy?: string;
+    evalDate?: string;
+  };
 }
 
 export interface PendingRegistration {
@@ -261,11 +274,31 @@ export interface ApprovalRequest {
   studentId: string;
   studentName: string;
   title: string;
-  type: 'leave' | 'task_review' | 'project_completion' | 'equipment_access';
+  type: 'leave' | 'sick' | 'task_review' | 'project_completion' | 'equipment_access' | 'research_permit' | 'certificate_claim' | string;
   description: string;
   status: 'pending' | 'approved' | 'rejected';
   date: string;
   reviewedBy?: string;
+  reviewNotes?: string;
+  attachmentUrl?: string;
+  createdAt?: string;
+}
+
+export interface LogbookEntry {
+  id: string;
+  studentId: string;
+  studentName: string;
+  date: string;
+  time: string;
+  activityTitle: string;
+  description: string;
+  category?: string;
+  status: 'Pending Review' | 'Verified' | 'Needs Revision';
+  mentorComment?: string;
+  githubUrl?: string;
+  docsUrl?: string;
+  photoUrl?: string;
+  createdAt?: string;
 }
 
 export interface LmsNotification {

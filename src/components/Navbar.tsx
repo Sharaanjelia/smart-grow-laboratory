@@ -33,6 +33,17 @@ export default function Navbar({
   onOpenLogin 
 }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Detect scroll to style fixed navbar dynamically
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 8);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Close drawer on escape key
   useEffect(() => {
@@ -87,7 +98,11 @@ export default function Navbar({
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-slate-100 bg-white/95 backdrop-blur-md transition-shadow duration-200">
+      <header className={`fixed top-0 left-0 right-0 z-40 w-full transition-all duration-300 ${
+        isScrolled 
+          ? 'border-b border-slate-200/90 bg-white/95 backdrop-blur-md shadow-sm shadow-slate-900/5' 
+          : 'border-b border-slate-100 bg-white/95 backdrop-blur-md'
+      }`}>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:py-4 sm:px-6 lg:px-8">
           
           {/* Brand Logo */}
@@ -175,6 +190,9 @@ export default function Navbar({
 
         </div>
       </header>
+
+      {/* Spacer to preserve natural layout under fixed navbar */}
+      <div className="h-[65px] sm:h-[73px] w-full shrink-0" aria-hidden="true" />
 
       {/* MOBILE SIDEBAR / DRAWER MENU */}
       {isMobileMenuOpen && (

@@ -102,7 +102,9 @@ import {
   Leaf,
   Calendar,
   MessageSquare,
-  ExternalLink
+  ExternalLink,
+  Instagram,
+  Maximize2
 } from 'lucide-react';
 
 const parseUrlNavigationState = () => {
@@ -144,6 +146,7 @@ export default function App() {
 
   const [projectCategory, setProjectCategory] = useState<string>('All');
   const [joinModalOpen, setJoinModalOpen] = useState(false);
+  const [projectLightboxImage, setProjectLightboxImage] = useState<{ url: string; title: string; category?: string } | null>(null);
 
   // ==========================================
   // LABORATORY MANAGEMENT SYSTEM (LMS) STATE
@@ -340,10 +343,79 @@ export default function App() {
       return {
         ...user,
         role: 'student',
-        title: user.title === 'Kepala & Direktur Utama Smart Grow Laboratory' ? 'Mahasiswa Magang Riset' : (user.title || 'Mahasiswa Magang Riset')
+        title: (user.title === 'Kepala & Direktur Utama Smart Grow Laboratory' || user.title === 'Pembina Lab & Dosen Pembimbing Utama') ? 'Mahasiswa Magang Riset' : (user.title || 'Mahasiswa Magang Riset')
       };
     }
     return user;
+  };
+
+  // Strictly deduplicates and canonicalizes laboratory users to the official 18-member roster
+  const deduplicateLabUsers = (rawList: User[]): User[] => {
+    const userMap = new Map<string, User>();
+
+    // 1. Seed with baseline canonical profiles (1 Director, 1 Assistant, 1 Admin, 9 Active Interns, 6 Alumni = 18 members)
+    for (const base of initialUsers) {
+      const canonicalKey = (base.email || '').trim().toLowerCase();
+      userMap.set(canonicalKey, base);
+    }
+
+    // 2. Overlay live Firestore data, merging duplicates and stripping legacy test accounts
+    for (const raw of rawList) {
+      const email = (raw.email || '').trim().toLowerCase();
+      const name = (raw.name || '').trim().toLowerCase();
+
+      // Skip test/dummy accounts
+      if (
+        email.includes('mayaindah') ||
+        name.includes('maya indah') ||
+        raw.id === 'user_1785383027950'
+      ) {
+        continue;
+      }
+
+      // Determine canonical key
+      let canonicalKey = email;
+      if (raw.role === 'director' || email.includes('indrarini') || name.includes('indrarini')) {
+        canonicalKey = 'indrarini@telkomuniversity.ac.id';
+      } else if (raw.role === 'assistant' || email.includes('azliny') || name.includes('azliny')) {
+        canonicalKey = 'azliny@telkomuniversity.ac.id';
+      } else if (raw.role === 'admin' || email.includes('admin@smartgrowlab')) {
+        canonicalKey = 'admin@smartgrowlab.com';
+      } else {
+        const matched = initialUsers.find(iu => 
+          (iu.email && iu.email.toLowerCase() === email) ||
+          (iu.name && iu.name.toLowerCase() === name) ||
+          (iu.studentId && raw.studentId && iu.studentId === raw.studentId)
+        );
+        if (matched && matched.email) {
+          canonicalKey = matched.email.toLowerCase();
+        }
+      }
+
+      const existing = userMap.get(canonicalKey);
+      if (existing) {
+        // Prefer real Firebase Auth UID (alphanumeric without 'user_' or 'preg_' prefix)
+        const preferUid = (raw.id && !raw.id.startsWith('user_') && !raw.id.startsWith('preg_'))
+          ? raw.id
+          : existing.id;
+
+        userMap.set(canonicalKey, enforceStrictUserRole({
+          ...existing,
+          ...raw,
+          id: preferUid,
+          name: existing.name || raw.name,
+          studentId: raw.studentId || existing.studentId,
+          specialty: raw.specialty || existing.specialty,
+          avatar: raw.avatar || existing.avatar,
+          status: ALUMNI_EMAILS.includes(canonicalKey) ? 'alumni' : (raw.status || existing.status)
+        }));
+      } else if (raw.role && (raw.name || raw.email)) {
+        // Genuine new approved user (e.g. approved applicant)
+        userMap.set(canonicalKey, enforceStrictUserRole(raw));
+      }
+    }
+
+    return Array.from(userMap.values());
   };
 
   useEffect(() => {
@@ -724,6 +796,16 @@ export default function App() {
     saveToFirestore('announcements', annObj.id, annObj);
   };
 
+  const handleUpdateAnnouncement = async (updatedAnn: Announcement) => {
+    setAnnouncements(prev => prev.map(a => a.id === updatedAnn.id ? updatedAnn : a));
+    saveToFirestore('announcements', updatedAnn.id, updatedAnn);
+  };
+
+  const handleDeleteAnnouncement = async (annId: string) => {
+    setAnnouncements(prev => prev.filter(a => a.id !== annId));
+    deleteFromFirestore('announcements', annId);
+  };
+
   // NOTE: One-time getDocs fetch removed — realtime onSnapshot listeners below provide
   // initial data load AND continuous updates, eliminating duplicate fetching.
   // Public data (news, projects) loaded via public listener (always active).
@@ -965,6 +1047,92 @@ export default function App() {
       }
       return r;
     }));
+  };
+
+  const handleCreateApprovalRequest = async (req: Omit<ApprovalRequest, 'id' | 'status' | 'date'>) => {
+    const newReq: ApprovalRequest = {
+      ...req,
+      id: `req_${Date.now()}`,
+      status: 'pending',
+      date: getTodayDateJakarta(),
+      createdAt: new Date().toISOString()
+    };
+    setApprovalRequests(prev => [newReq, ...prev]);
+    saveToFirestore('approval_requests', newReq.id, newReq);
+
+    const logObj: SystemLog = {
+      id: `log_${Date.now()}`,
+      timestamp: new Date().toLocaleString('id-ID'),
+      user: req.studentName,
+      action: 'PENGAJUAN_IZIN_APPROVAL',
+      details: `Mengajukan permohonan baru: "${req.title}" (Kategori: ${req.type})`
+    };
+    setSystemLogs(prev => [logObj, ...prev]);
+    saveToFirestore('system_logs', logObj.id, logObj);
+  };
+
+  const handleDeleteApprovalRequest = async (requestId: string) => {
+    setApprovalRequests(prev => prev.filter(r => r.id !== requestId));
+    deleteFromFirestore('approval_requests', requestId);
+  };
+
+  const handleCorrectAttendance = async (recordId: string, updatedData: Partial<AttendanceRecord>, reason: string) => {
+    setAttendance(prev => prev.map(a => {
+      if (a.id === recordId) {
+        const updated = { ...a, ...updatedData, updatedAt: new Date().toISOString() };
+        saveToFirestore('attendance', recordId, updated);
+        return updated;
+      }
+      return a;
+    }));
+
+    const logObj: SystemLog = {
+      id: `log_${Date.now()}`,
+      timestamp: new Date().toLocaleString('id-ID'),
+      user: currentUser?.name || 'Director/Assistant',
+      action: 'KOREKSI_PRESENSI',
+      details: `Koreksi presensi ID ${recordId}: ${reason}`
+    };
+    setSystemLogs(prev => [logObj, ...prev]);
+    saveToFirestore('system_logs', logObj.id, logObj);
+  };
+
+  const handleUpdateStudentEvaluation = async (studentId: string, evaluation: any) => {
+    const finalScore = evaluation.finalScore ?? evaluation.internshipEvaluation?.finalScore;
+    const grade = evaluation.grade ?? evaluation.internshipEvaluation?.grade;
+    const advisorNotes = evaluation.advisorNotes || evaluation.evalNotes || evaluation.internshipEvaluation?.advisorNotes || '';
+    const fullEvaluation = evaluation.internshipEvaluation || evaluation;
+
+    setUsers(prev => prev.map(u => {
+      if (u.id === studentId || u.studentId === studentId) {
+        const updated: User = {
+          ...u,
+          internshipEvaluation: fullEvaluation,
+          finalScore: finalScore,
+          grade: grade,
+          advisorNotes: advisorNotes
+        };
+        saveToFirestore('users', u.id, updated);
+        saveToFirestore('internship_evaluations', u.id, {
+          studentId: u.id,
+          studentName: u.name,
+          ...fullEvaluation,
+          updatedAt: new Date().toISOString()
+        });
+        return updated;
+      }
+      return u;
+    }));
+
+    const logObj: SystemLog = {
+      id: `log_${Date.now()}`,
+      timestamp: new Date().toLocaleString('id-ID'),
+      user: currentUser?.name || 'Direktur Lab',
+      action: 'EVALUASI_MAHASISWA',
+      details: `Input evaluasi nilai akhir untuk mahasiswa ID ${studentId}: Nilai ${evaluation.finalScore} (Grade ${evaluation.grade})`
+    };
+    setSystemLogs(prev => [logObj, ...prev]);
+    saveToFirestore('system_logs', logObj.id, logObj);
   };
 
   const handleCreateUser = async (newUser: Omit<User, 'id' | 'joinedDate'>) => {
@@ -1231,6 +1399,12 @@ export default function App() {
         snapshot.forEach(docSnap => {
           const data = docSnap.data() as ProjectItem;
           if (data && data.id) {
+            // Keep official updated logos from built-in projectsData
+            const builtIn = projectsData.find(p => p.id === data.id);
+            if (builtIn && builtIn.image && (builtIn.image.includes('logo') || builtIn.image.includes('mops') || builtIn.image.includes('htci'))) {
+              data.image = builtIn.image;
+              data.gallery = builtIn.gallery || data.gallery;
+            }
             projectMap.set(data.id, data);
           }
         });
@@ -1238,7 +1412,7 @@ export default function App() {
       setProjectsList(Array.from(projectMap.values()));
     }, (err) => console.warn('Projects listener notice:', err));
 
-    // Auto-sync smart-tbn, smart-water, mops, and sapa-jamiyyah to Firestore
+    // Auto-sync smart-tbn, smart-water, mops, htci, and sapa-jamiyyah to Firestore
     const smartTbnProject = projectsData.find(p => p.id === 'smart-tbn');
     if (smartTbnProject) {
       setDoc(doc(db, 'projects', 'smart-tbn'), JSON.parse(JSON.stringify(smartTbnProject)), { merge: true }).catch(() => {});
@@ -1250,6 +1424,11 @@ export default function App() {
     const mopsProject = projectsData.find(p => p.id === 'mops');
     if (mopsProject) {
       setDoc(doc(db, 'projects', 'mops'), JSON.parse(JSON.stringify(mopsProject)), { merge: true }).catch(() => {});
+    }
+    const htciProject = projectsData.find(p => p.id === 'proj_1788926059725' || p.id === 'htci');
+    if (htciProject) {
+      setDoc(doc(db, 'projects', htciProject.id), JSON.parse(JSON.stringify(htciProject)), { merge: true }).catch(() => {});
+      setDoc(doc(db, 'projects', 'htci'), JSON.parse(JSON.stringify(htciProject)), { merge: true }).catch(() => {});
     }
     const sapaJamiyyahProject = projectsData.find(p => p.id === 'sapa-jamiyyah');
     if (sapaJamiyyahProject) {
@@ -1310,10 +1489,11 @@ export default function App() {
             const raw = docSnap.data() as User;
             list.push(enforceStrictUserRole(raw));
           });
-          setUsers(list);
+          const deduplicated = deduplicateLabUsers(list);
+          setUsers(deduplicated);
           setCurrentUser(prev => {
             if (!prev) return null;
-            const updatedFromDb = list.find(u => u.id === prev.id || (u.email && prev.email && u.email.toLowerCase() === prev.email.toLowerCase()));
+            const updatedFromDb = deduplicated.find(u => u.id === prev.id || (u.email && prev.email && u.email.toLowerCase() === prev.email.toLowerCase()));
             return updatedFromDb ? enforceStrictUserRole({ ...prev, ...updatedFromDb }) : enforceStrictUserRole(prev);
           });
         }
@@ -1549,7 +1729,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-white text-slate-800 font-sans selection:bg-teal-500 selection:text-white relative">
+    <div className="min-h-screen w-full overflow-x-clip bg-white text-slate-800 font-sans selection:bg-teal-500 selection:text-white relative">
       <ToastContainer />
       
       {/* Subtle light background hints */}
@@ -1571,6 +1751,7 @@ export default function App() {
       {currentPage === 'login' && (
         <LoginView 
           users={users} 
+          tasks={tasks}
           onLogin={handleLogin} 
           onRegister={(newUser) => setUsers(prev => [newUser, ...prev])}
           onPendingRegister={(newPending) => setPendingRegistrations(prev => [newPending, ...prev])}
@@ -1632,6 +1813,8 @@ export default function App() {
               onApproveApplicant={handleApproveApplicant}
               onRejectApplicant={handleRejectApplicant}
               onCreateAnnouncement={handleCreateAnnouncement}
+              onUpdateAnnouncement={handleUpdateAnnouncement}
+              onDeleteAnnouncement={handleDeleteAnnouncement}
               onCreateProject={handleCreateLmsProject}
               onUpdateProject={handleUpdateLmsProject}
               onDeleteProject={handleDeleteLmsProject}
@@ -1646,6 +1829,14 @@ export default function App() {
               }}
               onUpdateProfile={handleUpdateUser}
               onDeleteStudent={handleDeleteUser}
+              onCreateTask={handleCreateTask}
+              onUpdateTask={handleUpdateTask}
+              onDeleteTask={handleDeleteTask}
+              onApproveTask={handleApproveTask}
+              onRejectTask={handleRejectTask}
+              onRequestRevision={handleRequestRevision}
+              onCorrectAttendance={handleCorrectAttendance}
+              onUpdateStudentEvaluation={handleUpdateStudentEvaluation}
               darkMode={darkMode}
               language={language}
             />
@@ -1655,6 +1846,7 @@ export default function App() {
             <AssistantDashboard
               currentUser={currentUser}
               activeTab={lmsActiveTab}
+              users={users}
               tasks={tasks}
               attendance={attendance}
               projects={lmsProjects}
@@ -1677,6 +1869,8 @@ export default function App() {
               onApproveApplicant={handleApproveApplicant}
               onRejectApplicant={handleRejectApplicant}
               onCreateAnnouncement={handleCreateAnnouncement}
+              onUpdateAnnouncement={handleUpdateAnnouncement}
+              onDeleteAnnouncement={handleDeleteAnnouncement}
               onCreateProject={handleCreateLmsProject}
               onUpdateProject={handleUpdateLmsProject}
               onDeleteProject={handleDeleteLmsProject}
@@ -1704,6 +1898,9 @@ export default function App() {
               attendance={attendance}
               projects={lmsProjects}
               announcements={announcements}
+              approvalRequests={approvalRequests}
+              onCreateApprovalRequest={handleCreateApprovalRequest}
+              onDeleteApprovalRequest={handleDeleteApprovalRequest}
               onCheckIn={handleCheckIn}
               onCheckOut={handleCheckOut}
               onSubmitTaskProgress={handleSubmitTaskProgress}
@@ -1753,6 +1950,7 @@ export default function App() {
         ) : (
           <LoginView 
             users={users} 
+            tasks={tasks}
             onLogin={handleLogin} 
             onRegister={(newUser) => setUsers(prev => [newUser, ...prev])}
             onPendingRegister={(newPending) => setPendingRegistrations(prev => [newPending, ...prev])}
@@ -1789,11 +1987,6 @@ export default function App() {
                 {/* Right Side (7 Cols): Headline, Subtext, CTAs & Metrics */}
                 <div className="lg:col-span-7 lg:col-start-6 flex flex-col items-start text-left space-y-5 bg-white/45 backdrop-blur-2xl backdrop-saturate-150 p-6 sm:p-8 rounded-3xl border border-white/60 shadow-2xl">
                   
-                  {/* Glassmorphic Pill Tag */}
-                  <div className="inline-flex items-center gap-2.5 rounded-full border border-emerald-800/40 bg-white/70 backdrop-blur-xl px-4 py-1.5 text-xs font-sans font-extrabold tracking-widest text-[#0A5247] uppercase shadow-sm">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#058257] animate-pulse shadow-[0_0_12px_#058257]"></span>
-                    <span>SMART GROW LABORATORY • TELKOM UNIVERSITY</span>
-                  </div>
 
                   {/* Headline */}
                   <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-[#0A5247] leading-[1.15] drop-shadow-xs">
@@ -1802,7 +1995,7 @@ export default function App() {
                   </h1>
 
                   {/* Description */}
-                  <p className="max-w-2xl text-xs sm:text-sm leading-relaxed text-slate-900 font-sans font-bold">
+                  <p className="max-w-2xl text-sm sm:text-base leading-relaxed text-slate-800 font-sans font-medium">
                     Integrated research and innovation hub focused on developing intelligent agricultural systems, bridging electrical automation with organic plant physiology.
                   </p>
 
@@ -1840,13 +2033,13 @@ export default function App() {
             <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 mb-6">
               <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#0A5247] via-[#084239] to-[#042823] p-8 sm:p-12 text-white shadow-xl shadow-emerald-950/15 border border-emerald-700/30 flex flex-col lg:flex-row items-center justify-between gap-8">
                 <div className="space-y-3 text-center lg:text-left max-w-2xl">
-                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-emerald-300 text-[10px] font-mono font-bold uppercase tracking-widest">
+                  <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-emerald-300 text-xs font-mono font-bold uppercase tracking-widest">
                     KOLABORASI & TALENTA RISET
                   </span>
                   <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
                     Tertarik Berkolaborasi atau Bergabung dalam Riset Kami?
                   </h3>
-                  <p className="text-xs sm:text-sm text-emerald-100/80 leading-relaxed font-sans">
+                  <p className="text-sm sm:text-base text-emerald-100/90 leading-relaxed font-sans">
                     Smart Grow Laboratory membuka peluang kemitraan industri, riset bersama, dan program magang intensif bagi mahasiswa berdedikasi.
                   </p>
                 </div>
@@ -1877,7 +2070,7 @@ export default function App() {
             
             {!selectedNewsId ? (
               <>
-                <div className="flex flex-col gap-2 mb-10">
+                <div className="flex flex-col gap-2 mb-7">
                   <h1 className="font-display text-4xl font-bold text-slate-900 md:text-5xl">
                     News & Events
                   </h1>
@@ -1986,7 +2179,7 @@ export default function App() {
             {!selectedProjectId ? (
               <>
                 {/* Section Header */}
-                <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+                <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-7">
                   <div className="flex flex-col gap-2">
                     <h1 className="font-display text-4xl font-extrabold text-slate-900 md:text-5xl tracking-tight">
                       Projek R&D Hub
@@ -2045,13 +2238,24 @@ export default function App() {
                         >
                           <div className="space-y-5">
                             {/* Card Media Preview */}
-                            <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-950">
+                            <div className={`relative aspect-video w-full overflow-hidden rounded-2xl border transition-all ${
+                              project.id === 'smart-water' ? 'border-sky-200 bg-white shadow-inner' : 
+                              project.id === 'mops' ? 'border-emerald-200 bg-white shadow-inner' :
+                              project.id === 'proj_1788926059725' || project.id === 'htci' ? 'border-teal-200 bg-white shadow-inner' :
+                              'border-slate-100 bg-slate-950'
+                            }`}>
                               <img
                                 src={resolveImageUrl(project.image)}
                                 alt={project.title}
                                 referrerPolicy="no-referrer"
                                 className={`h-full w-full transition-transform duration-700 group-hover:scale-105 ${
-                                  (project.image || '').includes('logo') || (project.image || '').includes('poster') || (project.image || '').includes('brochure') || (project.image || '').includes('mops') || (project.image || '').includes('sapa') || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water' || project.id === 'mops' || project.id === 'sapa-jamiyyah'
+                                  project.id === 'smart-water'
+                                    ? 'object-contain p-3.5 bg-white'
+                                    : project.id === 'mops'
+                                    ? 'object-contain p-3 bg-white'
+                                    : project.id === 'proj_1788926059725' || project.id === 'htci'
+                                    ? 'object-contain p-3 bg-white'
+                                    : (project.image || '').includes('logo') || (project.image || '').includes('poster') || (project.image || '').includes('brochure') || (project.image || '').includes('sapa') || project.id === 'smart-tbn' || project.id === 'sapa-jamiyyah'
                                     ? 'object-contain p-2 bg-slate-950' 
                                     : 'object-cover object-center'
                                 }`}
@@ -2059,7 +2263,9 @@ export default function App() {
                                   (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg';
                                 }}
                               />
-                              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent" />
+                              {project.id !== 'smart-water' && project.id !== 'mops' && project.id !== 'proj_1788926059725' && project.id !== 'htci' && (
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent" />
+                              )}
                               
                               {/* Overlay Category Tag */}
                               <div className="absolute top-4 left-4 flex gap-2">
@@ -2068,20 +2274,25 @@ export default function App() {
                                 </span>
                               </div>
 
-                              {/* Direct Website / App Badge if liveUrl exists */}
-                              {(project.liveUrl || project.id === 'sapa-jamiyyah' || project.id === 'flocify' || project.id === 'mops' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
-                                <a
-                                  href={project.liveUrl || (project.id === 'sapa-jamiyyah' ? 'https://www.sapajamiyyah.com/' : project.id === 'flocify' ? 'https://ppmtelkom.vercel.app/' : project.id === 'mops' ? 'https://mops-5f51b.web.app/' : project.id === 'smart-tbn' ? 'https://smarttrash.devtbn.tech/' : project.id === 'smart-water' ? 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing' : 'https://htci.netlify.app/')}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/80 hover:bg-emerald-600 text-white text-[11px] font-bold backdrop-blur-md border border-white/20 transition-all hover:scale-105 shadow-md z-10"
-                                  title={project.id === 'smart-water' ? 'Unduh Aplikasi Smart Water' : `Kunjungi Website Resmi ${project.title}`}
+                              {/* Direct Website / App Badge & Buka Gambar Button */}
+                              <div className="absolute top-4 right-4 flex items-center gap-1.5 z-10">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setProjectLightboxImage({
+                                      url: resolveImageUrl(project.image),
+                                      title: project.title,
+                                      category: project.category
+                                    });
+                                  }}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-900/80 hover:bg-sky-600 text-white text-[11px] font-bold backdrop-blur-md border border-white/20 transition-all hover:scale-105 shadow-md cursor-pointer"
+                                  title={`Buka & Perbesar Gambar ${project.title}`}
                                 >
-                                  <span>{project.id === 'smart-water' || (project.liveUrl || '').includes('drive.google.com') ? 'Unduh App' : 'Kunjungi Web'}</span>
-                                  <ExternalLink className="h-3 w-3" />
-                                </a>
-                              )}
+                                  <Maximize2 className="h-3 w-3" />
+                                  <span>Buka Gambar</span>
+                                </button>
+                              </div>
                               
                               {/* Overlay Date Badge */}
                               <div className="absolute bottom-4 left-4 flex items-center gap-1.5 bg-slate-950/70 border border-white/10 backdrop-blur-md px-3 py-1 rounded-full text-[10px] text-white font-mono font-medium">
@@ -2448,50 +2659,30 @@ export default function App() {
             {(() => {
               const mentor = teamList.find(m => m.role === 'Pembina Lab' || m.role === 'Mentor');
               if (!mentor) return null;
-              const pilrekUrl = mentor.profileUrl || 'https://pilrek.telkomuniversity.ac.id/indrarini-dyah-irawati/';
+              const pilrekUrl = mentor.profileUrl || 'https://www.instagram.com/indrarini_dya/';
               return (
-                <div className="mx-auto max-w-3xl bg-white border border-slate-100 p-6 sm:p-8 rounded-3xl mb-12 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-sm group">
+                <div className="mx-auto max-w-3xl bg-white border border-slate-100 p-6 sm:p-8 rounded-3xl mb-8 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-sm group">
                   
-                  {/* Mentor Graphic Avatar section matching real photo - Clickable Link */}
-                  <a 
-                    href={pilrekUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Buka Profil Resmi Prof. Dr. Indrarini Dyah Irawati (Pilrek Telkom University)"
-                    className="relative w-44 h-52 shrink-0 rounded-2xl overflow-hidden shadow-md group/avatar cursor-pointer block border-2 border-transparent hover:border-pink-500 transition-all duration-300"
-                  >
+                  {/* Mentor Graphic Avatar section matching real photo */}
+                  <div className="relative w-44 h-52 shrink-0 rounded-2xl overflow-hidden shadow-md group/avatar block border border-slate-100">
                     <TeamAvatar id={mentor.id} name={mentor.name} className="w-full h-full group-hover/avatar:scale-105 transition-transform duration-300" />
-                    <div className="absolute inset-0 bg-pink-950/40 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 text-center">
-                      <span className="bg-white/95 text-pink-700 text-[10px] font-extrabold px-3 py-1 rounded-full shadow-lg border border-pink-200 flex items-center gap-1 font-mono">
-                        <span>Buka Profil Resmi</span>
-                        <ExternalLink className="h-3 w-3" />
-                      </span>
-                    </div>
-                  </a>
+                  </div>
 
                   <div className="flex-1 space-y-3 text-left">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="rounded bg-pink-50 border border-pink-200 px-2.5 py-0.5 font-sans text-[10px] font-bold text-pink-700 uppercase tracking-wider">
+                        <span className="rounded bg-pink-50 border border-pink-200 px-2.5 py-0.5 font-sans text-xs font-bold text-pink-700 uppercase tracking-wider">
                           {mentor.role}
                         </span>
-                        <span className="text-slate-400 font-sans text-[9px] font-bold">PEMBINA LAB SMART GROW</span>
+                        <span className="text-slate-400 font-sans text-xs font-semibold">PEMBINA LAB SMART GROW</span>
                       </div>
-                      <a
-                        href={pilrekUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block group/link"
-                      >
-                        <h2 className="font-display text-xl font-bold text-slate-900 group-hover/link:text-pink-600 transition-colors flex items-center gap-2">
-                          <span>{mentor.name}</span>
-                          <ExternalLink className="h-4 w-4 text-pink-500 opacity-70 group-hover/link:opacity-100 group-hover/link:translate-x-0.5 transition-all" />
-                        </h2>
-                      </a>
+                      <h2 className="font-display text-xl font-bold text-slate-900">
+                        {mentor.name}
+                      </h2>
                       <p className="font-sans text-xs font-bold text-teal-600 mt-1">{mentor.email}</p>
                     </div>
 
-                    <p className="text-xs text-slate-600 leading-relaxed font-sans">
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
                       {mentor.bio}
                     </p>
 
@@ -2502,7 +2693,8 @@ export default function App() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-700 font-sans font-bold text-xs transition-all shadow-2xs group/btn cursor-pointer"
                       >
-                        <span>Lihat Profil Pilrek Telkom University</span>
+                        <Instagram className="h-3.5 w-3.5 text-pink-600" />
+                        <span>Lihat Profil Instagram (@indrarini_dya)</span>
                         <ExternalLink className="h-3.5 w-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
                       </a>
                     </div>
@@ -2510,7 +2702,7 @@ export default function App() {
                     {/* Skills badges */}
                     <div className="flex flex-wrap gap-2 pt-1">
                       {mentor.skills.map(s => (
-                        <span key={s} className="rounded-full bg-slate-50 border border-slate-200 px-2.5 py-0.5 font-sans text-[9px] text-slate-600 font-medium">
+                        <span key={s} className="rounded-full bg-slate-50 border border-slate-200 px-2.5 py-0.5 font-sans text-[11px] text-slate-600 font-medium">
                           #{s.toLowerCase()}
                         </span>
                       ))}
@@ -2525,23 +2717,23 @@ export default function App() {
               const assistant = teamList.find(m => m.id === 'member-azliny' || m.role.toLowerCase().includes('asisten'));
               if (!assistant) return null;
               return (
-                <div className="mx-auto max-w-3xl bg-white border border-slate-100 p-5 sm:p-6 rounded-3xl mb-12 flex flex-col sm:flex-row items-center gap-6 relative overflow-hidden shadow-sm">
+                <div className="mx-auto max-w-3xl bg-white border border-slate-100 p-5 sm:p-6 rounded-3xl mb-8 flex flex-col sm:flex-row items-center gap-6 relative overflow-hidden shadow-sm">
                   <div className="relative w-36 h-44 shrink-0 rounded-2xl overflow-hidden shadow-md">
                     <TeamAvatar id={assistant.id} name={assistant.name} className="w-full h-full" />
                   </div>
                   <div className="flex-1 space-y-2 text-left">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="rounded bg-amber-50 border border-amber-200 px-2.5 py-0.5 font-sans text-[10px] font-bold text-amber-700 uppercase tracking-wider">
+                      <span className="rounded bg-amber-50 border border-amber-200 px-2.5 py-0.5 font-sans text-xs font-bold text-amber-700 uppercase tracking-wider">
                         {assistant.role}
                       </span>
-                      <span className="text-slate-400 font-sans text-[9px] font-bold">KOORDINATOR RISET & OPERASIONAL</span>
+                      <span className="text-slate-400 font-sans text-xs font-semibold">KOORDINATOR RISET & OPERASIONAL</span>
                     </div>
                     <h3 className="font-display text-xl font-bold text-slate-900">{assistant.name}</h3>
                     <p className="font-sans text-xs font-bold text-teal-600">{assistant.email}</p>
-                    <p className="text-xs text-slate-600 leading-relaxed font-sans">{assistant.bio}</p>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">{assistant.bio}</p>
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {assistant.skills.map(s => (
-                        <span key={s} className="rounded-full bg-slate-50 border border-slate-200 px-2.5 py-0.5 font-sans text-[9px] text-slate-600 font-medium">
+                        <span key={s} className="rounded-full bg-slate-50 border border-slate-200 px-2.5 py-0.5 font-sans text-[11px] text-slate-600 font-medium">
                           #{s.toLowerCase()}
                         </span>
                       ))}
@@ -2582,7 +2774,7 @@ export default function App() {
                       <div className="relative aspect-4/3 w-full rounded-xl overflow-hidden shadow-xs">
                         <TeamAvatar id={member.id} name={member.name} className="w-full h-full" />
                         <div className="absolute top-2 left-2 z-10 max-w-[88%]">
-                          <span className="inline-block rounded-full bg-slate-950/85 backdrop-blur-md border border-slate-700/60 px-2 py-0.5 font-sans text-[9px] font-bold text-teal-300 uppercase tracking-wider shadow-md truncate">
+                          <span className="inline-block rounded-full bg-slate-950/85 backdrop-blur-md border border-slate-700/60 px-2.5 py-0.5 font-sans text-[11px] font-bold text-teal-300 uppercase tracking-wider shadow-md truncate">
                             {member.role}
                           </span>
                         </div>
@@ -2592,7 +2784,7 @@ export default function App() {
                         <h3 className="font-display text-base font-bold text-slate-900 group-hover:text-teal-600 transition-colors">
                           {member.name}
                         </h3>
-                        <p className="font-sans text-[11px] text-slate-400 mt-0.5 break-all font-semibold">{member.email}</p>
+                        <p className="font-sans text-xs text-slate-400 mt-0.5 break-all font-semibold">{member.email}</p>
                       </div>
 
                       <p className="text-xs text-slate-500 leading-relaxed font-sans line-clamp-3">
@@ -2602,7 +2794,7 @@ export default function App() {
 
                     <div className="mt-4 pt-2.5 border-t border-slate-100 flex flex-wrap gap-1">
                       {member.skills.slice(0, 4).map(skill => (
-                        <span key={skill} className="text-[9px] font-sans text-teal-700 bg-teal-50/80 px-1.5 py-0.5 rounded font-semibold">
+                        <span key={skill} className="text-[11px] font-sans text-teal-700 bg-teal-50/80 px-2 py-0.5 rounded font-semibold">
                           #{skill.toLowerCase().replace(/\s+/g, '')}
                         </span>
                       ))}
@@ -2613,7 +2805,7 @@ export default function App() {
             </div>
 
             {/* Alumni Riset (6 Alumni) */}
-            <div className="mb-16">
+            <div className="mb-12">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 border-b border-slate-200 pb-3">
                 <div>
                   <h2 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2.5">
@@ -2638,7 +2830,7 @@ export default function App() {
                       <div className="relative aspect-4/3 w-full rounded-xl overflow-hidden shadow-xs">
                         <TeamAvatar id={member.id} name={member.name} className="w-full h-full" />
                         <div className="absolute top-2 left-2 z-10 max-w-[88%]">
-                          <span className="inline-block rounded-full bg-emerald-950/85 backdrop-blur-md border border-emerald-700/60 px-2 py-0.5 font-sans text-[9px] font-bold text-emerald-300 uppercase tracking-wider shadow-md truncate">
+                          <span className="inline-block rounded-full bg-emerald-950/85 backdrop-blur-md border border-emerald-700/60 px-2.5 py-0.5 font-sans text-[11px] font-bold text-emerald-300 uppercase tracking-wider shadow-md truncate">
                             {member.role}
                           </span>
                         </div>
@@ -2648,7 +2840,7 @@ export default function App() {
                         <h3 className="font-display text-base font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
                           {member.name}
                         </h3>
-                        <p className="font-sans text-[11px] text-slate-400 mt-0.5 break-all font-semibold">{member.email}</p>
+                        <p className="font-sans text-xs text-slate-400 mt-0.5 break-all font-semibold">{member.email}</p>
                       </div>
 
                       <p className="text-xs text-slate-500 leading-relaxed font-sans line-clamp-3">
@@ -2658,7 +2850,7 @@ export default function App() {
 
                     <div className="mt-4 pt-2.5 border-t border-slate-100 flex flex-wrap gap-1">
                       {member.skills.filter(s => s !== 'Alumni').slice(0, 4).map(skill => (
-                        <span key={skill} className="text-[9px] font-sans text-emerald-700 bg-emerald-50/80 px-1.5 py-0.5 rounded font-semibold">
+                        <span key={skill} className="text-[11px] font-sans text-emerald-700 bg-emerald-50/80 px-2 py-0.5 rounded font-semibold">
                           #{skill.toLowerCase().replace(/\s+/g, '')}
                         </span>
                       ))}
@@ -2714,6 +2906,70 @@ export default function App() {
       {/* --- FOOTER COMPONENT --- */}
       {currentPage !== 'login' && currentPage !== 'dashboard' && (
         <Footer setCurrentPage={handleNavigate} />
+      )}
+
+      {/* --- PROJECT IMAGE LIGHTBOX MODAL (BUKA GAMBAR) --- */}
+      {projectLightboxImage && (
+        <div 
+          className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 animate-fade-in"
+          onClick={() => setProjectLightboxImage(null)}
+        >
+          <div 
+            className="w-full max-w-4xl flex items-center justify-between text-white py-3 border-b border-slate-800"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div>
+              <h3 className="font-bold text-sm sm:text-base text-white">
+                {projectLightboxImage.title}
+              </h3>
+              {projectLightboxImage.category && (
+                <span className="text-xs text-sky-400 font-mono">
+                  {projectLightboxImage.category}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <a
+                href={projectLightboxImage.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                title="Buka Ukuran Asli di Tab Baru"
+              >
+                <ExternalLink className="h-4 w-4" />
+              </a>
+              <button
+                onClick={() => setProjectLightboxImage(null)}
+                className="p-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white transition-colors cursor-pointer"
+                title="Tutup Modal"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          <div 
+            className="w-full flex-1 overflow-auto flex items-center justify-center p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={`p-4 sm:p-8 rounded-3xl max-h-[80vh] flex items-center justify-center ${
+              projectLightboxImage.url.includes('logo') || projectLightboxImage.title?.toLowerCase().includes('water')
+                ? 'bg-white shadow-2xl border-2 border-sky-300/40'
+                : 'bg-transparent'
+            }`}>
+              <img 
+                src={projectLightboxImage.url} 
+                alt={projectLightboxImage.title}
+                className="max-h-[75vh] max-w-[85vw] object-contain drop-shadow-md rounded-xl"
+              />
+            </div>
+          </div>
+
+          <div className="text-center text-xs text-slate-400 font-mono py-2">
+            Klik di luar gambar atau tombol silang untuk menutup
+          </div>
+        </div>
       )}
 
       {/* --- FLOATING JOIN US MODAL DIALOG --- */}

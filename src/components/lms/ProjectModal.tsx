@@ -33,7 +33,7 @@ export default function ProjectModal({
   const [description, setDescription] = useState(project?.description || '');
   const [supervisor, setSupervisor] = useState(project?.supervisor || 'Prof. Dr. Indrarini Dyah Irawati, S.T., M.T.');
   const [assignedStudents, setAssignedStudents] = useState<string[]>(
-    project?.assignedStudentNames || ['Fathur Rahman', 'Nabila Putri']
+    project?.assignedStudentNames || (students.length > 0 ? [students[0].name] : ['Shara Anjelia', 'Shella Nadya Putri'])
   );
   const [status, setStatus] = useState<'planning' | 'in_progress' | 'review' | 'completed' | 'archived'>(project?.status || 'in_progress');
   const [progressPercent, setProgressPercent] = useState<number>(project?.progressPercent || 25);

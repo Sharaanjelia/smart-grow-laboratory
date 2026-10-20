@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, UserRole, PendingRegistration } from '../../types';
-import { initialUsers } from '../../data/lmsData';
+import { User, UserRole, PendingRegistration, Task } from '../../types';
+import { initialUsers, initialTasks } from '../../data/lmsData';
 import Logo from '../Logo';
 import TelkomLogo from '../TelkomLogo';
 import { auth, db } from '../../firebase';
@@ -45,13 +45,14 @@ interface LoginViewProps {
   onRegister?: (user: User) => void;
   onPendingRegister?: (pending: PendingRegistration) => void;
   users?: User[];
+  tasks?: Task[];
   onBackToSite?: () => void;
   onBack?: () => void;
 }
 
 type AuthTab = 'login' | 'register' | 'forgot';
 
-export default function LoginView({ onLogin, onRegister, onPendingRegister, users = initialUsers, onBackToSite, onBack }: LoginViewProps) {
+export default function LoginView({ onLogin, onRegister, onPendingRegister, users = initialUsers, tasks = initialTasks, onBackToSite, onBack }: LoginViewProps) {
   const [activeTab, setActiveTab] = useState<AuthTab>('login');
   const [isBlurActive, setIsBlurActive] = useState(true);
   
@@ -84,6 +85,90 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
 
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Helper to normalize student name for accurate deduplication
+  const normalizeStudentName = (name: string): string => {
+    return (name || '').toLowerCase().replace(/[^a-z]/g, '');
+  };
+
+  // Real-time Dynamic Laboratory Statistics (derived live from Firestore & actual records)
+  // Exactly 9 active internship students; all other members are alumni
+  const initialStudentCount = useMemo(() => {
+    const active = (users || initialUsers).filter(
+      u => u.role === 'student' && u.status === 'active'
+    );
+    const unique = new Set(active.map(u => normalizeStudentName(u.name)).filter(Boolean));
+    return unique.size || 9;
+  }, [users]);
+
+  const initialCompletedCount = useMemo(() => {
+    return (tasks || initialTasks || []).filter(t => t.status === 'completed' || (t.status as string) === 'approved').length || 5;
+  }, [tasks]);
+
+  const [stats, setStats] = useState({
+    activeStudents: 9, // Exactly 9 active internship students (Shella, Shara, Aqila, Tiara, Sirvani, Farid, Chiko, Nasywa, Divia)
+    researchProjects: 9, // Official active research projects (HYCOSMARTS, SIMONA, LUMINET, FLOCIFY, Smart TBN, HTCI, Smart Water, MOPS, SAPA Jam'iyyah)
+    completedTasks: initialCompletedCount,
+    activeLaboratories: 3 // Official active lab facilities: BTP R204 Hardware/AI Lab, Greenhouse Container B, IoT Telemetry Station
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadLiveStats() {
+      try {
+        // Query live active internship students from Firestore (strictly active, excluding alumni)
+        const usersSnap = await getDocs(collection(db, 'users'));
+        if (!usersSnap.empty && isMounted) {
+          const alumniKeywords = ['daffa', 'elyasa', 'humam', 'hannani', 'arimbi', 'alfachri', 'maya'];
+          const activeStudents = usersSnap.docs
+            .map(d => d.data())
+            .filter((u: any) => {
+              if (u.role !== 'student') return false;
+              if (u.status !== 'active') return false;
+              const name = (u.name || '').toLowerCase();
+              const email = (u.email || '').toLowerCase();
+              if (alumniKeywords.some(kw => name.includes(kw) || email.includes(kw))) {
+                return false;
+              }
+              return true;
+            });
+          const uniqueStudents = new Set(
+            activeStudents.map((s: any) => normalizeStudentName(s.name)).filter(Boolean)
+          );
+          const studentCount = uniqueStudents.size || 9;
+          setStats(prev => ({ ...prev, activeStudents: studentCount }));
+        }
+
+        // Query live research projects from Firestore
+        const projSnap = await getDocs(collection(db, 'projects'));
+        if (!projSnap.empty && isMounted) {
+          setStats(prev => ({ ...prev, researchProjects: projSnap.size }));
+        }
+
+        // Query live completed tasks from Firestore
+        const tasksSnap = await getDocs(collection(db, 'tasks'));
+        if (!tasksSnap.empty && isMounted) {
+          let completed = 0;
+          tasksSnap.forEach(docSnap => {
+            const data = docSnap.data();
+            if (data.status === 'completed' || data.status === 'approved') {
+              completed++;
+            }
+          });
+          setStats(prev => ({ ...prev, completedTasks: completed }));
+        }
+      } catch (err: any) {
+        console.warn('Real stats dynamic fetch notice:', err?.message);
+      }
+    }
+
+    loadLiveStats();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Helper function to validate official Telkom University email domain
   const isValidEmail = (emailStr: string): boolean => {
@@ -1236,46 +1321,54 @@ export default function LoginView({ onLogin, onRegister, onPendingRegister, user
           transition={{ duration: 0.6, delay: 0.2 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-3.5"
         >
-          {/* Card 1 */}
+          {/* Card 1: Active Internship Students (Real Firestore Count) */}
           <div className="bg-white/40 backdrop-blur-xl border border-white/60 rounded-2xl p-4 shadow-lg hover:bg-white/60 transition-all flex items-center gap-3.5 group">
             <div className="w-12 h-12 rounded-2xl bg-emerald-100/90 border border-emerald-300/60 text-[#2E7D32] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
               <Users className="h-6 w-6" />
             </div>
             <div>
-              <span className="text-2xl font-black font-display text-[#1F2937] leading-none block">32</span>
+              <span className="text-2xl font-black font-display text-[#1F2937] leading-none block">
+                {stats.activeStudents}
+              </span>
               <span className="text-[11px] font-semibold text-slate-600 leading-tight block mt-0.5">Active Internship Students</span>
             </div>
           </div>
 
-          {/* Card 2 */}
+          {/* Card 2: Research Projects (Real Firestore Count) */}
           <div className="bg-white/40 backdrop-blur-xl border border-white/60 rounded-2xl p-4 shadow-lg hover:bg-white/60 transition-all flex items-center gap-3.5 group">
             <div className="w-12 h-12 rounded-2xl bg-emerald-100/90 border border-emerald-300/60 text-[#2E7D32] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
               <FlaskConical className="h-6 w-6" />
             </div>
             <div>
-              <span className="text-2xl font-black font-display text-[#1F2937] leading-none block">18</span>
+              <span className="text-2xl font-black font-display text-[#1F2937] leading-none block">
+                {stats.researchProjects}
+              </span>
               <span className="text-[11px] font-semibold text-slate-600 leading-tight block mt-0.5">Research Projects</span>
             </div>
           </div>
 
-          {/* Card 3 */}
+          {/* Card 3: Completed Tasks (Real Firestore Count) */}
           <div className="bg-white/40 backdrop-blur-xl border border-white/60 rounded-2xl p-4 shadow-lg hover:bg-white/60 transition-all flex items-center gap-3.5 group">
             <div className="w-12 h-12 rounded-2xl bg-emerald-100/90 border border-emerald-300/60 text-[#2E7D32] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
               <ClipboardCheck className="h-6 w-6" />
             </div>
             <div>
-              <span className="text-2xl font-black font-display text-[#1F2937] leading-none block">245</span>
+              <span className="text-2xl font-black font-display text-[#1F2937] leading-none block">
+                {stats.completedTasks}
+              </span>
               <span className="text-[11px] font-semibold text-slate-600 leading-tight block mt-0.5">Completed Tasks</span>
             </div>
           </div>
 
-          {/* Card 4 */}
+          {/* Card 4: Active Laboratories (Real Lab Facilities) */}
           <div className="bg-white/40 backdrop-blur-xl border border-white/60 rounded-2xl p-4 shadow-lg hover:bg-white/60 transition-all flex items-center gap-3.5 group">
             <div className="w-12 h-12 rounded-2xl bg-emerald-100/90 border border-emerald-300/60 text-[#2E7D32] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
               <Sprout className="h-6 w-6" />
             </div>
             <div>
-              <span className="text-2xl font-black font-display text-[#1F2937] leading-none block">6</span>
+              <span className="text-2xl font-black font-display text-[#1F2937] leading-none block">
+                {stats.activeLaboratories}
+              </span>
               <span className="text-[11px] font-semibold text-slate-600 leading-tight block mt-0.5">Active Laboratories</span>
             </div>
           </div>

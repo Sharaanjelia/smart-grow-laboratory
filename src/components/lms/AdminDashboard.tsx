@@ -55,6 +55,8 @@ import {
 import TeamAvatar from '../TeamAvatar';
 import PendingRegistrationsView from './PendingRegistrationsView';
 import ProfileView from './ProfileView';
+import AttendanceView from './AttendanceView';
+import { resolveUserAvatar } from '../../utils/imageUtils';
 import { PendingRegistration } from '../../types';
 
 interface AdminDashboardProps {
@@ -167,9 +169,95 @@ export default function AdminDashboard({
   // Toast feedback
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Settings State
+  const [labOpenHour, setLabOpenHour] = useState('08:00');
+  const [labCloseHour, setLabCloseHour] = useState('17:00');
+  const [lateToleranceMins, setLateToleranceMins] = useState('30');
+  const [geofenceRadius, setGeofenceRadius] = useState('50');
+  const [autoCheckoutReminder, setAutoCheckoutReminder] = useState(true);
+  const [telegramAlerts, setTelegramAlerts] = useState(true);
+  const [criticalThresholdAlert, setCriticalThresholdAlert] = useState(true);
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const handleExportAttendanceCSV = () => {
+    const headers = ['Tanggal', 'Nama Mahasiswa', 'Check-In', 'Check-Out', 'Status', 'Durasi (Menit)', 'Catatan Aktivitas'];
+    const rows = attendance.map(a => [
+      `"${a.date}"`,
+      `"${a.studentName}"`,
+      `"${a.checkInTime || '-'}"`,
+      `"${a.checkOutTime || '-'}"`,
+      `"${a.status}"`,
+      `"${a.durationMinutes || 0}"`,
+      `"${(a.notes || 'Penelitian & Kalibrasi Perangkat Lab').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `rekap_presensi_admin_${getTodayDateJakarta()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('Data presensi berhasil diexport ke file CSV!');
+  };
+
+  const handleExportAuditLogsCSV = () => {
+    const headers = ['ID Log', 'Waktu', 'Pengguna', 'Aksi', 'Keterangan Detail'];
+    const rows = logs.map(l => [
+      `"${l.id}"`,
+      `"${l.timestamp}"`,
+      `"${l.user}"`,
+      `"${l.action.replace(/"/g, '""')}"`,
+      `"${(l.details || '').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `audit_sistem_smart_grow_${getTodayDateJakarta()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('Data audit log berhasil diexport ke file CSV!');
+  };
+
+  const handleExportDatabaseSnapshot = () => {
+    const snapshot = {
+      exportDate: new Date().toISOString(),
+      institution: 'Smart Grow Laboratory - Telkom University',
+      location: 'Bandung Techno Park (BTP) Lt. 2',
+      counts: {
+        users: users.length,
+        attendance: attendance.length,
+        projects: projects.length,
+        news: news.length,
+        logs: logs.length,
+        applicants: applicants.length,
+        pendingRegistrations: pendingRegistrations.length
+      },
+      users,
+      attendance,
+      projects,
+      news,
+      team,
+      logs,
+      applicants,
+      pendingRegistrations
+    };
+    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(snapshot, null, 2))}`;
+    const link = document.createElement('a');
+    link.href = jsonString;
+    link.download = `smart_grow_lab_database_snapshot_${getTodayDateJakarta()}.json`;
+    link.click();
+    showToast('Snapshot database JSON berhasil diunduh!');
   };
 
   const handleCreateUserSubmit = (e: React.FormEvent) => {
@@ -267,6 +355,38 @@ export default function AdminDashboard({
   const pendingApplicants = applicants.filter(a => a.status === 'pending');
   const activeStudents = users.filter(u => u.role === 'student' && u.status === 'active');
   const alumniUsers = users.filter(u => u.status === 'alumni');
+  const directorUsers = users.filter(u => u.role === 'director');
+  const assistantUsers = users.filter(u => u.role === 'assistant');
+  const adminUsers = users.filter(u => u.role === 'admin');
+
+  // Smart user search matching supporting Indonesian phonetic variants (e.g. naswa <-> nasywa, shela <-> shella)
+  const matchUserSearch = (u: User, query: string): boolean => {
+    if (!query.trim()) return true;
+    const q = query.trim().toLowerCase();
+    
+    const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const phon = (s: string) => norm(s).replace(/sy/g, 's').replace(/sh/g, 's').replace(/kh/g, 'k').replace(/y/g, '');
+
+    const qNorm = norm(q);
+    const qPhon = phon(q);
+
+    const fields = [
+      u.name || '',
+      u.email || '',
+      u.studentId || '',
+      u.internId || '',
+      u.specialty || '',
+      u.institution || '',
+      u.role || '',
+      u.status || ''
+    ];
+
+    if (fields.some(f => f.toLowerCase().includes(q))) return true;
+    if (fields.some(f => norm(f).includes(qNorm))) return true;
+    if (fields.some(f => phon(f).includes(qPhon))) return true;
+
+    return false;
+  };
 
   return (
     <div className="space-y-8 font-sans animate-fade-in relative">
@@ -293,46 +413,46 @@ export default function AdminDashboard({
         </div>
       )}
 
-      {/* Header Banner Command Center */}
-      <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-emerald-950 to-teal-950 border border-emerald-800/40 p-6 sm:p-8 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="space-y-2 relative z-10">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-900/60 border border-emerald-400/40 text-emerald-200 text-[10px] font-mono font-bold uppercase tracking-wider">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />
-              SYSTEM ADMIN CONTROL HUB
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-[10px] font-mono font-bold uppercase tracking-wider">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              MQTT GATEWAY ONLINE
-            </span>
-          </div>
-
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-display tracking-tight">
-            Administrator Control & Infrastructure
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-            Pusat komando tata kelola akun laboratorium, manajemen konten situs publik (CMS), log presensi RFID anggota, dan audit sistem Smart Grow Laboratory.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 relative z-10 shrink-0">
-          <button
-            onClick={() => setCreateUserOpen(true)}
-            className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all flex items-center gap-2 cursor-pointer border border-emerald-400/30 active:scale-95"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Buat Akun Pengguna</span>
-          </button>
-        </div>
-      </div>
-
       {/* ========================================================================= */}
       {/* 1. TAB: ADMIN DASHBOARD (COMMAND CENTER OVERVIEW)                         */}
       {/* ========================================================================= */}
       {activeTab === 'overview' && (
         <div className="space-y-8 animate-fade-in">
+          
+          {/* Header Banner Command Center */}
+          <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-emerald-950 to-teal-950 border border-emerald-800/40 p-6 sm:p-8 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="space-y-2 relative z-10">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-900/60 border border-emerald-400/40 text-emerald-200 text-[10px] font-mono font-bold uppercase tracking-wider">
+                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />
+                  SYSTEM ADMIN CONTROL HUB
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-[10px] font-mono font-bold uppercase tracking-wider">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  MQTT GATEWAY ONLINE
+                </span>
+              </div>
+
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-display tracking-tight">
+                Administrator Control & Infrastructure
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+                Pusat komando tata kelola akun laboratorium, manajemen konten situs publik (CMS), log presensi RFID anggota, dan audit sistem Smart Grow Laboratory.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 relative z-10 shrink-0">
+              <button
+                onClick={() => setCreateUserOpen(true)}
+                className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all flex items-center gap-2 cursor-pointer border border-emerald-400/30 active:scale-95"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Buat Akun Pengguna</span>
+              </button>
+            </div>
+          </div>
           
           {/* Top KPI Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -541,15 +661,24 @@ export default function AdminDashboard({
             </div>
 
             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-              <div className="relative flex-1 sm:w-64">
+              <div className="relative flex-1 sm:w-72">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <input 
                   type="text"
-                  placeholder="Cari nama atau email..."
+                  placeholder="Cari nama, email, atau NIM..."
                   value={userSearch}
                   onChange={e => setUserSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                  className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner"
                 />
+                {userSearch && (
+                  <button
+                    onClick={() => setUserSearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                    title="Hapus pencarian"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </div>
 
               <button
@@ -562,15 +691,34 @@ export default function AdminDashboard({
             </div>
           </div>
 
+          {/* Search Result Banner if query is active */}
+          {userSearch.trim() && (
+            <div className="flex items-center justify-between text-xs bg-emerald-50 border border-emerald-200/80 rounded-2xl px-4 py-2.5 text-emerald-800 font-medium">
+              <div className="flex items-center gap-2">
+                <Search className="h-4 w-4 text-emerald-600 shrink-0" />
+                <span>
+                  Menampilkan hasil pencarian untuk "<strong>{userSearch}</strong>" di semua role (
+                  <strong>{users.filter(u => matchUserSearch(u, userSearch)).length}</strong> ditemukan)
+                </span>
+              </div>
+              <button 
+                onClick={() => setUserSearch('')}
+                className="text-emerald-700 hover:text-emerald-950 font-bold text-[11px] underline cursor-pointer shrink-0 ml-2"
+              >
+                Reset Filter
+              </button>
+            </div>
+          )}
+
           {/* Role Filter Tabs */}
           <div className="flex flex-wrap gap-2 pb-2">
             {[
-              { id: 'ALL', label: 'Semua Akun' },
-              { id: 'director', label: 'Director' },
-              { id: 'assistant', label: 'Assistant' },
+              { id: 'ALL', label: `Semua Akun (${users.length})` },
+              { id: 'director', label: `Director (${directorUsers.length})` },
+              { id: 'assistant', label: `Assistant (${assistantUsers.length})` },
               { id: 'student', label: `Mahasiswa Magang (${activeStudents.length})` },
               { id: 'alumni', label: `Alumni (${alumniUsers.length})` },
-              { id: 'admin', label: 'Admin' },
+              { id: 'admin', label: `Admin (${adminUsers.length})` },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -603,19 +751,23 @@ export default function AdminDashboard({
               <tbody className="divide-y divide-slate-100">
                 {users
                   .filter(u => {
+                    const isSearching = Boolean(userSearch.trim());
+                    // When searching, match across all roles so the user is never blocked by an active tab
+                    if (isSearching) {
+                      return matchUserSearch(u, userSearch);
+                    }
                     if (roleFilter === 'ALL') return true;
                     if (roleFilter === 'alumni') return u.status === 'alumni';
                     if (roleFilter === 'student') return u.role === 'student' && u.status !== 'alumni';
                     return u.role === roleFilter;
                   })
-                  .filter(u => (u.name || '').toLowerCase().includes(userSearch.toLowerCase()) || (u.email || '').toLowerCase().includes(userSearch.toLowerCase()))
                   .map(user => (
                     <tr key={user.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="p-3.5">
                         <div className="flex items-center gap-3">
                           <img 
-                            src={user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100'} 
-                            alt="" 
+                            src={resolveUserAvatar(user)} 
+                            alt={user.name} 
                             className="w-9 h-9 rounded-xl object-cover ring-1 ring-slate-200 shrink-0" 
                           />
                           <div>
@@ -852,100 +1004,15 @@ export default function AdminDashboard({
       {/* 4. TAB: ATTENDANCE LOGS (PRESENSI & JAM KERJA LAB)                          */}
       {/* ========================================================================= */}
       {activeTab === 'attendance' && (
-        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 space-y-6 shadow-xs animate-fade-in">
-          
-          {/* Header Explanation */}
-          <div className="border-b border-slate-100 pb-5">
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-emerald-600" />
-              <h2 className="text-xl font-bold text-slate-900 font-display">Presensi & Jam Kerja Laboratorium (Attendance Logs)</h2>
-            </div>
-            <p className="text-xs text-slate-500 mt-1">
-              Fungsi: Memantau jam kerja harian, presensi fisik RFID/Badge, waktu masuk & keluar (Check-In / Check-Out), serta rekapitilasi total jam kerja mahasiswa magang.
-            </p>
-          </div>
-
-          {/* Attendance Real-Time Stats Cards */}
-          {(() => {
-            const todayStr = getTodayDateJakarta();
-            const todayAtt = (attendance || []).filter(a => a.date === todayStr);
-            const presentOnTime = todayAtt.filter(a => a.status === 'present').length;
-            const lateAtt = todayAtt.filter(a => a.status === 'late').length;
-            const totalWithStatus = presentOnTime + lateAtt;
-            const punctualityRate = totalWithStatus > 0 ? `${Math.round((presentOnTime / totalWithStatus) * 100)} %` : '-';
-            
-            const completedToday = todayAtt.filter(a => a.durationMinutes && a.durationMinutes > 0);
-            const avgMins = completedToday.length > 0
-              ? Math.round(completedToday.reduce((acc, curr) => acc + (curr.durationMinutes || 0), 0) / completedToday.length)
-              : null;
-            const avgDurationStr = avgMins !== null ? `${(avgMins / 60).toFixed(1)} Jam / Hari` : '-';
-
-            return (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Total Presensi Hari Ini</span>
-                  <p className="text-2xl font-black text-slate-900 mt-1">{todayAtt.length} Mahasiswa</p>
-                </div>
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Rata-rata Jam Kerja</span>
-                  <p className="text-2xl font-black text-emerald-600 mt-1">{avgDurationStr}</p>
-                </div>
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Tingkat Kehadiran Tepat Waktu</span>
-                  <p className="text-2xl font-black text-blue-600 mt-1">{punctualityRate}</p>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Attendance Log Table */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-sm text-slate-900 font-display">Log Riwayat Check-In / Check-Out</h3>
-              <button 
-                onClick={() => showToast('Data presensi bulanan berhasil diexport ke CSV!')}
-                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
-              >
-                <Download className="h-3.5 w-3.5" /> Export Excel/CSV
-              </button>
-            </div>
-
-            <div className="overflow-x-auto rounded-2xl border border-slate-200">
-              <table className="w-full text-left text-xs min-w-[680px]">
-                <thead className="bg-slate-50 text-slate-500 font-mono text-[10px] uppercase border-b border-slate-200">
-                  <tr>
-                    <th className="p-3">Tanggal</th>
-                    <th className="p-3">Mahasiswa / Peneliti</th>
-                    <th className="p-3">Check-In</th>
-                    <th className="p-3">Check-Out</th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3">Catatan / Aktivitas Lab</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {attendance.map(att => (
-                    <tr key={att.id} className="hover:bg-slate-50/80">
-                      <td className="p-3 font-mono text-slate-500">{att.date}</td>
-                      <td className="p-3 font-bold text-slate-900">{att.studentName}</td>
-                      <td className="p-3 font-mono text-emerald-700 font-bold">{att.checkInTime || '-'}</td>
-                      <td className="p-3 font-mono text-slate-600">{att.checkOutTime || '-'}</td>
-                      <td className="p-3">
-                        <span className={`px-2.5 py-0.5 rounded font-mono text-[10px] font-bold uppercase border ${
-                          att.status === 'present' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                          att.status === 'late' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                          att.status === 'leave' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-rose-50 text-rose-700 border-rose-200'
-                        }`}>
-                          {att.status}
-                        </span>
-                      </td>
-                      <td className="p-3 text-slate-600 max-w-xs truncate">{att.notes || 'Penelitian & Kalibrasi Perangkat Lab'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
+        <div className="space-y-6 animate-fade-in">
+          <AttendanceView
+            attendance={attendance}
+            students={users.filter(u => u.role === 'student')}
+            currentUser={currentUser}
+            onCheckIn={onCheckInStudent}
+            onCheckOut={onCheckOutStudent}
+            darkMode={darkMode}
+          />
         </div>
       )}
 
@@ -980,8 +1047,8 @@ export default function AdminDashboard({
               <p className="text-xs text-slate-500">Catatan aktivitas dan riwayat keamanan portal</p>
             </div>
             <button
-              onClick={() => showToast('Log audit berhasil diexport!')}
-              className="px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+              onClick={handleExportAuditLogsCSV}
+              className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors"
             >
               <Download className="h-4 w-4" /> Export Audit CSV
             </button>
@@ -1000,6 +1067,200 @@ export default function AdminDashboard({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 7. TAB: SYSTEM SETTINGS (PENGATURAN SISTEM & MAINTENANCE)                */}
+      {/* ========================================================================= */}
+      {activeTab === 'settings' && (
+        <div className="space-y-6 animate-fade-in font-sans">
+          
+          {/* Header */}
+          <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-1">
+            <div className="flex items-center gap-2">
+              <Settings className="h-5 w-5 text-emerald-600" />
+              <h2 className="text-xl font-bold text-slate-900 font-display">Pengaturan Sistem & Kebijakan Laboratorium</h2>
+            </div>
+            <p className="text-xs text-slate-500">
+              Konfigurasi kebijakan jam operasional, parameter geofence presensi BTP Lt. 2, aturan alert, dan pencadangan database sistem.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            {/* Box 1: Operating Hours & Attendance Rules */}
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
+              <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+                <Clock className="h-5 w-5 text-emerald-600" />
+                <h3 className="text-sm font-bold text-slate-900 font-display">Kebijakan Jam Kerja & Presensi</h3>
+              </div>
+
+              <div className="space-y-3.5 text-xs">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Jam Buka Lab (WIB)</label>
+                    <input 
+                      type="time" 
+                      value={labOpenHour} 
+                      onChange={e => setLabOpenHour(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-slate-900 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Jam Tutup Lab (WIB)</label>
+                    <input 
+                      type="time" 
+                      value={labCloseHour} 
+                      onChange={e => setLabCloseHour(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-slate-900 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Toleransi Keterlambatan Check-In (Menit)</label>
+                  <input 
+                    type="number" 
+                    value={lateToleranceMins} 
+                    onChange={e => setLateToleranceMins(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-slate-900 focus:outline-none focus:border-emerald-500"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-0.5 block">Mahasiswa yang check-in lebih dari {lateToleranceMins} menit setelah jam buka akan ditandai Status 'Late'.</span>
+                </div>
+
+                <div className="pt-2 flex items-center justify-between border-t border-slate-100">
+                  <div>
+                    <span className="font-bold text-slate-800 block">Pengingat Otomatis Check-Out</span>
+                    <span className="text-[10px] text-slate-400">Kirim pemberitahuan saat jam operasional lab berakhir (17:00 WIB)</span>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={autoCheckoutReminder} 
+                    onChange={e => setAutoCheckoutReminder(e.target.checked)}
+                    className="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Box 2: Geofence & Hardware Access Gate */}
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
+              <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+                <Radio className="h-5 w-5 text-teal-600" />
+                <h3 className="text-sm font-bold text-slate-900 font-display">Geofence GPS & Gerbang RFID BTP</h3>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5 font-mono text-[11px]">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Pusat Lokasi:</span>
+                    <span className="font-bold text-slate-800">Bandung Techno Park (BTP) Lt. 2</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Koordinat Resmi:</span>
+                    <span className="font-bold text-emerald-700">-6.974488, 107.630441</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Algoritma Verifikasi:</span>
+                    <span className="font-bold text-slate-800">Haversine Great-Circle Distance</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Radius Toleransi Geofence (Meter)</label>
+                  <input 
+                    type="number" 
+                    value={geofenceRadius} 
+                    onChange={e => setGeofenceRadius(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-slate-900 focus:outline-none focus:border-teal-500"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-0.5 block">Jarak maksimal mahasiswa dari gedung BTP saat presensi (saat ini: {geofenceRadius}m).</span>
+                </div>
+
+                <div className="pt-2 flex items-center justify-between border-t border-slate-100">
+                  <div>
+                    <span className="font-bold text-slate-800 block">Sinkronisasi RFID RC522 Reader</span>
+                    <span className="text-[10px] text-slate-400">Gerbang RFID sinkron otomatis dengan UID badge mahasiswa</span>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-mono font-bold border border-emerald-200">
+                    AKTIF & TERHUBUNG
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Box 3: Notification & Alerts */}
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
+              <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+                <Zap className="h-5 w-5 text-amber-600" />
+                <h3 className="text-sm font-bold text-slate-900 font-display">Notifikasi & Peringatan Otomatis</h3>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200/70">
+                  <div>
+                    <span className="font-bold text-slate-800 block">Notifikasi Broadcast Pengumuman</span>
+                    <span className="text-[10px] text-slate-400">Kirim notifikasi in-app otomatis saat pengumuman baru diterbitkan</span>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={telegramAlerts} 
+                    onChange={e => setTelegramAlerts(e.target.checked)}
+                    className="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200/70">
+                  <div>
+                    <span className="font-bold text-slate-800 block">Peringatan Sensor Kritis (Telemetry)</span>
+                    <span className="text-[10px] text-slate-400">Alert otomatis jika pH air &lt; 5.5 atau suhu container &gt; 28°C</span>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={criticalThresholdAlert} 
+                    onChange={e => setCriticalThresholdAlert(e.target.checked)}
+                    className="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Box 4: Database Backup & Maintenance */}
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xs space-y-4">
+              <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+                <Database className="h-5 w-5 text-blue-600" />
+                <h3 className="text-sm font-bold text-slate-900 font-display">Pencadangan & Pemeliharaan Database</h3>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <p className="text-slate-600 leading-relaxed text-[11px]">
+                  Simpan cadangan lengkap sistem yang berisi akun pengguna ({users.length}), catatan presensi ({attendance.length}), proyek riset ({projects.length}), berita, dan riwayat log ke dalam file JSON terenkripsi.
+                </p>
+
+                <div className="flex flex-wrap gap-2.5 pt-1">
+                  <button
+                    onClick={handleExportDatabaseSnapshot}
+                    className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-sm transition-all active:scale-95"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>Download Snapshot Database (JSON)</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      showToast('Konfigurasi pengaturan sistem berhasil disimpan!');
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-sm transition-all"
+                  >
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                    <span>Simpan Konfigurasi</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       )}

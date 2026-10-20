@@ -14,7 +14,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-pink-200/40 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/indrarini.jpg" alt={name} className="w-full h-full object-cover object-top" />
-        <div className="absolute bottom-2 left-2 right-2 bg-pink-950/85 backdrop-blur-md text-pink-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-pink-500/30">
+        <div className="absolute bottom-2 left-2 right-2 bg-pink-950/85 backdrop-blur-md text-pink-200 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-pink-500/30">
           HEAD OF LAB / PEMBINA LAB
         </div>
       </div>
@@ -26,7 +26,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-amber-200/30 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/azliny.jpg" alt={name} className="w-full h-full object-cover object-top" />
-        <div className="absolute bottom-2 left-2 right-2 bg-rose-950/85 backdrop-blur-md text-amber-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-rose-800">
+        <div className="absolute bottom-2 left-2 right-2 bg-rose-950/85 backdrop-blur-md text-amber-200 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-rose-800">
           ASISTEN UTAMA LAB
         </div>
       </div>
@@ -38,7 +38,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-emerald-300/40 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/alfachri.jpg?v=5" alt={name} className="w-full h-full object-cover object-top" />
-        <div className="absolute bottom-2 left-2 right-2 bg-emerald-950/85 backdrop-blur-md text-emerald-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-emerald-500/30">
+        <div className="absolute bottom-2 left-2 right-2 bg-emerald-950/85 backdrop-blur-md text-emerald-200 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-emerald-500/30">
           ALUMNI • AI ENGINEER
         </div>
       </div>
@@ -50,7 +50,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-teal-200/30 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/shara.jpg" alt={name} className="w-full h-full object-cover object-[center_15%]" />
-        <div className="absolute bottom-2 left-2 right-2 bg-teal-950/85 backdrop-blur-md text-teal-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-teal-800">
+        <div className="absolute bottom-2 left-2 right-2 bg-teal-950/85 backdrop-blur-md text-teal-200 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-teal-800">
           FULL-STACK DEVELOPER
         </div>
       </div>
@@ -62,7 +62,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-teal-200/30 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/aqila.jpg" alt={name} className="w-full h-full object-cover object-top" />
-        <div className="absolute bottom-2 left-2 right-2 bg-teal-950/85 backdrop-blur-md text-teal-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-teal-800">
+        <div className="absolute bottom-2 left-2 right-2 bg-teal-950/85 backdrop-blur-md text-teal-200 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-teal-800">
           FULL-STACK DEVELOPER
         </div>
       </div>
@@ -74,7 +74,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-slate-700 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/chiko.jpg" alt={name} className="w-full h-full object-cover object-center" />
-        <div className="absolute bottom-2 left-2 right-2 bg-slate-950/85 backdrop-blur-md text-sky-300 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-slate-700">
+        <div className="absolute bottom-2 left-2 right-2 bg-slate-950/85 backdrop-blur-md text-sky-300 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-slate-700">
           HARDWARE ENGINEER
         </div>
       </div>
@@ -86,7 +86,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-rose-800 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/shela.jpg" alt={name} className="w-full h-full object-cover object-[center_15%]" />
-        <div className="absolute bottom-2 left-2 right-2 bg-rose-950/85 backdrop-blur-md text-rose-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-rose-800">
+        <div className="absolute bottom-2 left-2 right-2 bg-rose-950/85 backdrop-blur-md text-rose-200 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-rose-800">
           IOT SPECIALIST
         </div>
       </div>
@@ -98,7 +98,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-teal-800 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/sirvani.jpg" alt={name} className="w-full h-full object-cover object-top" />
-        <div className="absolute bottom-2 left-2 right-2 bg-teal-950/85 backdrop-blur-md text-teal-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-teal-800">
+        <div className="absolute bottom-2 left-2 right-2 bg-teal-950/85 backdrop-blur-md text-teal-200 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-teal-800">
           IOT SPECIALIST
         </div>
       </div>
@@ -110,7 +110,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-blue-900 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/tiara.jpg" alt={name} className="w-full h-full object-cover object-top" />
-        <div className="absolute bottom-2 left-2 right-2 bg-blue-950/85 backdrop-blur-md text-sky-300 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-blue-800">
+        <div className="absolute bottom-2 left-2 right-2 bg-blue-950/85 backdrop-blur-md text-sky-300 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-blue-800">
           IOT SPECIALIST
         </div>
       </div>
@@ -126,7 +126,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
           alt={name} 
           className="w-full h-full object-cover object-[center_55%] scale-110" 
         />
-        <div className="absolute bottom-2 left-2 right-2 bg-teal-950/85 backdrop-blur-md text-teal-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-teal-800">
+        <div className="absolute bottom-2 left-2 right-2 bg-teal-950/85 backdrop-blur-md text-teal-200 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-teal-800">
           IOT SPECIALIST
         </div>
       </div>
@@ -138,7 +138,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-blue-900 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/divia-nuralika-namira.jpg" alt={name} className="w-full h-full object-cover object-top" />
-        <div className="absolute bottom-2 left-2 right-2 bg-blue-950/85 backdrop-blur-md text-sky-300 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-blue-800">
+        <div className="absolute bottom-2 left-2 right-2 bg-blue-950/85 backdrop-blur-md text-sky-300 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-blue-800">
           IOT SPECIALIST
         </div>
       </div>
@@ -150,7 +150,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-amber-900/60 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/farid.jpg" alt={name} className="w-full h-full object-cover object-[center_20%]" />
-        <div className="absolute bottom-2 left-2 right-2 bg-amber-950/85 backdrop-blur-md text-amber-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-amber-800">
+        <div className="absolute bottom-2 left-2 right-2 bg-amber-950/85 backdrop-blur-md text-amber-200 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-amber-800">
           IOT SPECIALIST
         </div>
       </div>
@@ -162,7 +162,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-stone-700 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/arimbi.jpg" alt={name} className="w-full h-full object-cover object-top" />
-        <div className="absolute bottom-2 left-2 right-2 bg-stone-900/85 backdrop-blur-md text-amber-300 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-stone-700">
+        <div className="absolute bottom-2 left-2 right-2 bg-stone-900/85 backdrop-blur-md text-amber-300 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-stone-700">
           LEAD HARDWARE ENGINEER
         </div>
       </div>
@@ -174,7 +174,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-emerald-800 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/daffa.jpg" alt={name} className="w-full h-full object-cover object-top" />
-        <div className="absolute bottom-2 left-2 right-2 bg-emerald-950/85 backdrop-blur-md text-emerald-300 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-emerald-800">
+        <div className="absolute bottom-2 left-2 right-2 bg-emerald-950/85 backdrop-blur-md text-emerald-300 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-emerald-800">
           FIRMWARE DEVELOPER
         </div>
       </div>
@@ -186,7 +186,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-teal-800 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/hannani.jpg" alt={name} className="w-full h-full object-cover object-top" />
-        <div className="absolute bottom-2 left-2 right-2 bg-teal-950/85 backdrop-blur-md text-teal-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-teal-800">
+        <div className="absolute bottom-2 left-2 right-2 bg-teal-950/85 backdrop-blur-md text-teal-200 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-teal-800">
           FULL-STACK DEVELOPER
         </div>
       </div>
@@ -198,7 +198,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-900 border border-purple-800 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/elyasa.jpg" alt={name} className="w-full h-full object-cover object-top" />
-        <div className="absolute bottom-2 left-2 right-2 bg-purple-950/85 backdrop-blur-md text-purple-200 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-purple-800">
+        <div className="absolute bottom-2 left-2 right-2 bg-purple-950/85 backdrop-blur-md text-purple-200 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-purple-800">
           UI/UX DESIGNER
         </div>
       </div>
@@ -210,7 +210,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
     return (
       <div className={`relative overflow-hidden bg-slate-950 border border-emerald-900 shadow-inner flex items-center justify-center ${className}`}>
         <img src="/images/team/humam.jpg" alt={name} className="w-full h-full object-cover object-top" />
-        <div className="absolute bottom-2 left-2 right-2 bg-emerald-950/85 backdrop-blur-md text-emerald-300 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-emerald-800">
+        <div className="absolute bottom-2 left-2 right-2 bg-emerald-950/85 backdrop-blur-md text-emerald-300 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-emerald-800">
           AGRONOMIST
         </div>
       </div>
@@ -228,7 +228,7 @@ export default function TeamAvatar({ id, name = '', className = '' }: TeamAvatar
           {(name || '?').charAt(0)}
         </text>
       </svg>
-      <div className="absolute bottom-2 left-2 right-2 bg-slate-900/90 text-teal-300 text-[9px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-teal-800">
+      <div className="absolute bottom-2 left-2 right-2 bg-slate-900/90 text-teal-300 text-[10px] font-bold py-0.5 px-2 rounded-full text-center tracking-wider border border-teal-800">
         RESEARCH TEAM
       </div>
     </div>

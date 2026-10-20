@@ -168,7 +168,7 @@ export default function SmartHydroponicsShowcase({
 
             {/* Large Hero Title */}
             <div className="space-y-4">
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#0F172A] leading-[1.08] tracking-tight">
+              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#0F172A] leading-[1.12] tracking-tight">
                 Smart Hydroponic:<br />
                 <span className="bg-gradient-to-r from-[#22C55E] via-[#10B981] to-[#2E86FF] bg-clip-text text-transparent">
                   Modular Automated<br />Grow System

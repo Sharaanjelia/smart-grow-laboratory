@@ -9,8 +9,13 @@ export function resolveImageUrl(url?: string, fallback = '/images/harvest-team-b
   
   const clean = url.trim();
 
+  // If already a local asset path
+  if (clean.startsWith('/images/')) {
+    return clean;
+  }
+
   // If this is the HTCI project image or previous Google Drive link
-  if (clean.includes('1KmNGEPsohEH3huD8aXpSSnE_9ZcXnmrY') || clean.includes('htci')) {
+  if (clean.includes('1KmNGEPsohEH3huD8aXpSSnE_9ZcXnmrY')) {
     return '/images/htci/htci-poster.jpg';
   }
 

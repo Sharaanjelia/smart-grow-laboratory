@@ -45,8 +45,17 @@ import {
   Trash2, 
   Github,
   ExternalLink,
-  Upload
+  Upload,
+  Megaphone,
+  RotateCcw,
+  Filter,
+  Award,
+  Star,
+  Check
 } from 'lucide-react';
+import AnnouncementsManager from './AnnouncementsManager';
+import RevisionDetailModal from './RevisionDetailModal';
+import { resolveUserAvatar } from '../../utils/imageUtils';
 
 interface DirectorDashboardProps {
   currentUser?: User;
@@ -72,7 +81,15 @@ interface DirectorDashboardProps {
   onAdvanceApplicantStage?: (applicantId: string, nextStage: SelectionStage, notes?: string) => void;
   onApproveApplicant?: (applicantId: string) => void;
   onRejectApplicant?: (applicantId: string) => void;
+  onCreateTask?: (task: Omit<Task, 'id' | 'status' | 'createdAt'>) => void;
+  onUpdateTask?: (task: Task) => void;
+  onDeleteTask?: (taskId: string) => void;
+  onApproveTask?: (taskId: string) => void;
+  onRejectTask?: (taskId: string, feedback: string) => void;
+  onRequestRevision?: (taskId: string, revisionNote: string, assistantNotes: string) => void;
   onCreateAnnouncement?: (ann: Omit<Announcement, 'id' | 'date'>) => void;
+  onUpdateAnnouncement?: (ann: Announcement) => void;
+  onDeleteAnnouncement?: (id: string) => void;
   onCreateProject?: (project: Omit<LmsProject, 'id'>) => void;
   onUpdateProject?: (project: LmsProject) => void;
   onDeleteProject?: (projectId: string) => void;
@@ -83,6 +100,8 @@ interface DirectorDashboardProps {
   onNavigateToShowcase?: (projId: string) => void;
   onUpdateProfile?: (updatedUser: User) => void;
   onDeleteStudent?: (studentId: string) => void;
+  onCorrectAttendance?: (recordId: string, updatedData: Partial<AttendanceRecord>, reason: string) => void;
+  onUpdateStudentEvaluation?: (studentId: string, evaluation: any) => void;
   darkMode?: boolean;
   language?: 'id' | 'en';
 }
@@ -91,14 +110,14 @@ export default function DirectorDashboard({
   currentUser,
   activeTab,
   users,
-  tasks,
-  attendance,
+  tasks = [],
+  attendance = [],
   projects = [],
   publicProjects = [],
   announcements = [],
-  approvalRequests,
+  approvalRequests = [],
   notifications = [],
-  logs,
+  logs = [],
   applicants = [],
   pendingRegistrations = [],
   onApproveRegistration,
@@ -110,7 +129,15 @@ export default function DirectorDashboard({
   onAdvanceApplicantStage,
   onApproveApplicant,
   onRejectApplicant,
+  onCreateTask,
+  onUpdateTask,
+  onDeleteTask,
+  onApproveTask,
+  onRejectTask,
+  onRequestRevision,
   onCreateAnnouncement,
+  onUpdateAnnouncement,
+  onDeleteAnnouncement,
   onCreateProject,
   onUpdateProject,
   onDeleteProject,
@@ -121,6 +148,8 @@ export default function DirectorDashboard({
   onNavigateToShowcase,
   onUpdateProfile,
   onDeleteStudent,
+  onCorrectAttendance,
+  onUpdateStudentEvaluation,
   darkMode = false,
   language = 'id'
 }: DirectorDashboardProps) {
@@ -249,6 +278,157 @@ export default function DirectorDashboard({
     setPubGallery([]);
   };
 
+  // --- Director Task Management State ---
+  const [createTaskModalOpen, setCreateTaskModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [taskTitle, setTaskTitle] = useState('');
+  const [assignedStudentId, setAssignedStudentId] = useState('');
+  const [taskDesc, setTaskDesc] = useState('');
+  const [taskDeadline, setTaskDeadline] = useState('');
+  const [taskPriority, setTaskPriority] = useState<'normal' | 'high' | 'urgent'>('normal');
+  const [taskProject, setTaskProject] = useState('HYCOS-SMARTS Telemetry Gateway');
+  const [taskSearch, setTaskSearch] = useState('');
+  const [taskStatusFilter, setTaskStatusFilter] = useState('all');
+  const [selectedTaskForRevision, setSelectedTaskForRevision] = useState<Task | null>(null);
+
+  // --- Director Academic Evaluation & Grading State ---
+  const [evalModalOpen, setEvalModalOpen] = useState(false);
+  const [evalStudent, setEvalStudent] = useState<User | null>(null);
+  const [evalAttendanceScore, setEvalAttendanceScore] = useState<number>(90);
+  const [evalTaskScore, setEvalTaskScore] = useState<number>(90);
+  const [evalAttitudeScore, setEvalAttitudeScore] = useState<number>(90);
+  const [evalFinalScore, setEvalFinalScore] = useState<number>(90);
+  const [evalGrade, setEvalGrade] = useState<string>('A');
+  const [evalAdvisorNotes, setEvalAdvisorNotes] = useState<string>('');
+
+  const calculateGradeFromScore = (score: number): string => {
+    if (score >= 85) return 'A';
+    if (score >= 80) return 'A-';
+    if (score >= 75) return 'B+';
+    if (score >= 70) return 'B';
+    if (score >= 65) return 'B-';
+    if (score >= 60) return 'C';
+    return 'D';
+  };
+
+  const handleOpenEvaluationModal = (student: User) => {
+    setEvalStudent(student);
+    const existing = student.internshipEvaluation;
+    const attScore = existing?.attendanceScore ?? (student.attendanceRate ? Math.round(student.attendanceRate) : 92);
+    const tskScore = existing?.taskScore ?? 90;
+    const attitScore = existing?.attitudeScore ?? 92;
+    const finalScore = student.finalScore ?? existing?.finalScore ?? Math.round(attScore * 0.25 + tskScore * 0.5 + attitScore * 0.25);
+    const grade = student.grade ?? existing?.grade ?? calculateGradeFromScore(finalScore);
+    const notes = student.advisorNotes ?? existing?.advisorNotes ?? '';
+
+    setEvalAttendanceScore(attScore);
+    setEvalTaskScore(tskScore);
+    setEvalAttitudeScore(attitScore);
+    setEvalFinalScore(finalScore);
+    setEvalGrade(grade);
+    setEvalAdvisorNotes(notes);
+    setEvalModalOpen(true);
+  };
+
+  const handleUpdateScores = (att: number, tsk: number, attit: number) => {
+    const finalVal = Math.round(att * 0.25 + tsk * 0.5 + attit * 0.25);
+    setEvalAttendanceScore(att);
+    setEvalTaskScore(tsk);
+    setEvalAttitudeScore(attit);
+    setEvalFinalScore(finalVal);
+    setEvalGrade(calculateGradeFromScore(finalVal));
+  };
+
+  const handleSaveEvaluation = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!evalStudent || !onUpdateStudentEvaluation) return;
+
+    onUpdateStudentEvaluation(evalStudent.id, {
+      finalScore: evalFinalScore,
+      grade: evalGrade,
+      advisorNotes: evalAdvisorNotes.trim(),
+      internshipEvaluation: {
+        attendanceScore: evalAttendanceScore,
+        taskScore: evalTaskScore,
+        attitudeScore: evalAttitudeScore,
+        finalScore: evalFinalScore,
+        grade: evalGrade,
+        advisorNotes: evalAdvisorNotes.trim(),
+        evaluatedAt: new Date().toISOString(),
+        evaluatorName: currentUser?.name || 'Prof. Dr. Indrarini Dyah Irawati, S.T., M.T.'
+      }
+    });
+
+    setEvalModalOpen(false);
+  };
+
+  const handleOpenCreateTask = () => {
+    setEditingTask(null);
+    setTaskTitle('');
+    setAssignedStudentId(students[0]?.id || '');
+    setTaskDesc('');
+    setTaskDeadline(new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]);
+    setTaskPriority('normal');
+    setTaskProject('HYCOS-SMARTS Telemetry Gateway');
+    setCreateTaskModalOpen(true);
+  };
+
+  const handleOpenEditTask = (task: Task) => {
+    setEditingTask(task);
+    setTaskTitle(task.title);
+    setAssignedStudentId(task.assignedStudentId || '');
+    setTaskDesc(task.description);
+    setTaskDeadline(task.deadline);
+    setTaskPriority(task.priority);
+    setTaskProject(task.projectName || 'HYCOS-SMARTS Telemetry Gateway');
+    setCreateTaskModalOpen(true);
+  };
+
+  const handleTaskSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!taskTitle.trim() || !assignedStudentId) return;
+
+    const assignedStudent = students.find(s => s.id === assignedStudentId);
+    const assignedStudentName = assignedStudent ? assignedStudent.name : 'Mahasiswa Magang';
+
+    if (editingTask && onUpdateTask) {
+      onUpdateTask({
+        ...editingTask,
+        title: taskTitle.trim(),
+        assignedStudentId,
+        assignedStudentName,
+        description: taskDesc.trim(),
+        deadline: taskDeadline,
+        priority: taskPriority,
+        projectName: taskProject || 'HYCOS-SMARTS Telemetry Gateway'
+      });
+    } else if (onCreateTask) {
+      onCreateTask({
+        taskNumber: `TGS-DIR-${Date.now().toString().slice(-4)}`,
+        title: taskTitle.trim(),
+        assignedStudentId,
+        assignedStudentName,
+        assignedBy: currentUser?.name || 'Prof. Dr. Indrarini (Direktur Lab)',
+        description: taskDesc.trim(),
+        deadline: taskDeadline || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+        priority: taskPriority,
+        projectName: taskProject || 'HYCOS-SMARTS Telemetry Gateway',
+        progressPercent: 0
+      });
+    }
+
+    setCreateTaskModalOpen(false);
+    setEditingTask(null);
+  };
+
+  const filteredTasks = tasks.filter(t => {
+    const matchSearch = (t.title || '').toLowerCase().includes(taskSearch.toLowerCase()) ||
+      (t.assignedStudentName || '').toLowerCase().includes(taskSearch.toLowerCase()) ||
+      (t.taskNumber || '').toLowerCase().includes(taskSearch.toLowerCase());
+    const matchStatus = taskStatusFilter === 'all' || t.status === taskStatusFilter;
+    return matchSearch && matchStatus;
+  });
+
   const today = getTodayDateJakarta();
   const todayAtt = attendance.filter(a => a.date === today);
   const presentCount = todayAtt.filter(a => a.status === 'present').length;
@@ -270,32 +450,34 @@ export default function DirectorDashboard({
       )}
       
       {/* Director Executive Banner */}
-      <div className="rounded-3xl bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 text-white p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-mono font-bold uppercase tracking-wider">
-            <GraduationCap className="h-3.5 w-3.5 text-emerald-400" />
-            <span>Portal Eksekutif Direktur Laboratorium</span>
+      {(activeTab === 'overview' || activeTab === 'dashboard') && (
+        <div className="rounded-3xl bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 text-white p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-mono font-bold uppercase tracking-wider">
+              <GraduationCap className="h-3.5 w-3.5 text-emerald-400" />
+              <span>Portal Eksekutif Direktur Laboratorium</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              {currentUser?.name || 'Prof. Dr. Indrarini Dyah Irawati, S.T., M.T.'}
+            </h1>
+            <p className="text-xs sm:text-sm text-emerald-100/90 max-w-2xl">
+              Smart Grow Agriculture Research Laboratory • Ringkasan KPI Eksekutif, Monitoring Mahasiswa, & Persetujuan Milestone
+            </p>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            {currentUser?.name || 'Prof. Dr. Indrarini Dyah Irawati, S.T., M.T.'}
-          </h1>
-          <p className="text-xs sm:text-sm text-emerald-100/90 max-w-2xl">
-            Smart Grow Agriculture Research Laboratory • Ringkasan KPI Eksekutif, Monitoring Mahasiswa, & Persetujuan Milestone
-          </p>
-        </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="p-3.5 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-              {pendingApprovals.length}
-            </div>
-            <div>
-              <span className="text-[10px] font-mono text-emerald-200 uppercase font-bold block">Memerlukan Persetujuan</span>
-              <span className="text-xs font-bold text-white">Permohonan Direktur</span>
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="p-3.5 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+                {pendingApprovals.length}
+              </div>
+              <div>
+                <span className="text-[10px] font-mono text-emerald-200 uppercase font-bold block">Memerlukan Persetujuan</span>
+                <span className="text-xs font-bold text-white">Permohonan Direktur</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* VIEW: OVERVIEW / DASHBOARD */}
       {(activeTab === 'overview' || activeTab === 'dashboard') && (
@@ -497,6 +679,19 @@ export default function DirectorDashboard({
         </div>
       )}
 
+      {/* VIEW: PENDING REGISTRATIONS */}
+      {activeTab === 'pending_registrations' && (
+        <div className="animate-fade-in">
+          <PendingRegistrationsView
+            registrations={pendingRegistrations}
+            onApprove={(reg) => onApproveRegistration && onApproveRegistration(reg)}
+            onReject={(id) => onRejectRegistration && onRejectRegistration(id)}
+            onDelete={(id) => onDeleteRegistration && onDeleteRegistration(id)}
+            onClearAll={() => onClearAllRegistrations && onClearAllRegistrations()}
+          />
+        </div>
+      )}
+
       {/* VIEW: INTERN MONITORING */}
       {activeTab === 'interns' && (
         <div className="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 rounded-3xl p-6 space-y-6 shadow-xs animate-fade-in">
@@ -549,6 +744,33 @@ export default function DirectorDashboard({
                       <div className="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 space-y-1 text-xs">
                         <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">Fokus Spesialisasi Riset</span>
                         <span className="font-semibold text-slate-800 dark:text-slate-200">{student.specialty || 'Smart Agriculture IoT'}</span>
+                      </div>
+
+                      {/* Official Director Grade & Evaluation Badge */}
+                      <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/70 dark:border-emerald-800/60">
+                        <div>
+                          <span className="text-[9px] font-mono uppercase font-bold text-emerald-800 dark:text-emerald-300 block">Nilai Resmi Pembina</span>
+                          <span className="text-xs font-extrabold text-emerald-900 dark:text-emerald-100">
+                            {student.grade || student.internshipEvaluation?.grade ? (
+                              `Huruf: ${student.grade || student.internshipEvaluation?.grade} (${student.finalScore ?? student.internshipEvaluation?.finalScore ?? 0}/100)`
+                            ) : (
+                              <span className="text-slate-400 font-normal italic">Belum Dievaluasi</span>
+                            )}
+                          </span>
+                        </div>
+                        {onUpdateStudentEvaluation && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenEvaluationModal(student);
+                            }}
+                            className="px-2.5 py-1.5 rounded-lg bg-[#2E7D32] hover:bg-emerald-700 text-white text-[10px] font-bold flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
+                          >
+                            <Award className="h-3 w-3" />
+                            <span>{student.grade || student.internshipEvaluation?.grade ? 'Edit Nilai' : '+ Input Nilai'}</span>
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -625,6 +847,226 @@ export default function DirectorDashboard({
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ==========================================
+          TAB: TUGAS BIMBINGAN RISET (DIRECTOR TASK CRUD)
+          ========================================== */}
+      {activeTab === 'tasks' && (
+        <div className="space-y-6 animate-fade-in">
+          
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <CheckSquare className="h-6 w-6 text-[#2E7D32]" />
+                <span>Modul Tugas & Riset Bimbingan Direktur</span>
+              </h2>
+              <p className="text-xs text-slate-500">Buat penugasan langsung, tinjau progres hasil riset, minta revisi ilmiah, serta beri persetujuan akhir tugas mahasiswa.</p>
+            </div>
+
+            <button
+              onClick={handleOpenCreateTask}
+              className="px-5 py-2.5 rounded-xl bg-[#2E7D32] hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-2 shadow-md transition-all cursor-pointer"
+            >
+              <Plus className="h-4 w-4" />
+              <span>+ Buat Penugasan Riset Baru</span>
+            </button>
+          </div>
+
+          {/* SEARCH & FILTERS */}
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari nomor tugas, judul riset, atau nama mahasiswa..."
+                value={taskSearch}
+                onChange={e => setTaskSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-slate-400" />
+              <select
+                value={taskStatusFilter}
+                onChange={e => setTaskStatusFilter(e.target.value)}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold"
+              >
+                <option value="all">Semua Status Tugas</option>
+                <option value="not_started">Belum Dimulai</option>
+                <option value="in_progress">Dalam Proses</option>
+                <option value="review">Menunggu Review Direktur</option>
+                <option value="revision">Memerlukan Revisi</option>
+                <option value="completed">Selesai & Disetujui</option>
+              </select>
+            </div>
+          </div>
+
+          {/* FULL TASK MANAGEMENT TABLE */}
+          <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700/80 shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs min-w-[950px]">
+                <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-700">
+                  <tr>
+                    <th className="py-3.5 px-4">Nomor & Tugas Riset</th>
+                    <th className="py-3.5 px-4">Mahasiswa Ditugaskan</th>
+                    <th className="py-3.5 px-4">Proyek R&D</th>
+                    <th className="py-3.5 px-4">Tenggat Waktu</th>
+                    <th className="py-3.5 px-4">Prioritas</th>
+                    <th className="py-3.5 px-4">Progress (%)</th>
+                    <th className="py-3.5 px-4">Status</th>
+                    <th className="py-3.5 px-4">GitHub & Lampiran</th>
+                    <th className="py-3.5 px-4 text-right">Aksi Direktur</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+                  {filteredTasks.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="py-12 text-center text-slate-400">
+                        Tidak ada data tugas yang sesuai dengan filter pencarian.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredTasks.map((t) => (
+                      <tr key={t.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors">
+                        <td className="py-4 px-4">
+                          <span className="font-mono text-[10px] font-bold text-[#2E7D32] bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md">
+                            {t.taskNumber || 'TGS-2026-001'}
+                          </span>
+                          <h4 className="font-bold text-slate-800 dark:text-slate-100 mt-1">{t.title}</h4>
+                          <p className="text-[11px] text-slate-500 line-clamp-1">{t.description}</p>
+                        </td>
+
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{t.assignedStudentName}</span>
+                          <span className="block text-[10px] text-slate-400">Assigned by: {t.assignedBy || 'Direktur Lab'}</span>
+                        </td>
+
+                        <td className="py-4 px-4 whitespace-nowrap font-medium text-slate-700 dark:text-slate-300">
+                          {t.projectName || 'HYCOS-SMARTS Gateway'}
+                        </td>
+
+                        <td className="py-4 px-4 whitespace-nowrap font-mono text-slate-600 dark:text-slate-400">
+                          {t.deadline}
+                        </td>
+
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
+                            t.priority === 'urgent' ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300' :
+                            t.priority === 'high' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
+                            'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                          }`}>
+                            {t.priority}
+                          </span>
+                        </td>
+
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-[#2E7D32]">{t.progressPercent || 0}%</span>
+                            <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div className="h-full bg-emerald-600 rounded-full" style={{ width: `${t.progressPercent || 0}%` }} />
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1 ${
+                            t.status === 'completed' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
+                            t.status === 'review' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' :
+                            t.status === 'revision' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
+                            t.status === 'in_progress' ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' :
+                            'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                          }`}>
+                            {t.status === 'completed' ? 'Selesai & Sah' :
+                             t.status === 'review' ? 'Menunggu Review' :
+                             t.status === 'revision' ? 'Memerlukan Revisi' :
+                             t.status === 'in_progress' ? 'Dalam Proses' : 'Belum Dimulai'}
+                          </span>
+                        </td>
+
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          {t.githubUrl ? (
+                            <a href={t.githubUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:text-emerald-600">
+                              <Github className="h-3.5 w-3.5" />
+                              <span>Source Code</span>
+                            </a>
+                          ) : (
+                            <span className="text-[10px] text-slate-400">Belum diunggah</span>
+                          )}
+                        </td>
+
+                        <td className="py-4 px-4 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => setSelectedTaskForRevision(t)}
+                              className="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 dark:bg-amber-950 dark:hover:bg-amber-900 text-amber-900 dark:text-amber-200 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                              title="Minta Revisi Ilmiah"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                              <span>Minta Revisi</span>
+                            </button>
+
+                            {onApproveTask && (
+                              <button
+                                onClick={() => onApproveTask(t.id)}
+                                className="px-2.5 py-1 rounded-lg bg-[#2E7D32] hover:bg-emerald-700 text-white text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                                title="Setujui Tugas Riset"
+                              >
+                                <CheckCircle2 className="h-3 w-3" />
+                                <span>Setujui</span>
+                              </button>
+                            )}
+
+                            <button
+                              onClick={() => handleOpenEditTask(t)}
+                              className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 transition-colors"
+                              title="Edit Tugas"
+                            >
+                              <Edit3 className="h-4 w-4" />
+                            </button>
+
+                            {onDeleteTask && (
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Hapus tugas riset "${t.title}"?`)) {
+                                    onDeleteTask(t.id);
+                                  }
+                                }}
+                                className="p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 text-slate-400 hover:text-red-600 transition-colors"
+                                title="Hapus Tugas"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* ==========================================
+          TAB: PENGUMUMAN LABORATORIUM (DIRECTOR CMS)
+          ========================================== */}
+      {activeTab === 'announcements' && (
+        <div className="animate-fade-in">
+          <AnnouncementsManager
+            announcements={announcements}
+            onCreateAnnouncement={onCreateAnnouncement}
+            onUpdateAnnouncement={onUpdateAnnouncement}
+            onDeleteAnnouncement={onDeleteAnnouncement}
+            currentUserRole="director"
+            currentUserName={currentUser?.name || 'Prof. Dr. Indrarini Dyah Irawati'}
+            darkMode={darkMode}
+          />
         </div>
       )}
 
@@ -1067,12 +1509,24 @@ export default function DirectorDashboard({
 
       {/* VIEW: ATTENDANCE */}
       {activeTab === 'attendance' && (
-        <AttendanceView attendance={attendance} students={students} currentUser={currentUser} darkMode={darkMode} />
+        <AttendanceView 
+          attendance={attendance} 
+          students={students} 
+          currentUser={currentUser} 
+          onCorrectAttendance={onCorrectAttendance}
+          darkMode={darkMode} 
+        />
       )}
 
       {/* VIEW: REPORTS & ANALYTICS */}
       {activeTab === 'reports' && (
-        <ReportExportModal darkMode={darkMode} />
+        <ReportExportModal 
+          students={students}
+          tasks={tasks}
+          attendance={attendance}
+          projects={projects}
+          darkMode={darkMode} 
+        />
       )}
 
       {/* VIEW: MY PROFILE */}
@@ -1114,6 +1568,230 @@ export default function DirectorDashboard({
           }}
           darkMode={darkMode}
         />
+      )}
+
+      {/* MODAL: CREATE / EDIT TASK FOR DIRECTOR */}
+      {createTaskModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-100 dark:border-slate-700">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                {editingTask ? 'Edit Penugasan Riset' : 'Buat Penugasan Riset Baru'}
+              </h3>
+              <button onClick={() => setCreateTaskModalOpen(false)} className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleTaskSubmit} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 font-semibold mb-1">Judul Tugas Riset</label>
+                <input 
+                  type="text" 
+                  value={taskTitle} 
+                  onChange={e => setTaskTitle(e.target.value)} 
+                  required 
+                  placeholder="Contoh: Implementasi Gateway MQTT & XBee Sensor Node" 
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 font-semibold mb-1">Pilih Mahasiswa Peneliti</label>
+                <select 
+                  value={assignedStudentId} 
+                  onChange={e => setAssignedStudentId(e.target.value)} 
+                  required 
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100 font-medium"
+                >
+                  <option value="">-- Pilih Mahasiswa Magang --</option>
+                  {students.map(s => (
+                    <option key={s.id} value={s.id}>{s.name} ({s.studentId || '1301210042'})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 font-semibold mb-1">Proyek R&D Terkait</label>
+                <input 
+                  type="text" 
+                  value={taskProject} 
+                  onChange={e => setTaskProject(e.target.value)} 
+                  placeholder="HYCOS-SMARTS Telemetry Gateway" 
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 font-semibold mb-1">Deskripsi Tugas & Instruksi Pembimbing</label>
+                <textarea 
+                  rows={3} 
+                  value={taskDesc} 
+                  onChange={e => setTaskDesc(e.target.value)} 
+                  required 
+                  placeholder="Jelaskan metodologi riset, parameter kalibrasi, dan target luaran ilmiah..."
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100" 
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-200 font-semibold mb-1">Tenggat Waktu (Deadline)</label>
+                  <input 
+                    type="date" 
+                    value={taskDeadline} 
+                    onChange={e => setTaskDeadline(e.target.value)} 
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-200 font-semibold mb-1">Prioritas</label>
+                  <select 
+                    value={taskPriority} 
+                    onChange={e => setTaskPriority(e.target.value as any)} 
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold"
+                  >
+                    <option value="normal">Normal</option>
+                    <option value="high">Tinggi</option>
+                    <option value="urgent">Urgent / Mendesak</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                <button 
+                  type="button" 
+                  onClick={() => setCreateTaskModalOpen(false)} 
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 font-semibold cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-5 py-2 rounded-xl bg-[#2E7D32] hover:bg-emerald-700 text-white font-bold shadow-md cursor-pointer transition-colors"
+                >
+                  {editingTask ? 'Simpan Perubahan' : 'Terbitkan Tugas Riset'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: REVISION DETAIL MODAL */}
+      {selectedTaskForRevision && (
+        <RevisionDetailModal
+          task={selectedTaskForRevision}
+          onClose={() => setSelectedTaskForRevision(null)}
+          onRequestRevision={onRequestRevision}
+          isAssistant={true}
+          darkMode={darkMode}
+        />
+      )}
+
+      {/* MODAL: OFFICIAL ACADEMIC EVALUATION & GRADING MODAL */}
+      {evalModalOpen && evalStudent && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl border border-slate-100 dark:border-slate-700">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-[#2E7D32]">
+                  <Award className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Evaluasi & Nilai Resmi Pembina Lab</h3>
+                  <p className="text-xs text-slate-500">{evalStudent.name} ({evalStudent.studentId || '1301210042'})</p>
+                </div>
+              </div>
+              <button onClick={() => setEvalModalOpen(false)} className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEvaluation} className="space-y-4 text-xs">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="block text-slate-700 dark:text-slate-200 font-semibold">Presensi (25%)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={evalAttendanceScore}
+                    onChange={(e) => handleUpdateScores(Number(e.target.value), evalTaskScore, evalAttitudeScore)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 font-mono text-center font-bold text-slate-800 dark:text-slate-100"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-slate-700 dark:text-slate-200 font-semibold">Tugas (50%)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={evalTaskScore}
+                    onChange={(e) => handleUpdateScores(evalAttendanceScore, Number(e.target.value), evalAttitudeScore)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 font-mono text-center font-bold text-slate-800 dark:text-slate-100"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-slate-700 dark:text-slate-200 font-semibold">Sikap (25%)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={evalAttitudeScore}
+                    onChange={(e) => handleUpdateScores(evalAttendanceScore, evalTaskScore, Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 font-mono text-center font-bold text-slate-800 dark:text-slate-100"
+                  />
+                </div>
+              </div>
+
+              {/* Calculated Summary */}
+              <div className="p-4 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-mono uppercase font-bold text-emerald-800 dark:text-emerald-300 block">Kalkulasi Nilai Akhir</span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-2xl font-black text-emerald-900 dark:text-emerald-200">{evalFinalScore}</span>
+                    <span className="text-xs text-emerald-700 dark:text-emerald-300">/ 100</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-mono uppercase font-bold text-emerald-800 dark:text-emerald-300 block">Huruf Mutu</span>
+                  <span className="text-2xl font-black px-3.5 py-0.5 rounded-xl bg-[#2E7D32] text-white inline-block mt-0.5 shadow-xs">
+                    {evalGrade}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-slate-700 dark:text-slate-200 font-semibold">Catatan Evaluasi Akademik Pembina Lab</label>
+                <textarea
+                  rows={3}
+                  value={evalAdvisorNotes}
+                  onChange={(e) => setEvalAdvisorNotes(e.target.value)}
+                  placeholder="Tuliskan catatan apresiasi, saran pengembangan riset, atau capaian mahasiswa..."
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-xs text-slate-800 dark:text-slate-100"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setEvalModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 font-semibold cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#2E7D32] hover:bg-emerald-700 text-white font-bold shadow-md flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Check className="h-4 w-4" />
+                  <span>Simpan Nilai & Evaluasi Resmi</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
     </div>

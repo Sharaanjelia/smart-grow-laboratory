@@ -176,7 +176,7 @@ export default function SimonaShowcase({
               <span className="font-mono text-xs font-extrabold tracking-widest text-cyan-600 uppercase">
                 ECO-FARMING INNOVATION // SIMONA
               </span>
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-none mt-1">
+              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight mt-1">
                 SIMONA
               </h1>
             </div>

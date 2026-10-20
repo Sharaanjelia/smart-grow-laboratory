@@ -46,50 +46,12 @@ export default function SmartTbnShowcase({
   const posterImage = '/images/smart-tbn/smart-tbn-poster.png';
   const [modalImage, setModalImage] = useState<string | null>(null);
 
-  // Live Telemetry Simulation States
-  const [capacityPercent, setCapacityPercent] = useState<number>(45);
-  const [trashWeight, setTrashWeight] = useState<number>(14.2);
-  const [sensorDistance, setSensorDistance] = useState<number>(48); // cm from lid
-  const [batteryVoltage, setBatteryVoltage] = useState<number>(12.6);
-  const [isFullSimulated, setIsFullSimulated] = useState<boolean>(false);
-  const [notificationSent, setNotificationSent] = useState<boolean>(false);
-  const [cameraActive, setCameraActive] = useState<boolean>(true);
-
-  // Comment Form States
+  // Comment & Share States
   const [nameInput, setNameInput] = useState('');
   const [emailInput, setEmailInput] = useState('');
   const [textInput, setTextInput] = useState('');
   const [commentSuccess, setCommentSuccess] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-
-  // Real-time gentle fluctuation
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (!isFullSimulated) {
-        setCapacityPercent(prev => Math.min(100, Math.max(10, Math.round(prev + (Math.random() - 0.45) * 2))));
-        setTrashWeight(prev => parseFloat((Math.max(1, prev + (Math.random() - 0.45) * 0.2)).toFixed(1)));
-        setSensorDistance(prev => Math.min(80, Math.max(15, Math.round(prev + (Math.random() - 0.5) * 2))));
-        setBatteryVoltage(prev => parseFloat((12.4 + Math.random() * 0.4).toFixed(2)));
-      }
-    }, 3500);
-    return () => clearInterval(timer);
-  }, [isFullSimulated]);
-
-  const handleToggleSimulateFull = () => {
-    if (!isFullSimulated) {
-      setIsFullSimulated(true);
-      setCapacityPercent(92);
-      setTrashWeight(28.4);
-      setSensorDistance(12);
-      setNotificationSent(true);
-    } else {
-      setIsFullSimulated(false);
-      setCapacityPercent(45);
-      setTrashWeight(14.2);
-      setSensorDistance(48);
-      setNotificationSent(false);
-    }
-  };
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -144,17 +106,6 @@ export default function SmartTbnShowcase({
         </button>
 
         <div className="flex items-center gap-2">
-          <a
-            href="https://smarttrash.devtbn.tech/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm hover:scale-105 cursor-pointer"
-            id="smart-tbn-external-link"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            <span>Kunjungi Website SmartTBN</span>
-          </a>
-
           <button
             onClick={handleShare}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
@@ -208,9 +159,6 @@ export default function SmartTbnShowcase({
               <span>Buka Platform SmartTBN</span>
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
-            <span className="text-xs text-emerald-200 font-mono">
-              https://smarttrash.devtbn.tech/
-            </span>
           </div>
         </div>
       </section>
@@ -252,159 +200,10 @@ export default function SmartTbnShowcase({
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 text-xs text-emerald-900 dark:text-emerald-200 flex items-center justify-between">
-            <span className="font-semibold">Format Infografis: Poster Resmi Sosialisasi & Implementasi Produk Riset Smart TBN</span>
-            <span className="text-[10px] font-mono font-bold bg-emerald-200/80 dark:bg-emerald-900 px-2 py-0.5 rounded">HD Verified</span>
-          </div>
         </div>
 
-        {/* RIGHT: LIVE TELEMETRY SIMULATOR & HIGHLIGHTS */}
+        {/* RIGHT: PLATFORM INFO & HIGHLIGHTS */}
         <div className="lg:col-span-6 space-y-6">
-          
-          {/* Live Telemetry Card */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xl space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-700 dark:text-emerald-400">
-                  <Activity className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="font-display text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-                    Live Telemetri Smart TBN
-                  </h3>
-                  <p className="text-[11px] text-slate-500 font-medium">Data sensor aktual Unit Prailiu-01 (Waingapu)</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px] font-mono font-bold border border-emerald-300 dark:border-emerald-700">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-                  ONLINE
-                </span>
-              </div>
-            </div>
-
-            {/* Capacity Progress Bar */}
-            <div className="space-y-2 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700">
-              <div className="flex items-center justify-between text-xs font-bold">
-                <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-200">
-                  <Trash2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  Kapasitas Timbunan Sampah
-                </span>
-                <span className={`font-mono text-sm ${capacityPercent >= 80 ? 'text-rose-600 dark:text-rose-400 font-extrabold animate-pulse' : 'text-emerald-700 dark:text-emerald-400'}`}>
-                  {capacityPercent}% {capacityPercent >= 80 ? '(Penuh)' : '(Normal)'}
-                </span>
-              </div>
-
-              <div className="w-full h-3.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden p-0.5">
-                <div 
-                  className={`h-full rounded-full transition-all duration-700 ${
-                    capacityPercent >= 85 
-                      ? 'bg-rose-500 shadow-md shadow-rose-500/50' 
-                      : capacityPercent >= 70 
-                        ? 'bg-amber-500' 
-                        : 'bg-gradient-to-r from-emerald-500 to-teal-400'
-                  }`}
-                  style={{ width: `${capacityPercent}%` }}
-                />
-              </div>
-
-              <div className="flex justify-between text-[10px] font-mono text-slate-400 pt-0.5">
-                <span>0% Kosong</span>
-                <span>Batas Notifikasi: 80%</span>
-                <span>100% Penuh</span>
-              </div>
-            </div>
-
-            {/* Telemetry Metric Grid */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700">
-                <span className="text-[10px] font-mono text-slate-400 font-semibold flex items-center gap-1">
-                  <Scale className="h-3.5 w-3.5 text-emerald-600" />
-                  Massa Beban (Load Cell)
-                </span>
-                <div className="text-xl font-mono font-black text-slate-900 dark:text-white mt-1">
-                  {trashWeight} <span className="text-xs font-normal text-slate-500">kg</span>
-                </div>
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Sensor HX711 Terkalibrasi</span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700">
-                <span className="text-[10px] font-mono text-slate-400 font-semibold flex items-center gap-1">
-                  <Ruler className="h-3.5 w-3.5 text-emerald-600" />
-                  Jarak Bebas Sensor
-                </span>
-                <div className="text-xl font-mono font-black text-slate-900 dark:text-white mt-1">
-                  {sensorDistance} <span className="text-xs font-normal text-slate-500">cm</span>
-                </div>
-                <span className="text-[10px] text-slate-500 font-medium">Ultrasonik JSN-SR04T</span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700">
-                <span className="text-[10px] font-mono text-slate-400 font-semibold flex items-center gap-1">
-                  <Camera className="h-3.5 w-3.5 text-emerald-600" />
-                  Visual Kamera
-                </span>
-                <div className="text-sm font-bold text-slate-800 dark:text-slate-100 mt-1 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  ESP32-CAM Siap
-                </div>
-                <span className="text-[10px] text-slate-500 font-medium">Snapshot Interval 15 Min</span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700">
-                <span className="text-[10px] font-mono text-slate-400 font-semibold flex items-center gap-1">
-                  <BatteryCharging className="h-3.5 w-3.5 text-emerald-600" />
-                  Solar Battery Pack
-                </span>
-                <div className="text-xl font-mono font-black text-slate-900 dark:text-white mt-1">
-                  {batteryVoltage} <span className="text-xs font-normal text-slate-500">V</span>
-                </div>
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Solar Charging Aktif</span>
-              </div>
-            </div>
-
-            {/* Notification Status Banner */}
-            {capacityPercent >= 80 && (
-              <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-xs text-rose-800 dark:text-rose-200 flex items-center gap-2.5 animate-pulse">
-                <Bell className="h-4 w-4 text-rose-600 shrink-0" />
-                <span><strong>Peringatan Otomatis:</strong> Kapasitas melebihi ambang batas! Notifikasi telah dikirimkan ke petugas kebersihan desa wisata via Telegram & Dashboard Web.</span>
-              </div>
-            )}
-
-            {/* Direct Platform Link Banner inside Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950 to-slate-950 text-white flex items-center justify-between">
-              <div>
-                <p className="text-xs font-bold text-emerald-300">Dashboard Web SmartTBN Online</p>
-                <p className="text-[10px] text-slate-300 font-mono">https://smarttrash.devtbn.tech/</p>
-              </div>
-              <a
-                href="https://smarttrash.devtbn.tech/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1 transition-all"
-              >
-                <span>Buka Web</span>
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            </div>
-
-            {/* Simulation Control Button */}
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={handleToggleSimulateFull}
-                className={`w-full py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm ${
-                  isFullSimulated 
-                    ? 'bg-slate-800 hover:bg-slate-700 text-white' 
-                    : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-800/20'
-                }`}
-              >
-                <RefreshCw className={`h-4 w-4 ${isFullSimulated ? 'animate-spin' : ''}`} />
-                <span>{isFullSimulated ? 'Reset Simulasi ke Kondisi Normal' : 'Simulasikan Kondisi Sampah Penuh (Test Notifikasi)'}</span>
-              </button>
-            </div>
-          </div>
 
           {/* Quick Features List */}
           <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-md space-y-3">

@@ -339,7 +339,7 @@ export default function AssistantDashboard({
           ========================================== */}
       {activeTab === 'pending_registrations' && (
         <PendingRegistrationsView 
-          registrations={pendingRegistrations}
+          registrations={displayPendingRegs}
           onApprove={onApproveRegistration || (() => {})}
           onReject={onRejectRegistration || (() => {})}
           onDelete={onDeleteRegistration}
@@ -1166,14 +1166,27 @@ export default function AssistantDashboard({
           TAB 5: REPORTS & YIELD
           ========================================== */}
       {activeTab === 'reports' && (
-        <ReportExportModal darkMode={darkMode} />
+        <ReportExportModal 
+          students={allStudentsAndAlumni.length > 0 ? allStudentsAndAlumni : students}
+          tasks={tasks}
+          attendance={attendance}
+          projects={projects}
+          darkMode={darkMode} 
+        />
       )}
 
       {/* ==========================================
           TAB 6: MY PROFILE
           ========================================== */}
       {activeTab === 'profile' && currentUser && (
-        <ProfileView currentUser={currentUser} onUpdateProfile={onUpdateProfile} darkMode={darkMode} />
+        <ProfileView 
+          currentUser={currentUser} 
+          onUpdateProfile={onUpdateProfile} 
+          users={users}
+          projects={projects}
+          publicProjects={publicProjects}
+          darkMode={darkMode} 
+        />
       )}
 
       {/* MODAL: TASK CREATION */}

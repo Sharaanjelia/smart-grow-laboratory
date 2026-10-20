@@ -43,34 +43,20 @@ export default function SmartWaterShowcase({
   onAddComment 
 }: SmartWaterShowcaseProps) {
   
+  const logoImageUrl = '/images/smart-water/smart-water-logo.jpg';
   const appImageUrl = '/images/smart-water/smart-water-app.jpg';
   const downloadUrl = 'https://drive.google.com/file/d/1NNfvmh80qbw0Gg1aB26Eod8DEh-26mh7/view?usp=sharing';
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalImage, setModalImage] = useState<string>(logoImageUrl);
+  const [activePreviewTab, setActivePreviewTab] = useState<'logo' | 'app'>('logo');
   const [copiedLink, setCopiedLink] = useState(false);
-
-  // AI-OCR Simulation States
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanStep, setScanStep] = useState<'idle' | 'scanning' | 'success'>('idle');
-  const [meterValue, setMeterValue] = useState(428.7);
-  const [prevMeterValue] = useState(404.5);
-  const [cubicRate] = useState(4000); // Rp 4.000 / m³
 
   // Comment Form States
   const [nameInput, setNameInput] = useState('');
   const [emailInput, setEmailInput] = useState('');
   const [textInput, setTextInput] = useState('');
   const [commentSuccess, setCommentSuccess] = useState(false);
-
-  const handleSimulateScan = () => {
-    setIsScanning(true);
-    setScanStep('scanning');
-    setTimeout(() => {
-      setIsScanning(false);
-      setScanStep('success');
-      setMeterValue(prev => parseFloat((prev + Math.floor(Math.random() * 5 + 1) * 0.1).toFixed(1)));
-    }, 1800);
-  };
 
   const handleShare = () => {
     try {
@@ -95,9 +81,6 @@ export default function SmartWaterShowcase({
     setTextInput('');
     setTimeout(() => setCommentSuccess(false), 4000);
   };
-
-  const usageCubic = parseFloat((meterValue - prevMeterValue).toFixed(1));
-  const estimatedBill = Math.round(usageCubic * cubicRate);
 
   const defaultComments: Comment[] = [
     {
@@ -133,18 +116,6 @@ export default function SmartWaterShowcase({
         </button>
 
         <div className="flex items-center gap-2.5">
-          <a
-            href={downloadUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold transition-all shadow-md hover:scale-105 cursor-pointer"
-            id="smart-water-download-btn"
-          >
-            <Download className="h-3.5 w-3.5" />
-            <span>Unduh Aplikasi Smart Water</span>
-            <ExternalLink className="h-3 w-3" />
-          </a>
-
           <button
             onClick={handleShare}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
@@ -177,9 +148,22 @@ export default function SmartWaterShowcase({
             </span>
           </div>
 
-          <h1 className="font-display text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight drop-shadow-sm">
-            Smart Water: Smart Self Meter Reading Berbasis AI
-          </h1>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-1">
+            <div 
+              onClick={() => { setModalImage(logoImageUrl); setModalOpen(true); }}
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white p-2 shadow-xl border border-sky-200/80 cursor-zoom-in shrink-0 hover:scale-105 transition-transform flex items-center justify-center group/logo"
+              title="Klik untuk membuka Logo Smart Water ukuran penuh"
+            >
+              <img 
+                src={logoImageUrl} 
+                alt="Smart Water Official Logo" 
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <h1 className="font-display text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight drop-shadow-sm">
+              Smart Water: Smart Self Meter Reading Berbasis AI
+            </h1>
+          </div>
 
           <p className="text-base sm:text-lg text-sky-100/95 font-medium leading-relaxed max-w-3xl">
             Transformasi Digital Perumda Air Minum melalui platform Self Meter Reading berbasis AI-OCR yang memungkinkan pelanggan melakukan pencatatan angka meter air secara mandiri melalui smartphone dengan validasi foto, timestamp, dan koordinat GPS.
@@ -212,39 +196,81 @@ export default function SmartWaterShowcase({
       {/* TWO-COLUMN SHOWCASE: APP INTERFACE & INTERACTIVE AI-OCR SIMULATOR */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* LEFT: SMARTPHONE APP SCREEN VIEW */}
+        {/* LEFT: SMARTPHONE APP & LOGO VIEW */}
         <div className="lg:col-span-5 space-y-4">
           <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl flex flex-col items-center">
             
-            <div className="w-full flex items-center justify-between pb-3 text-white border-b border-slate-800 text-xs">
-              <span className="flex items-center gap-1.5 font-bold text-sky-400">
-                <Smartphone className="h-4 w-4" />
-                Aplikasi Mobile Smart Water
-              </span>
+            <div className="w-full flex items-center justify-between pb-3 text-white border-b border-slate-800 text-xs gap-2">
+              <div className="flex items-center gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
+                <button
+                  onClick={() => setActivePreviewTab('logo')}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    activePreviewTab === 'logo'
+                      ? 'bg-sky-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Logo Resmi
+                </button>
+                <button
+                  onClick={() => setActivePreviewTab('app')}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    activePreviewTab === 'app'
+                      ? 'bg-sky-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Tampilan Aplikasi
+                </button>
+              </div>
+
               <button
-                onClick={() => setModalOpen(true)}
+                onClick={() => {
+                  setModalImage(activePreviewTab === 'logo' ? logoImageUrl : appImageUrl);
+                  setModalOpen(true);
+                }}
                 className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white cursor-pointer"
-                title="Perbesar Tampilan Layar"
+                title="Perbesar Tampilan Gambar"
               >
                 <Maximize2 className="h-3.5 w-3.5" />
               </button>
             </div>
 
-            {/* Phone Frame Mockup */}
-            <div className="relative mt-4 w-full max-w-[280px] rounded-[2.5rem] p-3 bg-slate-950 border-4 border-slate-800 shadow-2xl overflow-hidden group">
-              <div className="w-20 h-4 bg-slate-800 rounded-full mx-auto mb-2" />
-              
-              <div className="relative rounded-[2rem] overflow-hidden bg-white aspect-[9/18]">
+            {activePreviewTab === 'logo' ? (
+              <div className="relative mt-4 w-full max-w-[280px] rounded-3xl p-6 bg-white shadow-2xl overflow-hidden group flex flex-col items-center justify-center aspect-square border-4 border-slate-800">
                 <img 
-                  src={appImageUrl} 
-                  alt="Aplikasi Smart Water - Smart Self Meter Reading"
-                  className="w-full h-full object-contain cursor-zoom-in transition-transform duration-500 group-hover:scale-102"
-                  onClick={() => setModalOpen(true)}
+                  src={logoImageUrl} 
+                  alt="Smart Water Logo"
+                  className="w-full h-full object-contain cursor-zoom-in transition-transform duration-500 group-hover:scale-105"
+                  onClick={() => {
+                    setModalImage(logoImageUrl);
+                    setModalOpen(true);
+                  }}
                 />
+                <span className="text-[10px] font-mono text-slate-500 mt-2 font-bold uppercase tracking-wider">
+                  Klik Gambar untuk Zoom
+                </span>
               </div>
+            ) : (
+              /* Phone Frame Mockup */
+              <div className="relative mt-4 w-full max-w-[280px] rounded-[2.5rem] p-3 bg-slate-950 border-4 border-slate-800 shadow-2xl overflow-hidden group">
+                <div className="w-20 h-4 bg-slate-800 rounded-full mx-auto mb-2" />
+                
+                <div className="relative rounded-[2rem] overflow-hidden bg-white aspect-[9/18]">
+                  <img 
+                    src={appImageUrl} 
+                    alt="Aplikasi Smart Water - Smart Self Meter Reading"
+                    className="w-full h-full object-contain cursor-zoom-in transition-transform duration-500 group-hover:scale-102"
+                    onClick={() => {
+                      setModalImage(appImageUrl);
+                      setModalOpen(true);
+                    }}
+                  />
+                </div>
 
-              <div className="w-24 h-1 bg-slate-700 rounded-full mx-auto mt-2" />
-            </div>
+                <div className="w-24 h-1 bg-slate-700 rounded-full mx-auto mt-2" />
+              </div>
+            )}
 
             <div className="w-full pt-4 text-center">
               <a
@@ -260,115 +286,10 @@ export default function SmartWaterShowcase({
 
           </div>
 
-          <div className="p-4 rounded-2xl bg-sky-50/80 dark:bg-sky-950/40 border border-sky-200/80 dark:border-sky-800/60 text-xs text-sky-900 dark:text-sky-200 flex items-center justify-between">
-            <span className="font-semibold">Versi Aplikasi: Mobile Client v1.2.0 (Android)</span>
-            <span className="text-[10px] font-mono font-bold bg-sky-200/80 dark:bg-sky-900 px-2 py-0.5 rounded">AI-OCR Ready</span>
-          </div>
         </div>
 
-        {/* RIGHT: INTERACTIVE AI-OCR METER SIMULATOR */}
+        {/* RIGHT: HIGHLIGHTS & STRATEGIC BENEFITS */}
         <div className="lg:col-span-7 space-y-6">
-          
-          <div className="p-6 sm:p-7 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xl space-y-5">
-            
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400">
-                  <Camera className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="font-display text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-                    Simulasi Pembacaan Meter Mandiri (AI-OCR)
-                  </h3>
-                  <p className="text-[11px] text-slate-500 font-medium">Uji coba algoritma pengenalan angka meter dari foto kamera smartphone</p>
-                </div>
-              </div>
-
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px] font-mono font-bold border border-emerald-300 dark:border-emerald-700">
-                AI ENGINE ACTIVE
-              </span>
-            </div>
-
-            {/* Meter Analog Display Box */}
-            <div className="p-5 rounded-2xl bg-slate-950 text-white border border-slate-800 space-y-3 relative overflow-hidden">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-mono text-slate-400 flex items-center gap-1">
-                  <Activity className="h-3.5 w-3.5 text-sky-400" />
-                  Visual Dial Meter Pelanggan (Simulasi)
-                </span>
-                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800">
-                  GPS: -6.974, 107.630 (Terverifikasi)
-                </span>
-              </div>
-
-              {/* Digital Dial Counter Mock */}
-              <div className="flex items-center justify-center gap-1.5 py-4 bg-slate-900/90 rounded-xl border border-slate-800">
-                {String(meterValue.toFixed(1)).padStart(7, '0').split('').map((char, i) => (
-                  <div 
-                    key={i} 
-                    className={`w-9 h-14 rounded-lg flex items-center justify-center font-mono font-black text-2xl shadow-inner ${
-                      char === '.' 
-                        ? 'w-4 text-slate-500 bg-transparent text-lg' 
-                        : i >= 5 
-                          ? 'bg-rose-950 text-rose-300 border border-rose-800' 
-                          : 'bg-slate-800 text-white border border-slate-700'
-                    }`}
-                  >
-                    {char}
-                  </div>
-                ))}
-                <span className="font-mono text-sm text-slate-400 ml-2 font-bold">m³</span>
-              </div>
-
-              {/* AI Scan Overlay */}
-              {isScanning && (
-                <div className="absolute inset-0 bg-sky-950/85 backdrop-blur-xs flex flex-col items-center justify-center text-sky-300 space-y-2 animate-fade-in">
-                  <RefreshCw className="h-8 w-8 animate-spin text-sky-400" />
-                  <p className="text-xs font-mono font-bold">Memproses Citra Meter dengan AI-OCR Deep Learning...</p>
-                  <span className="text-[10px] text-slate-400">Deteksi angka & kalibrasi perspektif</span>
-                </div>
-              )}
-            </div>
-
-            {/* Scan Action & Output Breakdown */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700 text-center">
-                <span className="text-[10px] text-slate-400 font-mono block">Angka Terdeteksi AI</span>
-                <span className="text-lg font-mono font-black text-slate-900 dark:text-white">{meterValue} m³</span>
-                <span className="text-[9px] text-emerald-600 block mt-0.5">Confidence: 99.6%</span>
-              </div>
-
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700 text-center">
-                <span className="text-[10px] text-slate-400 font-mono block">Pemakaian Bulan Ini</span>
-                <span className="text-lg font-mono font-black text-sky-600 dark:text-sky-400">{usageCubic} m³</span>
-                <span className="text-[9px] text-slate-500 block mt-0.5">Bulan Lalu: {prevMeterValue} m³</span>
-              </div>
-
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700 text-center">
-                <span className="text-[10px] text-slate-400 font-mono block">Tagihan Otomatis</span>
-                <span className="text-lg font-mono font-black text-emerald-600 dark:text-emerald-400">Rp {estimatedBill.toLocaleString('id-ID')}</span>
-                <span className="text-[9px] text-emerald-600 block mt-0.5">Billing Real-Time</span>
-              </div>
-            </div>
-
-            {/* Trigger Button */}
-            <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-800">
-              <div className="text-xs">
-                <p className="font-bold text-slate-800 dark:text-slate-200">Uji Coba Pengenalan AI</p>
-                <p className="text-[10px] text-slate-500 font-mono">Klik tombol untuk mensimulasikan foto meter mandiri</p>
-              </div>
-
-              <button
-                onClick={handleSimulateScan}
-                disabled={isScanning}
-                className="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md transition-all hover:scale-105 cursor-pointer flex items-center justify-center gap-2"
-              >
-                <Camera className="h-4 w-4" />
-                <span>{isScanning ? 'Membaca Citra...' : 'Ambil Foto & Scan AI'}</span>
-              </button>
-            </div>
-
-          </div>
 
           {/* 3 MANFAAT STRATEGIS BAGI PERUMDA */}
           <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
@@ -637,40 +558,102 @@ export default function SmartWaterShowcase({
         </div>
       </section>
 
-      {/* FULL-SCREEN IMAGE MODAL */}
+      {/* FULL-SCREEN IMAGE MODAL (BUKA GAMBAR SMART WATER) */}
       {modalOpen && (
         <div 
-          className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-between p-4 animate-fade-in"
+          className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 animate-fade-in"
           onClick={() => setModalOpen(false)}
         >
+          {/* Modal Header */}
           <div 
-            className="w-full max-w-4xl flex items-center justify-between text-white py-2 border-b border-slate-800"
+            className="w-full max-w-4xl flex flex-wrap items-center justify-between text-white py-3 border-b border-slate-800 gap-3"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="font-bold text-sm sm:text-base">
-              Aplikasi Smart Water - Smart Self Meter Reading (Mobile View)
-            </h3>
-            <button
-              onClick={() => setModalOpen(false)}
-              className="p-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white cursor-pointer"
-            >
-              <X className="h-5 w-5" />
-            </button>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-400">
+                <Droplets className="h-4 w-4" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm sm:text-base text-white">
+                  {modalImage === logoImageUrl ? 'Logo Resmi Smart Water' : 'Aplikasi Mobile Smart Water'}
+                </h3>
+                <p className="text-xs text-slate-400">
+                  {modalImage === logoImageUrl ? 'Smart Self Meter Reading Berbasis AI' : 'Tampilan Antarmuka Pengguna (UI) Mobile'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Switch tabs inside modal */}
+              <div className="flex items-center bg-slate-900 border border-slate-700 rounded-xl p-1 text-xs">
+                <button
+                  onClick={() => setModalImage(logoImageUrl)}
+                  className={`px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                    modalImage === logoImageUrl
+                      ? 'bg-sky-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Logo
+                </button>
+                <button
+                  onClick={() => setModalImage(appImageUrl)}
+                  className={`px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                    modalImage === appImageUrl
+                      ? 'bg-sky-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Mockup App
+                </button>
+              </div>
+
+              <a
+                href={modalImage}
+                download={modalImage === logoImageUrl ? 'smart-water-logo.jpg' : 'smart-water-app.jpg'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                title="Unduh / Buka di Tab Baru"
+              >
+                <Download className="h-4 w-4" />
+              </a>
+
+              <button
+                onClick={() => setModalOpen(false)}
+                className="p-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white transition-colors cursor-pointer"
+                title="Tutup Modal"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
+          {/* Modal Image Body */}
           <div 
             className="w-full flex-1 overflow-auto flex items-center justify-center p-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <img 
-              src={appImageUrl} 
-              alt="Aplikasi Smart Water Fullscreen"
-              className="max-h-[85vh] object-contain rounded-2xl shadow-2xl"
-            />
+            {modalImage === logoImageUrl ? (
+              <div className="bg-white p-6 sm:p-10 rounded-3xl shadow-2xl border-2 border-sky-300/40 max-h-[80vh] flex items-center justify-center">
+                <img 
+                  src={logoImageUrl} 
+                  alt="Smart Water Official Logo"
+                  className="max-h-[70vh] max-w-[85vw] object-contain drop-shadow-md"
+                />
+              </div>
+            ) : (
+              <img 
+                src={appImageUrl} 
+                alt="Aplikasi Smart Water Fullscreen"
+                className="max-h-[85vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl"
+              />
+            )}
           </div>
 
-          <div className="text-center text-xs text-slate-400 font-mono py-2">
-            Klik di luar gambar atau tombol silang untuk menutup
+          {/* Modal Footer Note */}
+          <div className="text-center text-xs text-slate-400 font-mono py-2 flex items-center gap-2">
+            <span>Tekan di luar gambar atau tombol silang untuk menutup</span>
           </div>
         </div>
       )}

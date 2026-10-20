@@ -72,32 +72,21 @@ export default function HycosmartsShowcase({
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
   const [modalImage, setModalImage] = useState<string | null>(null);
 
-  // Interactive Live Telemetry State
-  const [phVal, setPhVal] = useState<number>(6.2);
-  const [tdsVal, setTdsVal] = useState<number>(1150);
-  const [doVal, setDoVal] = useState<number>(7.8);
-  const [ecVal, setEcVal] = useState<number>(1.8);
-  const [ultrasonicLevel, setUltrasonicLevel] = useState<number>(88);
-  const [mode3T, setMode3T] = useState<boolean>(true);
-  const [aiDiagnosticState, setAiDiagnosticState] = useState<'optimal' | 'warning' | 'calibrating'>('optimal');
+  const handlePrev = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setActiveImageIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1));
+  };
+
+  const handleNext = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setActiveImageIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1));
+  };
 
   // Comment Form States
   const [nameInput, setNameInput] = useState('');
   const [emailInput, setEmailInput] = useState('');
   const [textInput, setTextInput] = useState('');
   const [commentSuccess, setCommentSuccess] = useState(false);
-
-  // Auto simulated telemetry fluctuation
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setPhVal(prev => parseFloat((prev + (Math.random() - 0.5) * 0.05).toFixed(2)));
-      setTdsVal(prev => Math.round(prev + (Math.random() - 0.5) * 8));
-      setDoVal(prev => parseFloat((prev + (Math.random() - 0.5) * 0.04).toFixed(1)));
-      setEcVal(prev => parseFloat((prev + (Math.random() - 0.5) * 0.02).toFixed(2)));
-      setUltrasonicLevel(prev => parseFloat((prev + (Math.random() - 0.5) * 0.2).toFixed(1)));
-    }, 3500);
-    return () => clearInterval(timer);
-  }, []);
 
   const handleSubmitComment = (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,23 +101,6 @@ export default function HycosmartsShowcase({
     setTimeout(() => setCommentSuccess(false), 4000);
   };
 
-  const getStatusBadge = (val: number, min: number, max: number) => {
-    if (val >= min && val <= max) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300/40">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          Optimal
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/40">
-        <AlertTriangle className="w-3 h-3 text-amber-600" />
-        Alert
-      </span>
-    );
-  };
-
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 pb-20 animate-fade-in space-y-12">
       
@@ -141,21 +113,6 @@ export default function HycosmartsShowcase({
           <ChevronLeft className="h-4 w-4 text-emerald-600 group-hover:-translate-x-1 transition-transform" />
           <span>Kembali ke Hub Utama</span>
         </button>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 text-xs font-extrabold border border-emerald-200/50">
-            <Radio className="w-3.5 h-3.5 animate-pulse text-emerald-600" />
-            Smart Container Hydroponics
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-950/60 dark:text-cyan-300 text-xs font-extrabold border border-cyan-200/50">
-            <Globe className="w-3.5 h-3.5 text-cyan-600" />
-            3T Region Suitable
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 text-xs font-extrabold border border-purple-200/50">
-            <Cpu className="w-3.5 h-3.5 text-purple-600" />
-            AI Failure Early Alert
-          </span>
-        </div>
       </div>
 
       {/* Hero Showcase Title Section */}
@@ -214,416 +171,279 @@ export default function HycosmartsShowcase({
         </div>
       </div>
 
-      {/* Main Interactive Photo Gallery */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-display font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <Layers className="w-5 h-5 text-emerald-600" />
-            Galeri Dokumentasi & Arsitektur HYCOSMARTS
-          </h3>
-          <span className="text-xs font-mono font-bold text-slate-400">
-            {galleryImages.length} Foto Dokumentasi (Klik foto untuk memperbesar)
-          </span>
-        </div>
+      {/* Photo Gallery & Solusi Mandiri Daerah 3T (Side-by-Side Layout) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        
+        {/* Left Column: Segi Empat (Square) Interactive Photo Gallery */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-display font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+              <Layers className="w-5 h-5 text-emerald-600" />
+              Galeri Dokumentasi & Arsitektur
+            </h3>
+            <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+              {activeImageIndex + 1} / {galleryImages.length}
+            </span>
+          </div>
 
-        {/* Small Horizontal Thumbnail Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 pt-2">
-          {galleryImages.map((img, idx) => (
-            <button
-              key={idx}
-              onClick={() => setModalImage(img.url)}
-              className="group relative aspect-[4/3] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-900 shadow-md hover:shadow-2xl hover:scale-105 hover:border-emerald-500 transition-all cursor-pointer flex flex-col justify-end p-3 text-left"
+          {/* Square Photo Carousel Container */}
+          <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-xl group select-none">
+            {/* Main Photo (Click to zoom in lightbox modal) */}
+            <div 
+              onClick={() => setModalImage(galleryImages[activeImageIndex].url)}
+              className="w-full h-full cursor-pointer relative"
+              title="Klik untuk memperbesar foto"
             >
               <img 
-                src={img.url} 
-                alt={img.title} 
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                key={activeImageIndex}
+                src={galleryImages[activeImageIndex].url} 
+                alt={galleryImages[activeImageIndex].title} 
+                className="w-full h-full object-cover transition-all duration-500 animate-fade-in group-hover:scale-105" 
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent group-hover:from-emerald-950/90 transition-colors"></div>
               
-              <div className="relative z-10 space-y-0.5">
-                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-emerald-400">
-                  <Maximize2 className="w-3 h-3 text-emerald-400" /> Lihat Foto
+              {/* Top-Right Expand Lightbox Button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setModalImage(galleryImages[activeImageIndex].url);
+                }}
+                aria-label="Perbesar gambar"
+                className="absolute top-3.5 right-3.5 p-2 rounded-xl bg-slate-950/60 hover:bg-emerald-600 text-white backdrop-blur-md border border-white/20 transition-all opacity-0 group-hover:opacity-100 shadow-lg cursor-pointer z-10"
+              >
+                <Maximize2 className="w-4 h-4" />
+              </button>
+
+              {/* Title & Caption Bottom Gradient Overlay */}
+              <div className="absolute inset-x-0 bottom-0 pt-16 pb-12 px-5 bg-gradient-to-t from-slate-950/95 via-slate-950/70 to-transparent pointer-events-none">
+                <p className="text-white text-sm sm:text-base font-bold font-display line-clamp-1">
+                  {galleryImages[activeImageIndex].title}
+                </p>
+                <p className="text-slate-300 text-xs line-clamp-2 mt-1 font-sans">
+                  {galleryImages[activeImageIndex].caption}
+                </p>
+              </div>
+            </div>
+
+            {/* Left Navigation Chevron Button */}
+            <button
+              type="button"
+              onClick={handlePrev}
+              aria-label="Foto Sebelumnya"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-950/70 hover:bg-emerald-600 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all opacity-80 hover:opacity-100 hover:scale-110 shadow-lg cursor-pointer z-10"
+            >
+              <ChevronLeft className="w-5 h-5 -ml-0.5" />
+            </button>
+
+            {/* Right Navigation Chevron Button */}
+            <button
+              type="button"
+              onClick={handleNext}
+              aria-label="Foto Berikutnya"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-950/70 hover:bg-emerald-600 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all opacity-80 hover:opacity-100 hover:scale-110 shadow-lg cursor-pointer z-10"
+            >
+              <ChevronRight className="w-5 h-5 -mr-0.5" />
+            </button>
+
+            {/* Interactive Navigation Dots */}
+            <div className="absolute bottom-3.5 inset-x-0 flex items-center justify-center gap-2 z-10 pointer-events-auto">
+              <div className="bg-slate-950/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/15 flex items-center gap-2 shadow-lg">
+                {galleryImages.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveImageIndex(idx);
+                    }}
+                    aria-label={`Foto ke-${idx + 1}`}
+                    className={`transition-all duration-300 cursor-pointer rounded-full ${
+                      activeImageIndex === idx
+                        ? 'w-6 h-2 bg-emerald-400 shadow-md shadow-emerald-400/50'
+                        : 'w-2 h-2 bg-white/40 hover:bg-white'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Thumbnail Strip */}
+          <div className="grid grid-cols-5 gap-2 pt-1">
+            {galleryImages.map((img, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setActiveImageIndex(idx)}
+                title={img.title}
+                className={`aspect-video rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                  activeImageIndex === idx
+                    ? 'border-emerald-500 ring-2 ring-emerald-500/30 scale-102 shadow-sm'
+                    : 'border-slate-200 dark:border-slate-800 opacity-60 hover:opacity-100'
+                }`}
+              >
+                <img src={img.url} alt={img.title} className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Right Column: Solusi Mandiri Daerah 3T Card */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6 flex flex-col justify-between">
+          <div className="space-y-5">
+            {/* Header */}
+            <div className="flex items-start gap-4">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-500/15 to-teal-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                <Globe className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-2xl font-display font-extrabold text-slate-900 dark:text-white tracking-tight">
+                  Solusi Mandiri Daerah 3T
+                </h3>
+                <span className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                  TERDEPAN, TERLUAR, DAN TERTINGGAL (3T) READY
                 </span>
-                <h4 className="font-display text-xs font-bold text-white line-clamp-1 group-hover:text-emerald-300">
-                  {img.title}
-                </h4>
               </div>
-            </button>
-          ))}
+            </div>
+
+            {/* Description */}
+            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-sans">
+              Sistem kontainer cerdas HYCOSMARTS dirancang secara mandiri dan portabel sehingga sangat siap diimplementasikan di wilayah 3T. Tanpa memerlukan lahan subur tradisional, fasilitas ini dapat ditempatkan di pulau terluar, daerah minim sumber air, hingga pos terpencil untuk menjamin ketahanan pangan berkelanjutan.
+            </p>
+
+            {/* Quick Metrics Badges */}
+            <div className="grid grid-cols-3 gap-3 pt-1">
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-center space-y-0.5">
+                <p className="text-lg font-black font-display text-emerald-600 dark:text-emerald-400">95%</p>
+                <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-tight">Hemat Air (Tertutup)</p>
+              </div>
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-center space-y-0.5">
+                <p className="text-lg font-black font-display text-teal-600 dark:text-teal-400">100%</p>
+                <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-tight">Off-Grid Solar Ready</p>
+              </div>
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-center space-y-0.5">
+                <p className="text-lg font-black font-display text-cyan-600 dark:text-cyan-400">365 Hari</p>
+                <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-tight">Panen Tanpa Musim</p>
+              </div>
+            </div>
+
+            {/* Feature Points */}
+            <div className="space-y-3 pt-1">
+              <div className="flex items-start gap-3 text-xs text-slate-700 dark:text-slate-200">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                <span><strong>Hemat Energi & Mandiri:</strong> Kompatibel penuh dengan instalasi Solar PV Panel serta battery storage off-grid.</span>
+              </div>
+              <div className="flex items-start gap-3 text-xs text-slate-700 dark:text-slate-200">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                <span><strong>Kemandirian Pangan Lokal:</strong> Menghasilkan sayuran segar bergizi sepanjang tahun tanpa bergantung pasokan logistik laut/udara.</span>
+              </div>
+              <div className="flex items-start gap-3 text-xs text-slate-700 dark:text-slate-200">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                <span><strong>Sirkulasi Air Tertutup:</strong> Sistem sirkulasi air presisi meminimalkan penguapan dan menghemat kebutuhan air drastis.</span>
+              </div>
+              <div className="flex items-start gap-3 text-xs text-slate-700 dark:text-slate-200">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                <span><strong>Modular & Tahan Cuaca Ekstrem:</strong> Bodi kontainer terisolasi termal menjaga iklim mikro optimal terlepas dari cuaca luar.</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Highlight Callout */}
+          <div className="pt-2">
+            <div className="flex items-center gap-2 p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-800 dark:text-emerald-300 font-medium">
+              <Zap className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Inovasi terdepan untuk kedaulatan pangan wilayah perbatasan & kepulauan nusantara.</span>
+            </div>
+          </div>
         </div>
+
       </div>
 
-      {/* Interactive Sensor Telemetry & Diagnostics Section */}
-      <div className="space-y-6 pt-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="h-1.5 w-6 rounded bg-emerald-500"></span>
-              <span className="font-mono text-xs font-bold text-emerald-600 uppercase tracking-widest">
-                REAL-TIME TELEMETRY SENSORS
-              </span>
-            </div>
-            <h2 className="text-2xl font-display font-extrabold text-slate-900 dark:text-white mt-1">
-              Instrumen & Sensor Kualitas Air Real-Time
-            </h2>
-          </div>
-
-          <div className="flex items-center gap-3 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl self-start">
-            <button
-              onClick={() => setAiDiagnosticState('optimal')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                aiDiagnosticState === 'optimal' 
-                  ? 'bg-emerald-600 text-white shadow-sm' 
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-              }`}
-            >
-              Kondisi Normal
-            </button>
-            <button
-              onClick={() => setAiDiagnosticState('warning')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                aiDiagnosticState === 'warning' 
-                  ? 'bg-amber-600 text-white shadow-sm' 
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-              }`}
-            >
-              Simulasi Peringatan Dini (AI Alert)
-            </button>
-          </div>
-        </div>
-
-        {/* AI Early Alert Banner if active */}
-        {aiDiagnosticState === 'warning' && (
-          <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex items-start gap-4 animate-fade-in">
-            <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
-            <div className="space-y-1 text-sm">
-              <h4 className="font-bold font-display text-amber-700 dark:text-amber-300">
-                Peringatan Dini Artificial Intelligence Detected!
-              </h4>
-              <p className="text-xs text-amber-800 dark:text-amber-300/80 leading-relaxed">
-                Modul Edge AI mendeteksi penurunan Dissolved Oxygen (DO) mendadak ke 5.2 mg/L dan kenaikan pH ke 7.1 pH. Sistem HYCOSMARTS secara otomatis mengaktifkan pompa aerasi tambahan dan mengirim notifikasi darurat ke Aplikasi Mobile & Web Dashboard operator.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Sensor Grid (5 Main Sensors requested by user: pH, TDS, DO, EC, Ultrasonic) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          
-          {/* 1. pH Sensor */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4 hover:border-emerald-500/40 transition-all">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
-                  <Activity className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">Sensor pH Air</h4>
-                  <p className="text-[11px] text-slate-400">Derajat Keasaman Solution</p>
-                </div>
-              </div>
-              {getStatusBadge(phVal, 5.5, 6.5)}
-            </div>
-
-            <div className="flex items-baseline gap-2 pt-2">
-              <span className="text-3xl font-mono font-black text-slate-900 dark:text-white">
-                {phVal}
-              </span>
-              <span className="text-xs font-bold text-slate-500">pH</span>
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                <span>Min: 5.5 pH</span>
-                <span>Max: 6.5 pH</span>
-              </div>
-              <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-emerald-500 transition-all duration-500 rounded-full"
-                  style={{ width: `${Math.min(100, Math.max(0, ((phVal - 4) / 4) * 100))}%` }}
-                ></div>
-              </div>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 pt-1">
-              Memantau keasaman air agar penyerapan unsur hara makro dan mikro oleh akar tanaman optimal.
-            </p>
-          </div>
-
-          {/* 2. TDS Sensor */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4 hover:border-emerald-500/40 transition-all">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400">
-                  <Gauge className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">Sensor TDS</h4>
-                  <p className="text-[11px] text-slate-400">Total Dissolved Solids</p>
-                </div>
-              </div>
-              {getStatusBadge(tdsVal, 800, 1400)}
-            </div>
-
-            <div className="flex items-baseline gap-2 pt-2">
-              <span className="text-3xl font-mono font-black text-slate-900 dark:text-white">
-                {tdsVal}
-              </span>
-              <span className="text-xs font-bold text-slate-500">ppm</span>
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                <span>Min: 800 ppm</span>
-                <span>Max: 1400 ppm</span>
-              </div>
-              <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-teal-500 transition-all duration-500 rounded-full"
-                  style={{ width: `${Math.min(100, Math.max(0, (tdsVal / 1800) * 100))}%` }}
-                ></div>
-              </div>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 pt-1">
-              Mengukur konsentrasi kepadatan nutrisi larutan hara AB Mix dalam tangki penampung.
-            </p>
-          </div>
-
-          {/* 3. DO (Dissolved Oxygen) Sensor */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4 hover:border-emerald-500/40 transition-all">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-2xl bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400">
-                  <Wind className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">Sensor DO</h4>
-                  <p className="text-[11px] text-slate-400">Dissolved Oxygen</p>
-                </div>
-              </div>
-              {getStatusBadge(doVal, 6.0, 9.0)}
-            </div>
-
-            <div className="flex items-baseline gap-2 pt-2">
-              <span className="text-3xl font-mono font-black text-slate-900 dark:text-white">
-                {doVal}
-              </span>
-              <span className="text-xs font-bold text-slate-500">mg/L</span>
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                <span>Min: 6.0 mg/L</span>
-                <span>Max: 9.0 mg/L</span>
-              </div>
-              <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-cyan-500 transition-all duration-500 rounded-full"
-                  style={{ width: `${Math.min(100, Math.max(0, (doVal / 10) * 100))}%` }}
-                ></div>
-              </div>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 pt-1">
-              Memantau kadar oksigen terlarut untuk mencegah pembusukan akar dan memacu pertumbuhan cepat.
-            </p>
-          </div>
-
-          {/* 4. EC (Electrical Conductivity) Sensor */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4 hover:border-emerald-500/40 transition-all">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
-                  <Zap className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">Sensor EC</h4>
-                  <p className="text-[11px] text-slate-400">Electrical Conductivity</p>
-                </div>
-              </div>
-              {getStatusBadge(ecVal, 1.2, 2.2)}
-            </div>
-
-            <div className="flex items-baseline gap-2 pt-2">
-              <span className="text-3xl font-mono font-black text-slate-900 dark:text-white">
-                {ecVal}
-              </span>
-              <span className="text-xs font-bold text-slate-500">mS/cm</span>
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                <span>Min: 1.2 mS/cm</span>
-                <span>Max: 2.2 mS/cm</span>
-              </div>
-              <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-amber-500 transition-all duration-500 rounded-full"
-                  style={{ width: `${Math.min(100, Math.max(0, (ecVal / 3) * 100))}%` }}
-                ></div>
-              </div>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 pt-1">
-              Menghitung daya hantar listrik ion terlarut untuk kalibrasi kepekatan garam nutrisi.
-            </p>
-          </div>
-
-          {/* 5. Ultrasonic Water Level Sensor */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4 hover:border-emerald-500/40 transition-all">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
-                  <Radio className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">Sensor Ultrasonik</h4>
-                  <p className="text-[11px] text-slate-400">Water Tank Reservoir Level</p>
-                </div>
-              </div>
-              {getStatusBadge(ultrasonicLevel, 30, 100)}
-            </div>
-
-            <div className="flex items-baseline gap-2 pt-2">
-              <span className="text-3xl font-mono font-black text-slate-900 dark:text-white">
-                {ultrasonicLevel}%
-              </span>
-              <span className="text-xs font-bold text-slate-500">Kapasitas Tangki</span>
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                <span>Batas Kritis: 20%</span>
-                <span>Penuh: 100%</span>
-              </div>
-              <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-indigo-500 transition-all duration-500 rounded-full"
-                  style={{ width: `${ultrasonicLevel}%` }}
-                ></div>
-              </div>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 pt-1">
-              Sensor non-kontak ultrasonik untuk mengukur stok air dan mencegah pompa terbakar akibat kering.
-            </p>
-          </div>
-
-          {/* 6. AI Microclimate Controller */}
-          <div className="bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-3xl p-6 shadow-sm space-y-4 border border-slate-800">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400">
-                  <Thermometer className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-white">Mikroklimat Container</h4>
-                  <p className="text-[11px] text-slate-400">HVAC & LED Control</p>
-                </div>
-              </div>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                Auto HVAC
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 pt-2">
-              <div>
-                <p className="text-[10px] text-slate-400 font-mono">Suhu Ruang</p>
-                <p className="text-2xl font-mono font-black text-white">23.5 °C</p>
+      {/* Multi-Platform Dashboard & Mobile Integration Showcase Card */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="lg:col-span-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-2xl bg-cyan-100 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400">
+                <Smartphone className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-[10px] text-slate-400 font-mono">Kelembapan Air</p>
-                <p className="text-2xl font-mono font-black text-emerald-400">65.0 %</p>
+                <h3 className="text-xl sm:text-2xl font-display font-extrabold text-slate-900 dark:text-white">
+                  Web Dashboard & Mobile App Integration
+                </h3>
+                <p className="text-xs font-mono font-bold text-cyan-600 dark:text-cyan-400">
+                  REAL-TIME CROSS-PLATFORM CONTROL
+                </p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-400 pt-1">
-              Pengondisian suhu AC dan exhaust fans terhubung dengan sensor suhu untuk menjaga stabilitas transpirasi daun.
+            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-sans">
+              HYCOSMARTS terhubung secara langsung dengan Dashboard berbasis Web dan Aplikasi Mobile Android/iOS. Pengelola laboratorium atau petani modern dapat secara presisi mengatur jadwal pemupukan, memantau grafik sensor historis, dan menerima push notification instan kapan saja dan di mana saja.
             </p>
-          </div>
 
-        </div>
-      </div>
-
-      {/* Deep-Dive Architectural Features Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-6">
-        
-        {/* Left Card: 3T Region Suitability & Energy Self-Sufficiency */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
-              <Globe className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-xl font-display font-extrabold text-slate-900 dark:text-white">
-                Solusi Mandiri Daerah 3T
-              </h3>
-              <p className="text-xs font-mono font-bold text-emerald-600">
-                TERDEPAN, TERLUAR, DAN TERTINGGAL (3T) READY
-              </p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300">
+                MQTT Protocol
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300">
+                LoRaWAN / 4G LTE
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300">
+                Firebase Cloud Sync
+              </span>
             </div>
           </div>
 
-          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-sans">
-            Sistem container mandiri HYCOSMARTS dirancang secara portabel sehingga sangat cocok diimplementasikan di wilayah 3T. Tanpa memerlukan lahan subur tradisional, container ini dapat diletakkan di pulau terluar, daerah konflik lingkungan, maupun wilayah maritim.
-          </p>
-
-          <div className="space-y-3 pt-2">
-            <div className="flex items-start gap-3 text-xs text-slate-700 dark:text-slate-200">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-              <span><strong>Hemat Energi & Mandiri:</strong> Kompatibel dengan instalasi Solar PV Panel & battery storage off-grid.</span>
-            </div>
-            <div className="flex items-start gap-3 text-xs text-slate-700 dark:text-slate-200">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-              <span><strong>Kemandirian Pangan Lokal:</strong> Menghasilkan sayuran segar sepanjang tahun tanpa bergantung musim atau impor pasokan.</span>
-            </div>
-            <div className="flex items-start gap-3 text-xs text-slate-700 dark:text-slate-200">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-              <span><strong>Sirkulasi Air Tertutup:</strong> Efisiensi penggunaan air hingga 95% dibandingkan pertanian konvensional.</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Card: Multi-Platform Dashboard & Mobile Integration */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-cyan-100 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400">
-              <Smartphone className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-xl font-display font-extrabold text-slate-900 dark:text-white">
-                Web Dashboard & Mobile App Integration
-              </h3>
-              <p className="text-xs font-mono font-bold text-cyan-600">
-                REAL-TIME CROSS-PLATFORM CONTROL
-              </p>
-            </div>
-          </div>
-
-          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-sans">
-            HYCOSMARTS terhubung secara langsung dengan Dashboard berbasis Web dan Aplikasi Mobile Android/iOS. Pengelola laboratorium atau petani modern dapat secara presisi mengatur jadwal pemupukan, memantau grafik sensor historis, dan menerima push notification instan.
-          </p>
-
-          <div className="grid grid-cols-2 gap-4 pt-2">
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-1">
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-2">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-                <Cpu className="w-4 h-4 text-emerald-500" />
-                <span>AI Presisi</span>
+                <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500">
+                  <Cpu className="w-4 h-4" />
+                </div>
+                <span>AI Presisi & Auto Dosing</span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Penyesuaian kebutuhan nutrisi tanaman otomatis secara real-time.
+              <p className="text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Penyesuaian kebutuhan nutrisi tanaman (pH & TDS) loop tertutup secara otomatis berbasis kecerdasan buatan.
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-1">
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-2">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
-                <ShieldCheck className="w-4 h-4 text-cyan-500" />
-                <span>Early Warning</span>
+                <div className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-500">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <span>Early Warning System</span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Notifikasi awal ancaman kegagalan panen via SMS & Push App.
+              <p className="text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Notifikasi instan ancaman kegagalan panen, kelainan suhu, atau penurunan oksigen terlarut via Push Notif & SMS.
+              </p>
+            </div>
+
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                <div className="p-1.5 rounded-lg bg-teal-500/10 text-teal-500">
+                  <Activity className="w-4 h-4" />
+                </div>
+                <span>Telemetri & Analitik 24/7</span>
+              </div>
+              <p className="text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Visualisasi grafik fluktuasi mikroklimat historis untuk kebutuhan validasi dan publikasi riset ilmiah.
+              </p>
+            </div>
+
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500">
+                  <Wind className="w-4 h-4" />
+                </div>
+                <span>Aktuator Terkendali Jauh</span>
+              </div>
+              <p className="text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Kendali saklar ventilasi, pompa aerasi, dan spektrum lampu LED langsung dari layar smartphone.
               </p>
             </div>
           </div>
         </div>
-
       </div>
 
       {/* Discussion & Comments Section */}

@@ -31,7 +31,11 @@ import {
   Wifi,
   Zap,
   GitBranch,
-  FlaskConical
+  FlaskConical,
+  Smartphone,
+  Wind,
+  ShieldCheck,
+  Globe
 } from 'lucide-react';
 import { NewsItem, Comment } from '../types';
 
@@ -49,27 +53,38 @@ export default function FlocifyShowcase({
   onAddComment 
 }: FlocifyShowcaseProps) {
   
-  // 3D Render images uploaded by user for FLOCIFY
+  // 3D Render images uploaded by user for FLOCIFY (HD 3D Renders)
   const galleryImages = [
     {
-      url: '/images/flocify/flocify-biofloc-tank-iso.png',
-      caption: 'Isometric 3D Architectural Model of Flocify Biofloc Round Tank featuring central bio-settling container, automated carbon dosing unit, and circular mesh support.',
+      url: '/images/flocify/flocify-biofloc-tank-iso.jpg',
+      caption: 'Model arsitektur 3D isometrik unit tank biofloc FLOCIFY dengan hopper dosing sentral, aerasi vortex mikrobiologi, dan rangka jaring baja sirkular.',
       title: 'Isometric 3D Biofloc Tank Unit'
     },
     {
-      url: '/images/flocify/flocify-topview-tank.png',
-      caption: "Bird's Eye Top View showing biofloc brown water circulation, central vortex aerator mixer, and real-time multi-probe sensor array.",
+      url: '/images/flocify/flocify-topview-tank.jpg',
+      caption: 'Pandangan atas (top-down view) sirkulasi air biofloc, vortex aerator mixer di pusat tangki, dan susunan sensor multi-probe terkalibrasi.',
       title: 'Top-Down Circulation & Aerator View'
     },
     {
-      url: '/images/flocify/flocify-perspective-tank.png',
-      caption: 'Perspective View showcasing Flocify smart sensing module, automated feeding hoppers, and external sludge drain bypass.',
+      url: '/images/flocify/flocify-perspective-tank.jpg',
+      caption: 'Sudut pandang perspektif unit filtrasi bertingkat, bypass drain endapan lumpur flok, dan aktuator dosing otomatis berbasis Deep Learning.',
       title: 'Perspective Tank & Automated Dosing'
     }
   ];
 
+  const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
   const [modalImage, setModalImage] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  const handlePrev = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setActiveImageIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1));
+  };
+
+  const handleNext = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setActiveImageIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1));
+  };
 
   // Comment Form States
   const [nameInput, setNameInput] = useState('');
@@ -124,26 +139,22 @@ export default function FlocifyShowcase({
   const allComments = comments.length > 0 ? comments : defaultComments;
 
   return (
-    <div className="space-y-10 animate-fade-in text-slate-800 dark:text-slate-100 pb-16">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 pb-20 animate-fade-in space-y-12">
       
-      {/* ========================================================================= */}
-      {/* TOP NAVIGATION BAR */}
-      {/* ========================================================================= */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onBack}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-400 transition-all cursor-pointer shadow-2xs group"
-          >
-            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-            <span>Kembali ke Daftar Proyek</span>
-          </button>
-        </div>
+      {/* Top Navigation & Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-6">
+        <button 
+          onClick={onBack}
+          className="group inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 shadow-sm hover:shadow hover:border-indigo-500 cursor-pointer self-start"
+        >
+          <ChevronLeft className="h-4 w-4 text-indigo-600 group-hover:-translate-x-1 transition-transform" />
+          <span>Kembali ke Hub Utama</span>
+        </button>
 
         <div className="flex items-center gap-2.5">
           <button
             onClick={handleShare}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all cursor-pointer border border-slate-200 dark:border-slate-700 shadow-xs"
             title="Salin tautan projek ini"
           >
             {copiedLink ? <Check className="h-3.5 w-3.5 text-indigo-600" /> : <Share2 className="h-3.5 w-3.5" />}
@@ -152,194 +163,335 @@ export default function FlocifyShowcase({
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* HERO BANNER SECTION (Rich Indigo/Blue Gradient Card) */}
-      {/* ========================================================================= */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1e1b4b] via-[#312e81] to-[#1e3a5f] text-white p-8 sm:p-12 shadow-xl border border-indigo-600/30">
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-indigo-400/15 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 -mb-20 w-80 h-80 rounded-full bg-cyan-300/15 blur-2xl pointer-events-none" />
-        <div className="absolute top-1/2 right-1/4 w-40 h-40 rounded-full bg-blue-500/10 blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 max-w-4xl space-y-4">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-950/70 border border-indigo-400/40 text-indigo-200 font-mono text-xs font-bold uppercase tracking-wider backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span>
-              Biofloc Aquaculture • Deep Learning AI
-            </span>
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-mono text-xs font-semibold">
-              <Cpu className="h-3.5 w-3.5 text-cyan-300" />
-              ResNet / LSTM Neural Networks
-            </span>
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-400/20 border border-cyan-300/30 text-cyan-200 font-mono text-xs font-semibold">
-              <Radio className="h-3.5 w-3.5 text-cyan-300" />
-              LoRaWAN IoT Telemetry
+      {/* Hero Showcase Title Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="lg:col-span-8 space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-10 rounded-full bg-gradient-to-r from-indigo-500 to-cyan-500"></span>
+            <span className="font-mono text-xs font-extrabold tracking-widest text-indigo-600 dark:text-indigo-400 uppercase">
+              FLAGSHIP INNOVATION // FLOCIFY
             </span>
           </div>
-
-          <h1 className="font-display text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight drop-shadow-sm">
-            FLOCIFY: Sistem Monitoring & Optimasi Budidaya Biofloc Berbasis IoT & Deep Learning
+          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+            FLOCIFY
           </h1>
-
-          <p className="text-base sm:text-lg text-indigo-50/95 font-medium leading-relaxed max-w-3xl">
-            Platform IoT cerdas yang mengintegrasikan Deep Learning untuk monitoring kualitas air real-time, prediksi risiko amonia, otomasi dosing probiotik, dan optimasi pakan pada budidaya ikan biofloc. Dirancang untuk meningkatkan survival rate, efisiensi pakan (FCR), dan keberlanjutan akuakultur modern.
+          <p className="text-lg font-sans font-bold text-indigo-600 dark:text-indigo-400">
+            Smart Biofloc Aquaculture Monitoring & Deep Learning Optimization
           </p>
-
-          <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-indigo-200 font-mono">
-            <span>Riset & Inovasi: <strong>Smart Grow Laboratory</strong> (Telkom University)</span>
-            <span>Target: <strong>Pembudidaya Ikan Biofloc Indonesia</strong></span>
-          </div>
-
-          {/* Primary Action Buttons */}
-          <div className="pt-3 flex flex-wrap items-center gap-3">
-
-            <button
-              onClick={() => {
-                const el = document.getElementById('architecture-section');
-                el?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs backdrop-blur-md border border-white/20 transition-all cursor-pointer"
-            >
-              <Layers className="h-4 w-4 text-indigo-300" />
-              <span>Lihat Arsitektur & 3D Model</span>
-            </button>
-          </div>
+          <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-sans pt-2">
+            FLOCIFY adalah sistem monitoring dan optimasi budidaya akuakultur biofloc cerdas berbasis IoT dan Deep Learning (ResNet + LSTM). Platform ini dirancang untuk memantau kualitas air secara real-time, mendeteksi risiko amonia sebelum mencapai ambang kritis, mengotomasi penambahan karbon & probiotik, serta menjaga rasio C:N kolam secara presisi.
+          </p>
         </div>
-      </section>
 
-      {/* ========================================================================= */}
-      {/* QUICK METRICS ROW (4 Clean Light Cards) */}
-      {/* ========================================================================= */}
-      <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-sm space-y-1">
-          <span className="text-[11px] font-mono text-slate-400 uppercase block">Survival Rate (SR)</span>
-          <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400">96.8%</div>
-          <span className="text-[11px] text-slate-500">Kelangsungan Hidup Ikan</span>
-        </div>
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-sm space-y-1">
-          <span className="text-[11px] font-mono text-slate-400 uppercase block">Efisiensi Pakan</span>
-          <div className="text-2xl font-black text-cyan-600 dark:text-cyan-400">+28.4%</div>
-          <span className="text-[11px] text-slate-500">Feed Conversion Ratio (FCR)</span>
-        </div>
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-sm space-y-1">
-          <span className="text-[11px] font-mono text-slate-400 uppercase block">Prediksi AI Akurasi</span>
-          <div className="text-2xl font-black text-slate-900 dark:text-white">94.2%</div>
-          <span className="text-[11px] text-slate-500">Deteksi Anomali Amonia</span>
-        </div>
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-sm space-y-1">
-          <span className="text-[11px] font-mono text-slate-400 uppercase block">Penghematan Biaya</span>
-          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">~30%</div>
-          <span className="text-[11px] text-slate-500">Reduksi Biaya Pakan Pelet</span>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 3D MODEL PHOTO GALLERY & ARCHITECTURE SECTION */}
-      {/* ========================================================================= */}
-      <section id="architecture-section" className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-indigo-600" />
-              <span className="text-xs font-mono font-bold tracking-widest text-indigo-700 dark:text-indigo-400 uppercase">3D Architecture & Design</span>
+        {/* Highlight Card matching HYCOSMARTS Specs */}
+        <div className="lg:col-span-4 bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden border border-indigo-500/30">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="relative z-10 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
+                Biofloc AI Specs
+              </span>
+              <span className="px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-400/30">
+                v2.4 Active
+              </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-              Galeri 3D Render Model & Arsitektur Tank FLOCIFY
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-2xl mt-1">
-              Dokumentasi arsitektur tank biofloc modular berupa render 3D isometric, top-view, dan perspective yang memperlihatkan komponen sensor, aerator vortex, dan sistem dosing otomatis.
-            </p>
-          </div>
-
-          <span className="text-xs font-mono font-bold text-slate-400">
-            {galleryImages.length} Foto Dokumentasi (Klik untuk memperbesar)
-          </span>
-        </div>
-
-        {/* Gallery Grid with Hardware-style presentation */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm">
-          
-          {/* Left: Main Gallery Image */}
-          <div className="lg:col-span-7 flex flex-col items-center">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
-              {galleryImages.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setModalImage(img.url)}
-                  className="group relative aspect-[4/3] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-900 shadow-md hover:shadow-2xl hover:scale-105 hover:border-indigo-500 transition-all cursor-pointer flex flex-col justify-end p-3 text-left"
-                >
-                  <img 
-                    src={img.url} 
-                    alt={img.title} 
-                    className="absolute inset-0 w-full h-full object-contain p-2 bg-slate-950 transition-transform duration-500 group-hover:scale-110" 
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent group-hover:from-indigo-950/90 transition-colors"></div>
-                  
-                  <div className="relative z-10 space-y-0.5">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-indigo-400">
-                      <Maximize2 className="w-3 h-3 text-indigo-400" /> Lihat Foto
-                    </span>
-                    <h4 className="font-display text-xs font-bold text-white line-clamp-1 group-hover:text-indigo-300">
-                      {img.title}
-                    </h4>
-                  </div>
-                </button>
-              ))}
-            </div>
-            <p className="text-[11px] text-slate-500 font-mono mt-3 text-center">
-              Gambar 1–3. Render 3D Tank Biofloc FLOCIFY: Isometric View, Top View, dan Perspective View.
-            </p>
-          </div>
-
-          {/* Right: Tank Component Descriptions */}
-          <div className="lg:col-span-5 space-y-4">
             
-            {/* Component 1: Multi-Probe Sensor Array */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 transition-all space-y-1">
-              <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
-                <Gauge className="h-4 w-4" />
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Multi-Probe Sensor Array (DO, pH, NH3, Temp)</h4>
+            <div className="space-y-3 pt-2">
+              <div className="flex justify-between items-center text-xs border-b border-white/10 pb-2">
+                <span className="text-slate-300">Form Factor:</span>
+                <span className="font-bold text-white">Modular Round Tank (Dia. 3m - 5m)</span>
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Modul sensor terintegrasi untuk monitoring kontinu kualitas air biofloc: dissolved oxygen, derajat keasaman, konsentrasi amonia, dan suhu air secara real-time.
-              </p>
+              <div className="flex justify-between items-center text-xs border-b border-white/10 pb-2">
+                <span className="text-slate-300">Telemetry Nodes:</span>
+                <span className="font-bold text-cyan-400">DO, pH, ORP, Temp, NH3 (Amonia)</span>
+              </div>
+              <div className="flex justify-between items-center text-xs border-b border-white/10 pb-2">
+                <span className="text-slate-300">AI Deep Learning:</span>
+                <span className="font-bold text-white">ResNet + LSTM Anomaly Detection</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-slate-300">Target Species:</span>
+                <span className="font-bold text-indigo-300">Lele, Nila, Udang Vaname</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Photo Gallery & Solusi Closed-Loop (Side-by-Side Layout matching HYCOSMARTS) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        
+        {/* Left Column: Segi Empat (Square) Interactive Photo Gallery */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-display font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+              <Layers className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              Galeri Dokumentasi & Arsitektur 3D
+            </h3>
+            <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+              {activeImageIndex + 1} / {galleryImages.length}
+            </span>
+          </div>
+
+          {/* Square Photo Carousel Container */}
+          <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-xl group select-none">
+            {/* Main Photo (Click to zoom in lightbox modal) */}
+            <div 
+              onClick={() => setModalImage(galleryImages[activeImageIndex].url)}
+              className="w-full h-full cursor-pointer relative"
+              title="Klik untuk memperbesar foto"
+            >
+              <img 
+                key={activeImageIndex}
+                src={galleryImages[activeImageIndex].url} 
+                alt={galleryImages[activeImageIndex].title} 
+                className="w-full h-full object-cover transition-all duration-500 animate-fade-in group-hover:scale-105" 
+              />
+              
+              {/* Top-Right Expand Lightbox Button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setModalImage(galleryImages[activeImageIndex].url);
+                }}
+                aria-label="Perbesar gambar"
+                className="absolute top-3.5 right-3.5 p-2 rounded-xl bg-slate-950/60 hover:bg-indigo-600 text-white backdrop-blur-md border border-white/20 transition-all opacity-0 group-hover:opacity-100 shadow-lg cursor-pointer z-10"
+              >
+                <Maximize2 className="w-4 h-4" />
+              </button>
+
+              {/* Title & Caption Bottom Gradient Overlay */}
+              <div className="absolute inset-x-0 bottom-0 pt-16 pb-12 px-5 bg-gradient-to-t from-slate-950/95 via-slate-950/70 to-transparent pointer-events-none">
+                <p className="text-white text-sm sm:text-base font-bold font-display line-clamp-1">
+                  {galleryImages[activeImageIndex].title}
+                </p>
+                <p className="text-slate-300 text-xs line-clamp-2 mt-1 font-sans">
+                  {galleryImages[activeImageIndex].caption}
+                </p>
+              </div>
             </div>
 
-            {/* Component 2: Vortex Aerator */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-cyan-500 transition-all space-y-1">
-              <div className="flex items-center gap-2 text-cyan-700 dark:text-cyan-400">
-                <Waves className="h-4 w-4" />
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Vortex Aerator Mixer & Sirkulasi Air</h4>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Sistem aerasi pusat yang menciptakan aliran vortex untuk distribusi oksigen merata dan menjaga suspensi partikel biofloc dalam kolom air.
-              </p>
-            </div>
+            {/* Left Navigation Chevron Button */}
+            <button
+              type="button"
+              onClick={handlePrev}
+              aria-label="Foto Sebelumnya"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-950/70 hover:bg-indigo-600 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all opacity-80 hover:opacity-100 hover:scale-110 shadow-lg cursor-pointer z-10"
+            >
+              <ChevronLeft className="w-5 h-5 -ml-0.5" />
+            </button>
 
-            {/* Component 3: Automated Dosing Unit */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 transition-all space-y-1">
-              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
-                <FlaskConical className="h-4 w-4" />
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Automated Carbon & Probiotic Dosing</h4>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Unit dosing otomatis untuk penambahan molase (sumber karbon) dan probiotik bakteri heterotrofik berdasarkan rasio C:N yang direkomendasikan AI.
-              </p>
-            </div>
+            {/* Right Navigation Chevron Button */}
+            <button
+              type="button"
+              onClick={handleNext}
+              aria-label="Foto Berikutnya"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-950/70 hover:bg-indigo-600 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all opacity-80 hover:opacity-100 hover:scale-110 shadow-lg cursor-pointer z-10"
+            >
+              <ChevronRight className="w-5 h-5 -mr-0.5" />
+            </button>
 
-            {/* Component 4: Bio-Settling Container */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-amber-500 transition-all space-y-1">
-              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
-                <Database className="h-4 w-4" />
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Central Bio-Settling Container & Sludge Drain</h4>
+            {/* Interactive Navigation Dots */}
+            <div className="absolute bottom-3.5 inset-x-0 flex items-center justify-center gap-2 z-10 pointer-events-auto">
+              <div className="bg-slate-950/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/15 flex items-center gap-2 shadow-lg">
+                {galleryImages.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveImageIndex(idx);
+                    }}
+                    aria-label={`Foto ke-${idx + 1}`}
+                    className={`transition-all duration-300 cursor-pointer rounded-full ${
+                      activeImageIndex === idx
+                        ? 'w-6 h-2 bg-indigo-400 shadow-md shadow-indigo-400/50'
+                        : 'w-2 h-2 bg-white/40 hover:bg-white'
+                    }`}
+                  />
+                ))}
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Wadah pengendapan sentral untuk pemisahan lumpur biofloc berlebih dengan bypass drain eksternal, menjaga densitas flok optimal 15–25 mL/L.
-              </p>
             </div>
           </div>
 
+          {/* Quick Thumbnail Strip matching HYCOSMARTS */}
+          <div className="grid grid-cols-3 gap-2.5 pt-1">
+            {galleryImages.map((img, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setActiveImageIndex(idx)}
+                title={img.title}
+                className={`aspect-video rounded-xl overflow-hidden border-2 transition-all cursor-pointer relative group ${
+                  activeImageIndex === idx
+                    ? 'border-indigo-500 ring-2 ring-indigo-500/30 scale-[1.02] shadow-sm'
+                    : 'border-slate-200 dark:border-slate-800 opacity-60 hover:opacity-100'
+                }`}
+              >
+                <img src={img.url} alt={img.title} className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
         </div>
-      </section>
+
+        {/* Right Column: Solusi Closed-Loop Akuakultur Biofloc Card matching HYCOSMARTS */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6 flex flex-col justify-between">
+          <div className="space-y-5">
+            {/* Header */}
+            <div className="flex items-start gap-4">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-500/15 to-blue-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shrink-0">
+                <Waves className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-2xl font-display font-extrabold text-slate-900 dark:text-white tracking-tight">
+                  Solusi Closed-Loop Akuakultur
+                </h3>
+                <span className="inline-block px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+                  ZERO WATER EXCHANGE & HIGH DENSITY READY
+                </span>
+              </div>
+            </div>
+
+            {/* Description */}
+            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-sans">
+              Sistem FLOCIFY dirancang untuk menciptakan ekosistem budidaya biofloc mandiri dan berkelanjutan. Dengan memadukan sensor multi-parameter presisi tinggi dan model kecerdasan buatan, kolam dapat beroperasi tanpa pergantian air berulang (zero water exchange), sekaligus mendaur ulang limbah nitrogen beracun menjadi biomassa protein pakan alami.
+            </p>
+
+            {/* Quick Metrics Badges */}
+            <div className="grid grid-cols-3 gap-3 pt-1">
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-center space-y-0.5">
+                <p className="text-lg font-black font-display text-indigo-600 dark:text-indigo-400">96.8%</p>
+                <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-tight">Survival Rate (SR)</p>
+              </div>
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-center space-y-0.5">
+                <p className="text-lg font-black font-display text-cyan-600 dark:text-cyan-400">+28.4%</p>
+                <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-tight">Efisiensi Pakan (FCR)</p>
+              </div>
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-center space-y-0.5">
+                <p className="text-lg font-black font-display text-emerald-600 dark:text-emerald-400">94.2%</p>
+                <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-tight">Akurasi Prediksi AI</p>
+              </div>
+            </div>
+
+            {/* Feature Points */}
+            <div className="space-y-3 pt-1">
+              <div className="flex items-start gap-3 text-xs text-slate-700 dark:text-slate-200">
+                <CheckCircle2 className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+                <span><strong>Sirkulasi Vortex Aerasi:</strong> Distribusi oksigen merata dan suspensi flok mikroba konstan tanpa pengendapan lumpur anaerobik.</span>
+              </div>
+              <div className="flex items-start gap-3 text-xs text-slate-700 dark:text-slate-200">
+                <CheckCircle2 className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+                <span><strong>Dosing Karbon & Probiotik Cerdas:</strong> Penambahan molase otomatis menjaga rasio C:N optimal (15:1 hingga 20:1) sesuai rekomendasi AI.</span>
+              </div>
+              <div className="flex items-start gap-3 text-xs text-slate-700 dark:text-slate-200">
+                <CheckCircle2 className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+                <span><strong>Zero Water Exchange:</strong> Menjaga kestabilan mikrobiologi kolam tanpa boros air, menghemat konsumsi air hingga 90%.</span>
+              </div>
+              <div className="flex items-start gap-3 text-xs text-slate-700 dark:text-slate-200">
+                <CheckCircle2 className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+                <span><strong>Early Warning System Amonia:</strong> Peringatan dini lonjakan amonia dan penurunan DO melalui notifikasi push instan.</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Highlight Callout */}
+          <div className="pt-2">
+            <div className="flex items-center gap-2 p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 text-xs text-indigo-800 dark:text-indigo-300 font-medium">
+              <Zap className="w-4 h-4 text-indigo-600 shrink-0" />
+              <span>Inovasi terdepan untuk modernisasi akuakultur biofloc presisi ramah lingkungan.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Multi-Platform Dashboard & Mobile Integration Showcase Card matching HYCOSMARTS */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="lg:col-span-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-2xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                <Smartphone className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl sm:text-2xl font-display font-extrabold text-slate-900 dark:text-white">
+                  Web Dashboard & Mobile App Integration
+                </h3>
+                <p className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                  REAL-TIME CROSS-PLATFORM CONTROL
+                </p>
+              </div>
+            </div>
+
+            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-sans">
+              FLOCIFY terhubung secara langsung dengan Dashboard berbasis Web dan Aplikasi Mobile Android/iOS. Pembudidaya atau peneliti dapat memantau telemetri kolam, mengatur jadwal aerator vortex, dan menerima push notification ancaman amonia 24/7.
+            </p>
+
+            <div className="flex flex-wrap gap-2 pt-1">
+              <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300">
+                MQTT Protocol
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300">
+                LoRaWAN Telemetry
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300">
+                Firebase Cloud Sync
+              </span>
+            </div>
+          </div>
+
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-500">
+                  <Cpu className="w-4 h-4" />
+                </div>
+                <span>AI Presisi & Auto Dosing</span>
+              </div>
+              <p className="text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Penyesuaian kebutuhan molase karbon & probiotik loop tertutup secara otomatis berbasis estimasi rasio C:N.
+              </p>
+            </div>
+
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                <div className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-500">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <span>Early Warning System Amonia</span>
+              </div>
+              <p className="text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Deteksi lonjakan gas amonia beracun (NH3) dan drop oksigen terlarut sebelum membahayakan mortalitas ikan.
+              </p>
+            </div>
+
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                <div className="p-1.5 rounded-lg bg-teal-500/10 text-teal-500">
+                  <Activity className="w-4 h-4" />
+                </div>
+                <span>Telemetri & Analitik 24/7</span>
+              </div>
+              <p className="text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Visualisasi data kontinu fluktuasi parameter air untuk validasi pertumbuhan bobot ikan dan efisiensi pakan FCR.
+              </p>
+            </div>
+
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500">
+                  <Wind className="w-4 h-4" />
+                </div>
+                <span>Aktuator Aerator Terkendali</span>
+              </div>
+              <p className="text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Kendali saklar aerator vortex mikroba, pompa drain sludge, dan dosing hoppers langsung dari HP/Web.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
 
 

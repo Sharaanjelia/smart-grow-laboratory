@@ -392,8 +392,9 @@ export const projectsData: ProjectItem[] = [
     category: 'IoT & Hardware',
     description: 'HTCI merupakan sistem pengelolaan dan pengolahan sampah terpadu yang memanfaatkan proses hydrothermal cogeneration untuk mengolah sampah organik dan inert menjadi bio-oil, biochar, dan gas yang berpotensi sebagai sumber energi.',
     fullDescription: 'HTCI merupakan sistem pengelolaan dan pengolahan sampah terpadu yang memanfaatkan proses hydrothermal cogeneration untuk mengolah sampah organik dan inert menjadi produk bernilai guna, seperti bio-oil, biochar, dan gas yang berpotensi sebagai sumber energi. Sistem dilengkapi dengan sensor berbasis IoT, Programmable Logic Controller (PLC), serta algoritma kendali berbasis Artificial Intelligence (AI) untuk melakukan pemantauan dan pengendalian parameter proses secara otomatis, termasuk suhu, tekanan, konsumsi energi, dan emisi.\n\nPelaksanaan proyek mencakup pemetaan dan analisis kebutuhan, perancangan dan pembangunan sistem, instalasi dan pengujian teknologi, pelatihan serta pendampingan operator desa, monitoring dan evaluasi, serta pengembangan pemanfaatan produk hasil pengolahan sampah. Melalui pendekatan teknologi dan pemberdayaan masyarakat tersebut, proyek HTCI diharapkan dapat membangun model pengelolaan sampah desa yang berkelanjutan, mendukung ekonomi sirkular, meningkatkan kapasitas masyarakat, serta menjadi model yang dapat direplikasi di wilayah lainnya.',
-    image: '/images/htci/htci-poster.jpg',
+    image: '/images/htci/htci-logo.png',
     gallery: [
+      '/images/htci/htci-logo.png',
       '/images/htci/htci-poster.jpg'
     ],
     date: '2026-09-09',
@@ -432,8 +433,9 @@ export const projectsData: ProjectItem[] = [
     category: 'AI & Smart Utility',
     description: 'Smart Water adalah platform Self Meter Reading berbasis AI-OCR yang memungkinkan pelanggan melakukan pencatatan meter air secara mandiri melalui smartphone disertai validasi foto, timestamp, dan koordinat GPS.',
     fullDescription: 'Transformasi Digital Perumda Air Minum Melalui Smart Self Meter Reading Berbasis AI\n\nMasalah yang Dihadapi PDAM Saat Ini:\n✅ Petugas harus datang ke rumah pelanggan.\n✅ Biaya operasional pembacaan meter tinggi.\n✅ Human error dalam pencatatan angka meter.\n✅ Data terlambat masuk ke sistem.\n✅ Komplain pelanggan terkait tagihan.\n✅ Sulit menjangkau pelanggan di daerah terpencil.\n\nSmart Water adalah platform Self Meter Reading berbasis AI-OCR yang memungkinkan pelanggan melakukan pencatatan meter air secara mandiri melalui smartphone. Solusi ini membantu Perumda Air Minum mengurangi biaya operasional pembacaan meter, meningkatkan akurasi data konsumsi, mempercepat proses penagihan, serta meningkatkan kualitas layanan pelanggan.\n\nManfaat Utama:\n1. Pengurangan biaya operasional petugas meter hingga puluhan persen.\n2. Pengurangan human error pencatatan meter.\n3. Percepatan proses billing dan penagihan pelanggan.\n\nSolusi Smart Water:\n1. Self Meter Reading Berbasis AI-OCR: Pelanggan cukup memfoto meter air. AI akan membaca angka meter secara otomatis.\n2. Tagihan Otomatis Real-Time: Setelah angka terbaca, pemakaian dihitung otomatis, tagihan langsung muncul, dan data tersimpan dalam database cloud.\n3. Validasi Bukti Foto: Setiap pembacaan disertai foto meter, timestamp, dan lokasi GPS untuk akuntabilitas tinggi serta mencegah manipulasi.\n4. Dashboard Monitoring: Manajemen PDAM dapat melihat jumlah pelanggan yang sudah lapor, konsumsi air bulanan, tren penggunaan, dan wilayah dengan anomali pemakaian.\n\nTim Pengembang Smart Grow Lab:\n1. Prof. Dr. Indrarini Dyah Irawati S.T., M.T.\n2. Shara Anjelia\n3. Sirvani Cinta Dewi Mudasir',
-    image: '/images/smart-water/smart-water-app.jpg',
+    image: '/images/smart-water/smart-water-logo.jpg',
     gallery: [
+      '/images/smart-water/smart-water-logo.jpg',
       '/images/smart-water/smart-water-app.jpg'
     ],
     date: '2026-09-10',
@@ -480,9 +482,11 @@ export const projectsData: ProjectItem[] = [
     category: 'Smart Waste & IoT Smart City',
     description: 'MOPS adalah platform Smart City berbasis IoT dan Web untuk memantau kondisi volume sampah di berbagai TPS Kota Bandung secara real-time, mencegah terjadinya luberan sampah, dan mengefisiensikan rute armada truk sampah.',
     fullDescription: 'MOPS (Sistem Monitoring & Operasional Persampahan Kota Bandung) merupakan platform inovatif Smart City berbasis Internet of Things (IoT) dan Web yang dirancang secara komprehensif untuk memantau kondisi volume sampah di Tempat Pembuangan Sementara (TPS) se-Kota Bandung secara real-time. Melalui integrasi sensor jarak Time-of-Flight (ToF TOF400F) dan ultrasonik industri, kamera IP outdoor cerdas TP-Link VIGI C340, serta control box edge computing, MOPS secara presisi mendeteksi ketinggian dan volume timbunan sampah, mencegah luberan sampah ke badan jalan, mengantisipasi timbulan bau tidak sedap, serta mengoptimalkan rute logistik armada truk sampah Dinas Lingkungan Hidup (DLH).\n\nPlatform ini terbagi ke dalam 2 ekosistem utama:\n1. Portal Publik Warga Bandung: Menyajikan statistik kebersihan kota, peta monitoring interaktif status TPS (Normal, Hampir Penuh, Penuh/Kritis), feed visual CCTV FPS tinggi, artikel edukasi pemilahan sampah 3R, serta formulir aduan luberan sampah dan pengajuan TPS Pintar tingkat RT/RW.\n2. Dashboard Operasional Internal Role-Based: Mendukung 3 tingkat hierarki operasional — Super Admin (manajemen perangkat sensor IoT & tata kelola pengguna), Supervisor (analisis utilisasi armada truk & rekap performa TPS per kecamatan), dan Operator Lapangan (pemantauan status kritis darurat & konfirmasi dispatching truk penjemput).\n\nDibangun menggunakan arsitektur modern React 19, TypeScript, Tailwind CSS, Recharts, Motion, dan konektivitas telemetri sensorik, MOPS menjadi wujud nyata transformasi Bandung Smart City menuju tata kelola lingkungan yang bersih, terukur, dan berkelanjutan.',
-    image: '/images/mops/mops-hardware-installation.png',
+    image: '/images/mops/mops-logo.png',
     gallery: [
-      '/images/mops/mops-hardware-installation.png'
+      '/images/mops/mops-logo.png',
+      '/images/mops/mops-hardware-installation.png',
+      '/images/mops/mops-logo-badge.jpg'
     ],
     date: '2026-09-14',
     liveUrl: 'https://mops-5f51b.web.app/',
@@ -579,7 +583,7 @@ export const teamData: TeamMember[] = [
     role: 'Pembina Lab',
     image: 'mentor-indrarini',
     email: 'indrarini@telkomuniversity.ac.id',
-    profileUrl: 'https://pilrek.telkomuniversity.ac.id/indrarini-dyah-irawati/',
+    profileUrl: 'https://www.instagram.com/indrarini_dya/',
     bio: 'Pakar riset sistem telekomunikasi cerdas dan pengolahan sinyal digital. Membimbing Smart Grow Laboratory untuk terus berinovasi dalam memadukan keahlian teknik elektro dengan pemecahan solusi pangan siber.',
     skills: ['IoT Architecture', 'Digital Signal Processing', 'Machine Learning', 'Research Strategy']
   },
