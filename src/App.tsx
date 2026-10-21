@@ -2241,6 +2241,7 @@ export default function App() {
                             <div className={`relative aspect-video w-full overflow-hidden rounded-2xl border transition-all ${
                               project.id === 'smart-water' ? 'border-sky-200 bg-white shadow-inner' : 
                               project.id === 'mops' ? 'border-emerald-200 bg-white shadow-inner' :
+                              project.id === 'smart-tbn' ? 'border-emerald-200 bg-white shadow-inner' :
                               project.id === 'proj_1788926059725' || project.id === 'htci' ? 'border-teal-200 bg-white shadow-inner' :
                               'border-slate-100 bg-slate-950'
                             }`}>
@@ -2253,9 +2254,11 @@ export default function App() {
                                     ? 'object-contain p-3.5 bg-white'
                                     : project.id === 'mops'
                                     ? 'object-contain p-3 bg-white'
+                                    : project.id === 'smart-tbn'
+                                    ? 'object-contain p-3 bg-white'
                                     : project.id === 'proj_1788926059725' || project.id === 'htci'
                                     ? 'object-contain p-3 bg-white'
-                                    : (project.image || '').includes('logo') || (project.image || '').includes('poster') || (project.image || '').includes('brochure') || (project.image || '').includes('sapa') || project.id === 'smart-tbn' || project.id === 'sapa-jamiyyah'
+                                    : (project.image || '').includes('logo') || (project.image || '').includes('poster') || (project.image || '').includes('brochure') || (project.image || '').includes('sapa') || project.id === 'sapa-jamiyyah'
                                     ? 'object-contain p-2 bg-slate-950' 
                                     : 'object-cover object-center'
                                 }`}
@@ -2263,7 +2266,7 @@ export default function App() {
                                   (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg';
                                 }}
                               />
-                              {project.id !== 'smart-water' && project.id !== 'mops' && project.id !== 'proj_1788926059725' && project.id !== 'htci' && (
+                              {project.id !== 'smart-water' && project.id !== 'mops' && project.id !== 'smart-tbn' && project.id !== 'proj_1788926059725' && project.id !== 'htci' && (
                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent" />
                               )}
                               

@@ -226,11 +226,16 @@ export default function ResearchInterestSlider() {
       <div className="absolute bottom-0 left-1/4 h-96 w-96 bg-teal-500/5 rounded-full blur-[140px] pointer-events-none"></div>
 
       {/* Section Header: Aligned cleanly with the website's main 7xl container */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed font-sans max-w-2xl font-medium">
-            Fokus kepakaran dan kelompok laboratorium riset terpadu dalam memajukan teknologi pertanian cerdas, otomasi biosistem, dan sistem siber.
-          </p>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+          <div className="max-w-2xl space-y-2">
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+              Research Interest
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed font-sans font-medium">
+              Fokus kepakaran dan kelompok laboratorium riset terpadu dalam memajukan teknologi pertanian cerdas, otomasi biosistem, dan sistem siber.
+            </p>
+          </div>
 
           {/* Navigation Controls */}
           <div className="flex items-center justify-center sm:justify-end gap-3.5 shrink-0">

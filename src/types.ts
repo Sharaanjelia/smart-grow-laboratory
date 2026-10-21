@@ -114,14 +114,20 @@ export interface User {
   finalScore?: number;
   grade?: string;
   advisorNotes?: string;
+  attendanceRate?: number;
   internshipEvaluation?: {
     finalScore?: number;
     technicalScore?: number;
     disciplineScore?: number;
     initiativeScore?: number;
+    attendanceScore?: number;
+    taskScore?: number;
+    attitudeScore?: number;
     grade?: string;
     evalNotes?: string;
+    advisorNotes?: string;
     evaluatedBy?: string;
+    evaluatorName?: string;
     evalDate?: string;
   };
 }
@@ -281,6 +287,7 @@ export interface ApprovalRequest {
   reviewedBy?: string;
   reviewNotes?: string;
   attachmentUrl?: string;
+  amount?: string | number;
   createdAt?: string;
 }
 

@@ -1001,7 +1001,7 @@ export const initialLmsProjects: LmsProject[] = [
     progressPercent: 94,
     deadline: '2026-11-20',
     repoUrl: 'https://github.com/smartgrowlab/smart-tbn-iot',
-    photoUrl: '/images/smart-tbn/smart-tbn-poster.png',
+    photoUrl: '/images/smart-tbn/smart-tbn-logo.png',
     documents: [
       { name: 'Implementasi_IoT_Smart_TBN_Sumba.pdf', url: '#', date: '2026-07-27', size: '5.2 MB' },
       { name: 'Manual_Integrasi_Sensor_Ultrasonik_Kamera.pdf', url: '#', date: '2026-07-27', size: '3.4 MB' }

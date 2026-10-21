@@ -2,7 +2,6 @@ import React from 'react';
 import { 
   CheckCircle2, 
   Target, 
-  Sparkles, 
   Cpu, 
   Handshake, 
   GraduationCap, 
@@ -65,10 +64,6 @@ export default function VisionMissionSection() {
     <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 lg:py-24" id="home-visi-misi">
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-14 space-y-4">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800 text-xs font-bold font-mono text-emerald-800 dark:text-emerald-300 shadow-2xs">
-          <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 animate-pulse" />
-          <span>ROADMAP & LANDASAN NILAI</span>
-        </div>
         <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
           Komitmen Riset & Inovasi Pertanian Cerdas
         </h2>
@@ -81,16 +76,14 @@ export default function VisionMissionSection() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         
         {/* Left Column: KARTU VISI */}
-        <div className="lg:col-span-5 relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#063f35] via-[#0A5247] to-[#032621] p-8 sm:p-10 text-white flex flex-col justify-between shadow-2xl shadow-emerald-950/25 border border-emerald-600/30 group">
+        <div className="lg:col-span-5 relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#063f35] via-[#0A5247] to-[#032621] p-8 sm:p-10 text-white flex flex-col shadow-2xl shadow-emerald-950/25 border border-emerald-600/30 group self-start">
           {/* Decorative Background Glows & Watermark */}
           <div className="absolute top-0 right-0 h-72 w-72 bg-emerald-400/15 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 h-72 w-72 bg-teal-400/15 rounded-full blur-3xl pointer-events-none" />
           <Quote className="absolute right-6 top-6 w-28 h-28 text-white/[0.04] -rotate-12 pointer-events-none" />
 
-          {/* Top content */}
-          <div className="relative z-10 space-y-6">
-
-
+          {/* Content */}
+          <div className="relative z-10 space-y-5">
             <div>
               <h3 className="font-display text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight">
                 Visi Laboratorium
@@ -98,31 +91,31 @@ export default function VisionMissionSection() {
               <div className="h-1.5 w-20 bg-gradient-to-r from-emerald-400 via-teal-300 to-transparent rounded-full mt-3" />
             </div>
 
-            <p className="font-sans text-sm sm:text-base text-emerald-50/95 leading-relaxed font-normal pt-1">
+            <p className="font-sans text-sm sm:text-base text-emerald-50/95 leading-relaxed font-normal">
               "Menjadi pusat riset dan inovasi unggulan di tingkat nasional maupun internasional dalam pengembangan teknologi <span className="text-emerald-300 font-bold">pertanian cerdas (Smart Agriculture)</span>, <span className="text-teal-200 font-bold">otomasi IoT</span>, dan <span className="text-emerald-300 font-bold">AI biosistem</span> guna mewujudkan ketahanan pangan yang tangguh, efisien, dan berkelanjutan."
             </p>
-          </div>
 
-          {/* Bottom content: Core Pillars */}
-          <div className="relative z-10 pt-6 mt-6 border-t border-emerald-800/60 space-y-3">
-            <span className="text-xs font-mono font-bold uppercase tracking-widest text-emerald-300/90 block">
-              3 PILAR UTAMA PENGEMBANGAN:
-            </span>
-            <div className="space-y-2.5">
-              {visionPillars.map((pillar, idx) => {
-                const IconComponent = pillar.icon;
-                return (
-                  <div 
-                    key={idx} 
-                    className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs text-xs font-semibold text-emerald-50 hover:bg-white/10 hover:border-white/20 transition-all duration-300 shadow-xs"
-                  >
-                    <div className={`w-7 h-7 rounded-lg ${pillar.color} flex items-center justify-center shrink-0`}>
-                      <IconComponent className="w-4 h-4" />
+            {/* Core Pillars - langsung di bawah visi dengan jarak dekat */}
+            <div className="pt-4 mt-2 border-t border-emerald-800/60 space-y-3">
+              <span className="text-xs font-mono font-bold uppercase tracking-widest text-emerald-300/90 block">
+                3 PILAR UTAMA PENGEMBANGAN:
+              </span>
+              <div className="space-y-2.5">
+                {visionPillars.map((pillar, idx) => {
+                  const IconComponent = pillar.icon;
+                  return (
+                    <div 
+                      key={idx} 
+                      className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs text-xs font-semibold text-emerald-50 hover:bg-white/10 hover:border-white/20 transition-all duration-300 shadow-xs"
+                    >
+                      <div className={`w-7 h-7 rounded-lg ${pillar.color} flex items-center justify-center shrink-0`}>
+                        <IconComponent className="w-4 h-4" />
+                      </div>
+                      <span>{pillar.title}</span>
                     </div>
-                    <span>{pillar.title}</span>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
