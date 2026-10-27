@@ -114,10 +114,10 @@ export default function LuminetShowcase({
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 pb-20 animate-fade-in space-y-12 font-sans">
+    <div className="w-full space-y-6 sm:space-y-8 animate-fade-in pb-12 font-sans">
       
       {/* Top Navigation Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3 sm:pb-4">
         <button 
           onClick={onBack}
           className="group inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-amber-500 dark:hover:text-amber-400 transition-all duration-300 shadow-sm hover:shadow hover:border-amber-500 cursor-pointer self-start"
@@ -143,7 +143,7 @@ export default function LuminetShowcase({
       </div>
 
       {/* Hero Header Section with Logo & Description */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
         <div className="lg:col-span-8 space-y-4">
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-slate-950 p-2.5 border border-slate-800 shadow-md shrink-0">

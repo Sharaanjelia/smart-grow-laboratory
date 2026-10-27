@@ -218,7 +218,7 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
       </div>
 
       {/* 3. BREADCRUMB / TOP GLASS CONTROLLER BAR */}
-      <header className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6 pb-2">
+      <header className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-2">
         <div className="backdrop-blur-md bg-slate-900/35 border border-white/5 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-lg">
           
           {/* Logo Brand / Back link */}
@@ -263,10 +263,10 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
       </header>
 
       {/* 4. MAIN LAYOUT: SPLIT SCREEN (HERO CONTENT LEFT vs. GLASSMOCK FORM RIGHT) */}
-      <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 sm:py-16 relative z-10 flex flex-col justify-center">
+      <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10 relative z-10 flex flex-col justify-center">
         
         {activeTab === 'app' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             
             {/* ============================================== */}
             {/* LEFT COL: HERO CONTENT SECTION (7 Columns)     */}

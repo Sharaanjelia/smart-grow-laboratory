@@ -139,10 +139,10 @@ export default function SimonaShowcase({
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 pb-20 animate-fade-in space-y-12">
+    <div className="w-full space-y-6 sm:space-y-8 animate-fade-in pb-12">
       
       {/* Top Navigation & Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3 sm:pb-4">
         <button 
           onClick={onBack}
           className="group inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-300 shadow-sm hover:shadow hover:border-cyan-500 cursor-pointer self-start"
@@ -168,7 +168,7 @@ export default function SimonaShowcase({
       </div>
 
       {/* Hero Showcase Title Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
         <div className="lg:col-span-8 space-y-4">
           <div className="flex items-center gap-3">
             <img src="/images/simona/simona-logo.png" alt="SIMONA Logo" className="h-12 w-auto object-contain" />
@@ -241,29 +241,56 @@ export default function SimonaShowcase({
 
         {/* Small Horizontal Thumbnail Cards Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 pt-2">
-          {galleryImages.map((img, idx) => (
-            <button
-              key={idx}
-              onClick={() => setModalImage(img.url)}
-              className="group relative aspect-[4/3] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-900 shadow-md hover:shadow-2xl hover:scale-105 hover:border-cyan-500 transition-all cursor-pointer flex flex-col justify-end p-3 text-left"
-            >
-              <img 
-                src={img.url} 
-                alt={img.title} 
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent group-hover:from-cyan-950/90 transition-colors"></div>
-              
-              <div className="relative z-10 space-y-0.5">
-                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-cyan-400">
-                  <Maximize2 className="w-3 h-3 text-cyan-400" /> Lihat Foto
-                </span>
-                <h4 className="font-display text-xs font-bold text-white line-clamp-1 group-hover:text-cyan-300">
-                  {img.title}
-                </h4>
-              </div>
-            </button>
-          ))}
+          {galleryImages.map((img, idx) => {
+            const isLogo = img.url.includes('logo');
+            return (
+              <button
+                key={idx}
+                onClick={() => setModalImage(img.url)}
+                className={`group relative aspect-[4/3] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-2xl hover:scale-105 hover:border-cyan-500 transition-all cursor-pointer flex flex-col justify-end text-left ${
+                  isLogo ? 'bg-white p-2.5' : 'bg-slate-900 p-3'
+                }`}
+              >
+                {isLogo ? (
+                  <>
+                    <div className="absolute inset-0 flex items-center justify-center p-3 pb-10 bg-white">
+                      <img 
+                        src={img.url} 
+                        alt={img.title} 
+                        className="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105" 
+                      />
+                    </div>
+                    <div className="absolute inset-x-0 bottom-0 bg-slate-900/95 px-2.5 py-1.5 backdrop-blur-xs">
+                      <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold text-cyan-400">
+                        <Maximize2 className="w-2.5 h-2.5 text-cyan-400" /> Logo Resmi
+                      </span>
+                      <h4 className="font-display text-[11px] font-bold text-white line-clamp-1 group-hover:text-cyan-300">
+                        {img.title}
+                      </h4>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <img 
+                      src={img.url} 
+                      alt={img.title} 
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent group-hover:from-cyan-950/90 transition-colors"></div>
+                    
+                    <div className="relative z-10 space-y-0.5">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-cyan-400">
+                        <Maximize2 className="w-3 h-3 text-cyan-400" /> Lihat Foto
+                      </span>
+                      <h4 className="font-display text-xs font-bold text-white line-clamp-1 group-hover:text-cyan-300">
+                        {img.title}
+                      </h4>
+                    </div>
+                  </>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 

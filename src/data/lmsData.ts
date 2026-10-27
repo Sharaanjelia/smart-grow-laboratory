@@ -905,7 +905,7 @@ export const initialLmsProjects: LmsProject[] = [
     progressPercent: 88,
     deadline: '2026-09-15',
     repoUrl: 'https://github.com/smartgrowlab/hycosmarts-container',
-    photoUrl: '/images/hycosmarts/hycosmarts-3.png',
+    photoUrl: '/images/hycosmarts/hycosmarts-logo.png',
     documents: [
       { name: 'Spesifikasi_Mekanik_Kontainer_v2.pdf', url: '#', date: '2026-06-10', size: '4.2 MB' },
       { name: 'Arsitektur_Sensor_Jaringan_Modbus.pdf', url: '#', date: '2026-07-01', size: '2.8 MB' },
@@ -964,7 +964,7 @@ export const initialLmsProjects: LmsProject[] = [
     deadline: '2026-11-20',
     repoUrl: 'https://github.com/smartgrowlab/flocify-biofloc-ai',
     liveUrl: 'https://ppmtelkom.vercel.app/',
-    photoUrl: '/images/flocify/flocify-biofloc-tank-iso.png',
+    photoUrl: '/images/flocify/flocify-logo.png',
     documents: [
       { name: 'Desain_Arsitektur_3D_Biofloc_Tank_FLOCIFY.pdf', url: '#', date: '2026-07-23', size: '6.4 MB' },
       { name: 'Model_Deep_Learning_Prediksi_Amonia.pdf', url: '#', date: '2026-07-24', size: '4.8 MB' }
@@ -1005,6 +1005,44 @@ export const initialLmsProjects: LmsProject[] = [
     documents: [
       { name: 'Implementasi_IoT_Smart_TBN_Sumba.pdf', url: '#', date: '2026-07-27', size: '5.2 MB' },
       { name: 'Manual_Integrasi_Sensor_Ultrasonik_Kamera.pdf', url: '#', date: '2026-07-27', size: '3.4 MB' }
+    ]
+  },
+  {
+    id: 'proj_sapa_jamiyyah',
+    projectNumber: 'PRJ-EDCOMM-2026-06',
+    title: "SAPA Jam'iyyah SMPI Al Azhar 36 Bandung",
+    category: 'Smart Community & EdTech',
+    description: "SAPA Jam'iyyah adalah platform digital terintegrasi untuk komunikasi orang tua, donasi transparan, pencatatan hasil musyawarah, dan angket partisipatif di SMPI Al Azhar 36 Bandung.",
+    advisor: 'Prof. Dr. Indrarini Dyah Irawati, S.T., M.T.',
+    assignedStudentIds: [],
+    assignedStudentNames: [],
+    status: 'completed',
+    progressPercent: 100,
+    deadline: '2026-09-14',
+    repoUrl: 'https://www.sapajamiyyah.com/',
+    photoUrl: '/images/sapa-jamiyyah/sapa-jamiyyah-logo.png',
+    documents: [
+      { name: 'Dokumentasi_Platform_SAPA_Jamiyyah.pdf', url: '#', date: '2026-09-14', size: '3.9 MB' },
+      { name: 'Panduan_Penggunaan_Portal_Wali_Murid.pdf', url: '#', date: '2026-09-14', size: '2.4 MB' }
+    ]
+  },
+  {
+    id: 'proj_das_cikapundung',
+    projectNumber: 'PRJ-RIVER-2026-07',
+    title: 'DAS Cikapundung - Smart River Basin IoT & Solar Telemetry',
+    category: 'Smart River & Green Energy',
+    description: 'Sistem monitoring telemetri kualitas dan ketinggian air daerah aliran sungai (DAS) Cikapundung dengan catu daya mandiri panel surya fotovoltaik.',
+    advisor: 'Prof. Dr. Indrarini Dyah Irawati, S.T., M.T.',
+    assignedStudentIds: [],
+    assignedStudentNames: [],
+    status: 'in_progress',
+    progressPercent: 90,
+    deadline: '2026-11-30',
+    repoUrl: '#',
+    photoUrl: '/images/das-cikapundung/das-cikapundung-panel.jpg',
+    documents: [
+      { name: 'Skematik_Enclosure_Catu_Daya_Surya_Cikapundung.pdf', url: '#', date: '2026-10-15', size: '4.7 MB' },
+      { name: 'Manual_Instalasi_Sensor_Ultrasonik_Sungai.pdf', url: '#', date: '2026-10-16', size: '3.2 MB' }
     ]
   }
 ];

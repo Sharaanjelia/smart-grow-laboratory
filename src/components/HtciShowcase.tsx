@@ -114,10 +114,10 @@ export default function HtciShowcase({
   const allComments = comments.length > 0 ? comments : defaultComments;
 
   return (
-    <div className="space-y-10 animate-fade-in text-slate-800 dark:text-slate-100">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in text-slate-800 dark:text-slate-100 pb-12">
       
       {/* TOP NAVIGATION BAR */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3 sm:pb-4">
         <button
           onClick={onBack}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-teal-500 hover:text-teal-700 dark:hover:text-teal-400 transition-all cursor-pointer shadow-2xs"
@@ -140,7 +140,7 @@ export default function HtciShowcase({
       </div>
 
       {/* HERO BANNER SECTION */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0c3937] via-[#0d4f4c] to-[#145d58] text-white p-8 sm:p-12 shadow-xl border border-teal-600/30">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0c3937] via-[#0d4f4c] to-[#145d58] text-white p-6 sm:p-8 shadow-xl border border-teal-600/30">
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-teal-400/15 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/4 -mb-20 w-80 h-80 rounded-full bg-emerald-300/10 blur-2xl pointer-events-none" />
 
@@ -150,10 +150,6 @@ export default function HtciShowcase({
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-950/70 border border-teal-400/40 text-teal-300 font-mono text-xs font-bold uppercase tracking-wider backdrop-blur-md">
                 <Flame className="h-3.5 w-3.5 text-amber-400" />
                 Riset Teknologi Termal & IoT • Waste to Energy
-              </span>
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-mono text-xs font-semibold">
-                <Calendar className="h-3.5 w-3.5" />
-                9 September 2026
               </span>
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-300/30 text-amber-200 font-mono text-xs font-semibold">
                 <Zap className="h-3.5 w-3.5 text-amber-300" />

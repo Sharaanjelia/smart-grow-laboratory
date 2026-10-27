@@ -126,8 +126,9 @@ export const projectsData: ProjectItem[] = [
     category: 'Container-based Smart Agriculture',
     description: 'HYCOSMARTS is a smart container-based intelligent farming system designed to manage indoor hydroponic farming automatically, efficiently, and sustainably.',
     fullDescription: 'HYCOSMARTS is a smart container-based intelligent farming system designed to manage indoor hydroponic farming automatically, efficiently, and sustainably. The system is equipped with various important sensors such as pH, TDS, DO, EC, and ultrasonic sensors to monitor water quality, nutrient availability, and growing conditions in real time. With artificial intelligence support and integration with web-based dashboards and mobile apps, HYCOSMARTS can precisely regulate plant needs and provide early notifications of potential crop failures. In addition to being energy-efficient and self-sufficient, the system is also suitable for implementation in 3T areas (remote, frontier, and outer regions) as an innovative solution to enhance agricultural productivity and food self-sufficiency through technology.',
-    image: '/images/hycosmarts/hycosmarts-3.png',
+    image: '/images/hycosmarts/hycosmarts-logo.png',
     gallery: [
+      '/images/hycosmarts/hycosmarts-logo.png',
       '/images/hycosmarts/hycosmarts-3.png',
       '/images/hycosmarts/hycosmarts-2.png',
       '/images/hycosmarts/hycosmarts-5.png',
@@ -294,8 +295,9 @@ export const projectsData: ProjectItem[] = [
     category: 'Biofloc AI Aquaculture',
     description: 'Flocify is an innovative Internet of Things (IoT) and Deep Learning-based solution designed to optimize fish farming in biofloc systems.',
     fullDescription: 'Flocify is an innovative Internet of Things (IoT) and Deep Learning-based solution designed to optimize fish farming in biofloc systems. The platform integrates smart sensing technologies, real-time monitoring, artificial intelligence-driven analytics, and automated control mechanisms to maintain sustainable aquaculture environments. Through continuous monitoring of critical water quality parameters, including temperature, pH, dissolved oxygen (DO), ammonia concentration, and other relevant environmental indicators, Flocify enables the acquisition of real-time data to support adaptive aquaculture management. The integration of Deep Learning algorithms facilitates pattern recognition, anomaly detection, and predictive analysis of environmental conditions, thereby enabling early identification of potential risks and supporting evidence-based decision-making. Furthermore, the system can provide automated recommendations and control mechanisms to maintain optimal culture conditions, improve production performance, and enhance the sustainability of biofloc-based fish farming operations. The adoption of Flocify is expected to reduce fish mortality rates, improve feed utilization efficiency, lower operational burdens for farmers, and minimize investment risks. Furthermore, the solution can enhance the competitiveness of small and medium-scale aquaculture producers by promoting smarter, more productive, and sustainable farming practices.',
-    image: '/images/flocify/flocify-biofloc-tank-iso.png',
+    image: '/images/flocify/flocify-logo.png',
     gallery: [
+      '/images/flocify/flocify-logo.png',
       '/images/flocify/flocify-biofloc-tank-iso.png',
       '/images/flocify/flocify-topview-tank.png',
       '/images/flocify/flocify-perspective-tank.png'
@@ -533,8 +535,9 @@ export const projectsData: ProjectItem[] = [
     category: "Smart Community & EdTech",
     description: "Platform digital resmi Jam'iyyah SMPI Al Azhar 36 Bandung untuk memfasilitasi komunikasi dua arah antara orang tua murid dan pihak sekolah melalui kanal aspirasi terstruktur, penggalangan donasi & infaq transparan, dokumentasi catatan rapat, warta berita sekolah, serta angket partisipatif.",
     fullDescription: "SAPA Jam'iyyah SMPI Al Azhar 36 Bandung (sapajamiyyah.com) merupakan platform web interaktif yang dikembangkan sebagai media komunikasi resmi dan jembatan kolaborasi antara Pengurus Jam'iyyah (komite orang tua murid), pihak manajemen sekolah SMPI Al Azhar 36 Bandung, serta seluruh wali murid.\n\nPlatform ini dirancang dengan prinsip keterbukaan, akuntabilitas, dan partisipasi aktif guna mendukung ekosistem pendidikan berkarakter Islam dan bertaraf unggul. Melalui SAPA Jam'iyyah, setiap pemangku kepentingan dapat mengakses informasi dan layanan kunci tanpa sekat birokrasi yang kaku.\n\nEkosistem Utama SAPA Jam'iyyah:\n1. Aspirasi Terpadu: Kanal penyampaian aspirasi, kritik konstruktif, dan usulan program sekolah dengan nomor tiket pelacakan progres tindak lanjut dari pengurus Jam'iyyah dan pimpinan sekolah.\n2. Donasi & Infaq Berkelanjutan: Sistem penggalangan dana sosial dan infaq kegiatan kesiswaan dengan pelaporan perolehan dana secara real-time, transparan, serta dapat diaudit bersama.\n3. Catatan Rapat & Kebijakan: Arsip resmi notulensi musyawarah, program kerja tahunan, serta transparansi laporan pertanggungjawaban Jam'iyyah 2024–2026.\n4. Warta Berita & Agenda: Informasi terkini seputar prestasi santri/siswa, event akbar sekolah, seminar parenting, dan agenda akademik terpadu.\n5. Angket & Polling Kebijakan: Sarana survei cepat digital untuk menjaring suara dan preferensi orang tua terhadap kebijakan sekolah dan inisiatif Jam'iyyah.\n\nDidukung tata kelola peran multi-level (Admin Jam'iyyah, Pengurus Bidang, Manajemen Sekolah, dan Wali Murid) dengan integrasi keamanan modern untuk mewujudkan sinergi harmonis antara sekolah dan keluarga.",
-    image: '/images/sapa-jamiyyah/sapa-jamiyyah-hero.png',
+    image: '/images/sapa-jamiyyah/sapa-jamiyyah-logo.png',
     gallery: [
+      '/images/sapa-jamiyyah/sapa-jamiyyah-logo.png',
       '/images/sapa-jamiyyah/sapa-jamiyyah-hero.png',
       '/images/sapa-jamiyyah/sapa-jamiyyah-poster.png'
     ],
@@ -572,6 +575,187 @@ export const projectsData: ProjectItem[] = [
         minSafe: 0.5,
         maxSafe: 6.0,
         description: 'Kecepatan rata-rata respon tanggapan pengurus terhadap aduan atau pertanyaan yang diajukan wali murid.'
+      }
+    ]
+  },
+  {
+    id: 'das-cikapundung',
+    title: 'DAS Cikapundung',
+    tagline: 'Sistem Telemetri Aliran Sungai & Stasiun Tenaga Surya Mandiri',
+    category: 'Smart River & Green Energy',
+    description: 'Sistem monitoring telemetri daerah aliran sungai (DAS) Cikapundung berbasis IoT dengan catu daya mandiri panel surya (Off-Grid Solar PV), dilengkapi proteksi MCB, Solar Charge Controller, dual deep-cycle battery, dan sensor hidrometeorologi real-time.',
+    fullDescription: "Sistem Pemantauan Daerah Aliran Sungai (DAS) Cikapundung Berbasis IoT & Catu Daya Panel Surya Mandiri\n\nSungai Cikapundung membelah jantung kawasan metropolitan Bandung Raya, berperan vital sebagai sumber air baku dan ekosistem lingkungan, sekaligus jalur rawan limpasan banjir saat intensitas hujan tinggi di kawasan hulu Lembang.\n\nSmart Grow Laboratory menghadirkan stasiun pemantauan terdesentralisasi ramah lingkungan (Off-Grid Clean Energy) yang dipasang di bantaran strategis DAS Cikapundung. Sistem ini beroperasi secara mandiri 24 jam nonstop tanpa bergantung pada jaringan listrik PLN berkat integrasi instalasi panel surya dan panel enclosure catu daya protektif.\n\nKomponen Inti Panel Catu Daya Surya:\n1. Solar Charge Controller (SCC): Mengatur regulasi pengisian daya cerdas dari modul panel surya fotovoltaik (PV) ke bank baterai dengan perlindungan overload, overcharge, dan deep discharge (LVD).\n2. Miniature Circuit Breaker (MCB): Pemutus sirkuit proteksi arus lebih dan hubung singkat untuk menjamin keselamatan modul telemetri dan baterai dari anomali kelistrikan.\n3. Dual Deep-Cycle Battery (VRLA): Bank penyimpan energi kimia berkapasitas tinggi untuk menjamin kontinuitas suplai daya transmisi IoT saat malam hari atau cuaca mendung berkepanjangan.\n4. Terminal Block Terisolasi: Sistem manajemen pengkabelan rapi dengan kode warna standar industri (Merah: Positif +, Hitam: Negatif -, Garis Merah-Hitam: Ke Beban Telemetri).\n\nSensor & Telemetri Terintegrasi:\n- Ketinggian Muka Air Sungai (Ultrasonic Water Level Sensor)\n- Kekeruhan Air (Turbidity Sensor)\n- Keasaman Air (pH Sensor)\n- Suhu Air & Lingkungan\n- Transmisi data nirkabel LoRaWAN / GSM 4G ke Cloud Dashboard",
+    image: '/images/das-cikapundung/das-cikapundung-panel.jpg',
+    gallery: [
+      '/images/das-cikapundung/das-cikapundung-panel.jpg',
+      '/images/das-cikapundung/das-cikapundung-poster.png'
+    ],
+    date: '2026-10-15',
+    liveUrl: '#',
+    sensors: [
+      {
+        name: 'Tegangan Baterai Sistem',
+        value: 13.6,
+        unit: 'V',
+        minSafe: 11.5,
+        maxSafe: 14.4,
+        description: 'Tegangan terminal bank baterai dalam siklus floating charge catu daya surya.'
+      },
+      {
+        name: 'Efisiensi Pengisian Solar Panel',
+        value: 94.2,
+        unit: '%',
+        minSafe: 70,
+        maxSafe: 100,
+        description: 'Efisiensi konversi daya modul surya fotovoltaik melalui Solar Charge Controller.'
+      },
+      {
+        name: 'Ketinggian Muka Air Sungai',
+        value: 1.25,
+        unit: 'Meter',
+        minSafe: 0.5,
+        maxSafe: 3.5,
+        description: 'Ketinggian permukaan air sungai terukur secara ultrasonik untuk deteksi dini banjir.'
+      },
+      {
+        name: 'Kekeruhan Air (Turbidity)',
+        value: 42,
+        unit: 'NTU',
+        minSafe: 5,
+        maxSafe: 150,
+        description: 'Tingkat kejernihan dan partikel lumpur terlarut di aliran Sungai Cikapundung.'
+      }
+    ]
+  },
+  {
+    id: 'smart-minimarket',
+    title: 'Smart Minimarket-QMART',
+    tagline: 'Model Inovatif Pengelolaan Teaching Factory & Retail Digital SMK',
+    category: 'Smart Retail & Teaching Factory',
+    description: 'Implementasi Smart Mini Market berbasis aplikasi Point of Sales (POS) dan teknologi ritel modern sebagai model Teaching Factory di SMK Karya Abadi Sumedang untuk mengasah keterampilan kewirausahaan digital.',
+    fullDescription: "Implementasi Smart Mini Market: Model Inovatif Pengelolaan Teaching Factory di SMK Karya Abadi Sumedang\n\nSmart Mini Market merupakan salah satu model Teaching Factory yang dirancang untuk mendukung pembelajaran berbasis praktik di SMK. Melalui pengelolaan mini market berbasis digital, siswa dapat belajar langsung mengenai manajemen ritel, penggunaan teknologi informasi, hingga strategi pemasaran modern.\n\nProgram ini hadir untuk menjawab kebutuhan pendidikan vokasi yang relevan dengan perkembangan industri ritel modern serta membekali siswa dengan keterampilan kewirausahaan di era digital.\n\nMetode Implementasi:\n1. Planning & Development (Maret - Mei 2025):\n- Pembuatan aplikasi Smart Mini Market (QMART)\n- Penyusunan modul pembelajaran & video tutorial interaktif\n- Pengadaan barang dan perlengkapan ritel\n- Identifikasi kebutuhan teaching factory sekolah\n\n2. Implementation (Juni - Juli 2025):\n- Penyediaan fasilitas ritel modern (display area, rak produk, gudang kecil)\n- Sistem Point of Sales (POS) berbasis aplikasi bersama PT. STA\n- Peralatan kasir, papan harga digital, pencahayaan, Wi-Fi, dan signage promosi\n- Simulasi transaksi kasir digital dan pendampingan bagi guru dan siswa\n\n3. Evaluation & Sustainability (Agustus 2025):\n- Monitoring dan evaluasi keberlanjutan program toko ritel\n- Integrasi ke dalam kurikulum Teaching Factory reguler\n- Kolaborasi berkelanjutan dengan perguruan tinggi, mitra industri, dan UMKM lokal\n\nWaktu & Lokasi:\n- Mitra Sekolah: SMK Karya Abadi Sumedang\n- Alamat: Jl. Raya Cijelag No. 329, Desa Cijelag, Kec. Pamulihan, Kab. Sumedang, Jawa Barat 45365\n- Pelaksanaan Utama: Selasa, 26 Agustus 2025\n- Tim Pengabdi: Indrarini Dyah Irawati, Dadan Nur Ramadhan, Didi Supriyadi, Arimbi Dwi Syabillah, Hannani Syadzwana Nur Ritonga, Muhammad Alfachri Akbar (Telkom University)\n- Video Tutorial: https://drive.google.com/file/d/1SUrLFZs9dJEY4fxmZWkd6TtP2E5-ndTk/view",
+    image: '/images/smart-minimarket/smart-minimarket-poster.jpg',
+    gallery: [
+      '/images/smart-minimarket/smart-minimarket-poster.jpg'
+    ],
+    date: '2025-08-26',
+    liveUrl: 'https://drive.google.com/file/d/1SUrLFZs9dJEY4fxmZWkd6TtP2E5-ndTk/view',
+    sensors: [
+      {
+        name: 'Transaksi POS Harian',
+        value: 128,
+        unit: 'Trx',
+        minSafe: 50,
+        maxSafe: 500,
+        description: 'Volume transaksi kasir tercatat pada sistem aplikasi POS Smart Minimarket.'
+      },
+      {
+        name: 'Akurasi Kasir Digital',
+        value: 99.4,
+        unit: '%',
+        minSafe: 95,
+        maxSafe: 100,
+        description: 'Tingkat akurasi pemindaian barcode barang dan pencatatan kas kasir.'
+      },
+      {
+        name: 'Ketersediaan Stok Rak',
+        value: 98.2,
+        unit: '%',
+        minSafe: 80,
+        maxSafe: 100,
+        description: 'Persentase ketersediaan display barang sesuai katalog harga digital.'
+      },
+      {
+        name: 'Keterlibatan Siswa TEFA',
+        value: 100,
+        unit: '%',
+        minSafe: 80,
+        maxSafe: 100,
+        description: 'Partisipasi aktif siswa SMK dalam rotasi praktik kasir dan merchandising ritel.'
+      }
+    ]
+  },
+  {
+    id: 'closed-smart-hydroponic',
+    title: 'Closed Smart Hydroponic',
+    tagline: 'Smart Cabinet & Green Technology',
+    category: 'Smart Agriculture & Green Technology',
+    description: 'Dokumentasi sistem Closed Smart Hydroponic (Smart Cabinet) berbasis teknologi hijau ramah lingkungan dari Fakultas Ilmu Terapan, Telkom University.',
+    fullDescription: "Closed Smart Hydroponic\n\nDokumentasi dan pengujian sistem Closed Smart Hydroponic (Smart Cabinet) untuk budidaya tanaman presisi di dalam ruangan tertutup dengan kontrol pencahayaan grow LED dan sirkulasi udara.\n\nPublikasi Instagram Reel (@indrarini_dya):\n\"Never stop learning because life will never stop teaching. Let's use every opportunity to learn something new anytime and anywhere.\"\n\nTopik & Tagar Resmi:\n#closed #smarthydroponic #smartcabinet #greentechnology #fakultasilmuterapan #telkomuniversity\n\nTanggal Publikasi: 1 September 2023\nInstitusi: Fakultas Ilmu Terapan, Telkom University\nTautan Reel: https://www.instagram.com/reel/CwpE-96NzPK/?utm_source=ig_web_copy_link&exln=MzRlODBiNWFlZA%3D%3D&srtk=MzRlODBiNWFlZA%3D%3D",
+    image: '/images/closed-smart-hydroponic/closed-smart-hydroponic.jpg',
+    gallery: [
+      '/images/closed-smart-hydroponic/closed-smart-hydroponic.jpg'
+    ],
+    date: '2023-09-01',
+    liveUrl: 'https://www.instagram.com/reel/CwpE-96NzPK/?utm_source=ig_web_copy_link&exln=MzRlODBiNWFlZA%3D%3D&srtk=MzRlODBiNWFlZA%3D%3D',
+    sensors: [
+      {
+        name: 'Tingkat Tray Hidroponik',
+        value: 2,
+        unit: 'Tier',
+        minSafe: 1,
+        maxSafe: 4,
+        description: 'Dua tingkat rak wadah penampung larutan nutrisi dan netpot tanaman.'
+      },
+      {
+        name: 'Pencahayaan Grow LED',
+        value: 100,
+        unit: '%',
+        minSafe: 50,
+        maxSafe: 100,
+        description: 'Instalasi lampu spektrum fotosintesis di dalam kabinet tertutup.'
+      },
+      {
+        name: 'Sirkulasi Kipas Kabinet',
+        value: 100,
+        unit: '%',
+        minSafe: 50,
+        maxSafe: 100,
+        description: 'Kipas sirkulasi udara di bagian atas kabinet untuk ventilasi.'
+      }
+    ]
+  },
+  {
+    id: 'sindulang-netconnect',
+    title: 'Sindulang Netconnect Container',
+    tagline: 'Stasiun Wi-Fi Publik dan Ruang Komunitas Digital',
+    category: 'Pengabdian Masyarakat & Smart Connectivity',
+    description: 'Peresmian Sindulang Netconnect Container sebagai stasiun Wi-Fi publik dan ruang komunitas digital di SMK Al Aman Sindulang, hasil program Pengabdian Kepada Masyarakat kolaborasi Universitas Telkom & PT Tigaresi Bangun Nusaperdana.',
+    fullDescription: "Smart Office Container Untuk Mendukung Program Sindulang Netconnect Sebagai Stasiun Wi-Fi Publik dan Ruang Komunitas Digital\n\nProgram Pengabdian Kepada Masyarakat (Abdimas)\nKolaborasi: Universitas Telkom & PT Tigaresi Bangun Nusaperdana (PT TBN)\nMitra Sasaran: SMK Al Amah Sindulang, Desa Sindulang, Kec. Cimanggung, Kab. Sumedang, Jawa Barat\nWaktu Pelaksanaan: Semester Genap 2023/2024 | Sabtu, 20 Juli 2024 (08.00 - 16.00 WIB)\n\nTim Pengabdian Masyarakat:\n- Prof. Dr. Indrarini Dyah Irawati., ST., MT\n- Dr. Sugondo Hadiyoso, S.T., M.T.\n- Prof. Dr. Rendy Munadi\n- Dr. Sofia Naning Hertiana\n- Dr. Istikmal, ST., MT.\n- Indri Talitha\n- Sulistyo Winardi\n- Alvino Tunjung Bagaskara\n- Riska Sri Anggraeni\n\n1. Latar Belakang Masalah:\nDesa Sindulang menghadapi tantangan serius dalam akses internet akibat infrastruktur yang kurang memadai, yang berdampak negatif pada perekonomian, pendidikan, dan kesejahteraan masyarakat.\n\n2. Metode Pelaksanaan:\n1. Diskusi antara tim pengabdian masyarakat dengan mitra sasar\n2. Survey lapangan\n3. Merumuskan roadmap kegiatan\n4. Pembuatan model pembelajaran\n5. Implementasi sistem\n\n3. Luaran & Hasil Kegiatan:\n1. Implementasi Wi-Fi publik di smart office container\n2. Modul Pelatihan\n3. Pelatihan instalasi Wi-Fi publik\n4. HaKI\n5. Alat (Unit Smart Office Container)\n\n4. Kesimpulan:\nPengabdian masyarakat Smart Office Container untuk mendukung Program Sindulang Netconnect Sebagai Stasiun Wi-Fi Publik dan Ruang Komunitas Digital berjalan dengan baik berkat kolaborasi dengan SMK Al Amah dan PT Tigaresi Bangun Nusaperdana. Berdasarkan hasil evaluasi, kegiatan ini sesuai dengan kebutuhan mitra dan diharapkan dapat berkelanjutan.",
+    image: '/images/sindulang/sindulang-poster.jpg',
+    gallery: [
+      '/images/sindulang/sindulang-poster.jpg',
+      '/images/sindulang/sindulang-spanduk.jpg',
+      '/images/sindulang/sindulang-container-side.jpg',
+      '/images/sindulang/sindulang-container-door.jpg',
+      '/images/sindulang/sindulang-container-angle.jpg'
+    ],
+    date: '2024-07-20',
+    liveUrl: '#',
+    sensors: [
+      {
+        name: 'Ketersediaan Wi-Fi Publik',
+        value: 100,
+        unit: '%',
+        minSafe: 90,
+        maxSafe: 100,
+        description: 'Ketersediaan akses koneksi nirkabel publik di area SMK Al Aman Sindulang.'
+      },
+      {
+        name: 'Kapasitas Ruang Komunitas',
+        value: 20,
+        unit: 'Orang',
+        minSafe: 10,
+        maxSafe: 30,
+        description: 'Daya tampung ruang interaksi digital komunal di dalam unit kontainer.'
+      },
+      {
+        name: 'Unit Kontainer Modifikasi',
+        value: 1,
+        unit: 'Unit',
+        minSafe: 1,
+        maxSafe: 1,
+        description: 'Unit kontainer dilengkapi pintu ganda dan jendela bertralis pengaman.'
       }
     ]
   }

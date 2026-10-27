@@ -105,10 +105,10 @@ export default function MopsShowcase({
   const allComments = comments.length > 0 ? comments : defaultComments;
 
   return (
-    <div className="space-y-10 animate-fade-in text-slate-800 dark:text-slate-100 pb-16">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in text-slate-800 dark:text-slate-100 pb-12">
       
       {/* TOP NAVIGATION BAR */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3 sm:pb-4">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
@@ -132,7 +132,7 @@ export default function MopsShowcase({
       </div>
 
       {/* HERO BANNER SECTION (Rich Emerald Gradient Card) */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#064e3b] via-[#047857] to-[#0f766e] text-white p-8 sm:p-12 shadow-xl border border-emerald-600/30">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#064e3b] via-[#047857] to-[#0f766e] text-white p-6 sm:p-8 shadow-xl border border-emerald-600/30">
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-emerald-400/15 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/4 -mb-20 w-80 h-80 rounded-full bg-teal-300/15 blur-2xl pointer-events-none" />
 

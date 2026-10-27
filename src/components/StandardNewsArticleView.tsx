@@ -125,7 +125,7 @@ export default function StandardNewsArticleView({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-24 font-sans animate-fade-in">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-12 sm:pb-16 font-sans animate-fade-in">
       
       {/* Toast alert */}
       {copiedToast && (
@@ -184,10 +184,10 @@ export default function StandardNewsArticleView({
       </div>
 
       {/* Article Container */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 space-y-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 space-y-6 sm:space-y-8">
         
         {/* ARTICLE HEADER CARD */}
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-10 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-5">
           
           {/* Metadata Badges */}
           <div className="flex flex-wrap items-center gap-2.5">

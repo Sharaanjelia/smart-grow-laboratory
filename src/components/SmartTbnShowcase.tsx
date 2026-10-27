@@ -93,10 +93,10 @@ export default function SmartTbnShowcase({
   const allComments = comments.length > 0 ? comments : defaultComments;
 
   return (
-    <div className="space-y-10 animate-fade-in text-slate-800 dark:text-slate-100">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in text-slate-800 dark:text-slate-100 pb-12">
       
       {/* TOP NAVIGATION BAR */}
-      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-5">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 sm:pb-4">
         <button
           onClick={onBack}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400 transition-all cursor-pointer shadow-2xs"
@@ -117,7 +117,7 @@ export default function SmartTbnShowcase({
       </div>
 
       {/* HERO BANNER SECTION */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#064e3b] via-[#047857] to-[#0f766e] text-white p-8 sm:p-12 shadow-xl border border-emerald-600/30">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#064e3b] via-[#047857] to-[#0f766e] text-white p-6 sm:p-8 shadow-xl border border-emerald-600/30">
         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-96 h-96 rounded-full bg-emerald-400/10 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 -mb-16 w-80 h-80 rounded-full bg-teal-300/10 blur-2xl pointer-events-none" />
 
@@ -126,10 +126,6 @@ export default function SmartTbnShowcase({
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/70 border border-emerald-400/40 text-emerald-300 font-mono text-xs font-bold uppercase tracking-wider backdrop-blur-md">
               <Sparkles className="h-3.5 w-3.5 text-amber-300" />
               Riset Pengabdian Masyarakat • Sumba NTT
-            </span>
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-mono text-xs font-semibold">
-              <Calendar className="h-3.5 w-3.5" />
-              27 Juli 2026
             </span>
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-300/30 text-amber-200 font-mono text-xs font-semibold">
               <MapPin className="h-3.5 w-3.5 text-amber-300" />
@@ -187,16 +183,6 @@ export default function SmartTbnShowcase({
               <span>Buka Platform SmartTBN</span>
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
-            <button
-              onClick={() => {
-                const el = document.getElementById('logo-section');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-900/60 hover:bg-emerald-900/90 text-emerald-200 border border-emerald-400/30 text-xs font-bold transition-all cursor-pointer backdrop-blur-sm"
-            >
-              <Leaf className="h-3.5 w-3.5 text-emerald-400" />
-              <span>Lihat Filosofi Logo</span>
-            </button>
           </div>
         </div>
       </section>

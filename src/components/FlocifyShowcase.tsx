@@ -35,7 +35,8 @@ import {
   Smartphone,
   Wind,
   ShieldCheck,
-  Globe
+  Globe,
+  Download
 } from 'lucide-react';
 import { NewsItem, Comment } from '../types';
 
@@ -53,8 +54,13 @@ export default function FlocifyShowcase({
   onAddComment 
 }: FlocifyShowcaseProps) {
   
-  // 3D Render images uploaded by user for FLOCIFY (HD 3D Renders)
+  // 3D Render images & official logo for FLOCIFY
   const galleryImages = [
+    {
+      url: '/images/flocify/flocify-logo.png',
+      caption: 'Logo Resmi Inovasi FLOCIFY (Smart Biofloc Aquaculture Monitoring & Deep Learning Optimization) berpadu dengan visual tangki biofloc sirkular berteknologi AI.',
+      title: 'Logo Resmi FLOCIFY'
+    },
     {
       url: '/images/flocify/flocify-biofloc-tank-iso.jpg',
       caption: 'Model arsitektur 3D isometrik unit tank biofloc FLOCIFY dengan hopper dosing sentral, aerasi vortex mikrobiologi, dan rangka jaring baja sirkular.',
@@ -139,10 +145,10 @@ export default function FlocifyShowcase({
   const allComments = comments.length > 0 ? comments : defaultComments;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 pb-20 animate-fade-in space-y-12">
+    <div className="w-full space-y-6 sm:space-y-8 animate-fade-in pb-12">
       
       {/* Top Navigation & Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3 sm:pb-4">
         <button 
           onClick={onBack}
           className="group inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 shadow-sm hover:shadow hover:border-indigo-500 cursor-pointer self-start"
@@ -164,7 +170,7 @@ export default function FlocifyShowcase({
       </div>
 
       {/* Hero Showcase Title Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         <div className="lg:col-span-8 space-y-4">
           <div className="flex items-center gap-2">
             <span className="h-2 w-10 rounded-full bg-gradient-to-r from-indigo-500 to-cyan-500"></span>
@@ -172,12 +178,32 @@ export default function FlocifyShowcase({
               FLAGSHIP INNOVATION // FLOCIFY
             </span>
           </div>
-          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-            FLOCIFY
-          </h1>
-          <p className="text-lg font-sans font-bold text-indigo-600 dark:text-indigo-400">
-            Smart Biofloc Aquaculture Monitoring & Deep Learning Optimization
-          </p>
+          {/* Logo & Project Title Row */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 pt-1">
+            <div 
+              onClick={() => setModalImage('/images/flocify/flocify-logo.png')}
+              className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-white p-2.5 shadow-2xl border-2 border-cyan-300/80 cursor-zoom-in shrink-0 hover:scale-105 transition-all flex items-center justify-center group/logo relative overflow-hidden"
+              title="Klik untuk membuka Logo Resmi FLOCIFY resolusi penuh"
+            >
+              <img 
+                src="/images/flocify/flocify-logo.png" 
+                alt="Logo Resmi FLOCIFY" 
+                className="w-full h-full object-contain"
+              />
+              <div className="absolute inset-0 bg-cyan-950/0 group-hover/logo:bg-cyan-950/20 transition-colors flex items-center justify-center">
+                <Maximize2 className="h-4 w-4 text-cyan-800 opacity-0 group-hover/logo:opacity-100 transition-opacity drop-shadow" />
+              </div>
+            </div>
+
+            <div>
+              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                FLOCIFY
+              </h1>
+              <p className="text-base sm:text-lg font-sans font-bold text-cyan-600 dark:text-cyan-400 mt-1">
+                Smart Biofloc Aquaculture Monitoring & Deep Learning Optimization
+              </p>
+            </div>
+          </div>
           <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-sans pt-2">
             FLOCIFY adalah sistem monitoring dan optimasi budidaya akuakultur biofloc cerdas berbasis IoT dan Deep Learning (ResNet + LSTM). Platform ini dirancang untuk memantau kualitas air secara real-time, mendeteksi risiko amonia sebelum mencapai ambang kritis, mengotomasi penambahan karbon & probiotik, serta menjaga rasio C:N kolam secara presisi.
           </p>
@@ -234,18 +260,24 @@ export default function FlocifyShowcase({
           </div>
 
           {/* Square Photo Carousel Container */}
-          <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-xl group select-none">
+          <div className={`relative aspect-square w-full rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl group select-none transition-colors ${
+            galleryImages[activeImageIndex].url.includes('logo') ? 'bg-white' : 'bg-slate-950'
+          }`}>
             {/* Main Photo (Click to zoom in lightbox modal) */}
             <div 
               onClick={() => setModalImage(galleryImages[activeImageIndex].url)}
-              className="w-full h-full cursor-pointer relative"
+              className="w-full h-full cursor-pointer relative flex items-center justify-center"
               title="Klik untuk memperbesar foto"
             >
               <img 
                 key={activeImageIndex}
                 src={galleryImages[activeImageIndex].url} 
                 alt={galleryImages[activeImageIndex].title} 
-                className="w-full h-full object-cover transition-all duration-500 animate-fade-in group-hover:scale-105" 
+                className={`w-full h-full transition-all duration-500 animate-fade-in group-hover:scale-[1.02] ${
+                  galleryImages[activeImageIndex].url.includes('logo')
+                    ? 'object-contain p-6 sm:p-10'
+                    : 'object-cover'
+                }`} 
               />
               
               {/* Top-Right Expand Lightbox Button */}
@@ -260,16 +292,6 @@ export default function FlocifyShowcase({
               >
                 <Maximize2 className="w-4 h-4" />
               </button>
-
-              {/* Title & Caption Bottom Gradient Overlay */}
-              <div className="absolute inset-x-0 bottom-0 pt-16 pb-12 px-5 bg-gradient-to-t from-slate-950/95 via-slate-950/70 to-transparent pointer-events-none">
-                <p className="text-white text-sm sm:text-base font-bold font-display line-clamp-1">
-                  {galleryImages[activeImageIndex].title}
-                </p>
-                <p className="text-slate-300 text-xs line-clamp-2 mt-1 font-sans">
-                  {galleryImages[activeImageIndex].caption}
-                </p>
-              </div>
             </div>
 
             {/* Left Navigation Chevron Button */}
@@ -315,8 +337,18 @@ export default function FlocifyShowcase({
             </div>
           </div>
 
-          {/* Quick Thumbnail Strip matching HYCOSMARTS */}
-          <div className="grid grid-cols-3 gap-2.5 pt-1">
+          {/* Clean Description Card Below Image (tidak menutupi logo/foto) */}
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
+            <p className="text-slate-900 dark:text-white text-sm font-bold font-display">
+              {galleryImages[activeImageIndex].title}
+            </p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed font-sans">
+              {galleryImages[activeImageIndex].caption}
+            </p>
+          </div>
+
+          {/* Quick Thumbnail Strip */}
+          <div className="grid grid-cols-4 gap-2.5 pt-1">
             {galleryImages.map((img, idx) => (
               <button
                 key={idx}
@@ -329,7 +361,11 @@ export default function FlocifyShowcase({
                     : 'border-slate-200 dark:border-slate-800 opacity-60 hover:opacity-100'
                 }`}
               >
-                <img src={img.url} alt={img.title} className="w-full h-full object-cover" />
+                <img 
+                  src={img.url} 
+                  alt={img.title} 
+                  className={`w-full h-full ${img.url.includes('logo') ? 'object-contain p-1.5 bg-white' : 'object-cover'}`} 
+                />
               </button>
             ))}
           </div>
@@ -865,11 +901,21 @@ export default function FlocifyShowcase({
 
             {(() => {
               const matched = galleryImages.find(g => g.url === modalImage);
-              if (!matched) return null;
               return (
-                <div className="p-5 bg-slate-900 text-white border-t border-slate-800 space-y-1">
-                  <h4 className="font-display text-lg font-bold text-indigo-400">{matched.title}</h4>
-                  <p className="text-xs text-slate-300 font-sans leading-relaxed">{matched.caption}</p>
+                <div className="p-5 bg-slate-900 text-white border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
+                  <div className="space-y-1 max-w-xl">
+                    <h4 className="font-display text-lg font-bold text-cyan-400">{matched ? matched.title : 'FLOCIFY Asset'}</h4>
+                    <p className="text-xs text-slate-300 font-sans leading-relaxed">{matched ? matched.caption : 'Smart Biofloc Aquaculture Platform'}</p>
+                  </div>
+                  <a 
+                    href={modalImage}
+                    download={modalImage.includes('logo') ? 'flocify-logo.png' : 'flocify-render.jpg'}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-md transition-all cursor-pointer shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    <span>Unduh Gambar</span>
+                  </a>
                 </div>
               );
             })()}

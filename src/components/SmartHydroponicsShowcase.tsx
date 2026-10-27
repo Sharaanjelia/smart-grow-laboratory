@@ -108,7 +108,7 @@ export default function SmartHydroponicsShowcase({
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#F8FAFC] pb-24 text-[#0F172A] relative overflow-hidden" id="hydroponics-showcase-container">
+    <div className="w-full min-h-screen bg-[#F8FAFC] pb-12 text-[#0F172A] relative overflow-hidden" id="hydroponics-showcase-container">
       
       {/* Premium Background Blurs, Grids & Curved Lines */}
       <div className="absolute inset-0 bg-[radial-gradient(#E2E8F0_1px,transparent_1px)] [background-size:24px_24px] opacity-60 pointer-events-none" />
@@ -124,10 +124,10 @@ export default function SmartHydroponicsShowcase({
         <circle cx="400" cy="200" r="4" fill="#10B981" />
       </svg>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 relative z-10">
+      <div className="w-full pt-1 relative z-10 space-y-6 sm:space-y-8">
         
         {/* Navigation Breadcrumb & Back Button */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-10">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 pb-3 sm:pb-4">
           <button 
             onClick={onBack}
             className="group inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-white px-5 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-900 hover:border-slate-300 hover:shadow-md transition-all duration-300 cursor-pointer"
@@ -147,7 +147,7 @@ export default function SmartHydroponicsShowcase({
         </div>
 
         {/* ================= HERO TWO-COLUMN SHOWCASE ================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center mb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center mb-10 sm:mb-14">
           
           {/* LEFT COLUMN: Premium Copywriting & Metadata */}
           <div className="lg:col-span-6 space-y-8 text-left">
@@ -429,7 +429,7 @@ export default function SmartHydroponicsShowcase({
         </div>
 
         {/* ================= FEATURE CARDS SECTION ================= */}
-        <section className="space-y-12 mb-24" id="features-grid-section">
+        <section className="space-y-8 mb-12 sm:mb-16" id="features-grid-section">
           
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <span className="font-mono text-xs font-extrabold tracking-widest text-emerald-600 uppercase">TECHNOLOGY ARCHITECTURE</span>
@@ -520,7 +520,7 @@ export default function SmartHydroponicsShowcase({
         </section>
 
         {/* ================= MODERN PREMIUM CTA SECTION ================= */}
-        <section className="mb-24 relative overflow-hidden rounded-[24px] bg-[#0F172A] border border-slate-800 text-white p-8 sm:p-12 lg:p-16 text-center shadow-2xl">
+        <section className="mb-12 sm:mb-16 relative overflow-hidden rounded-[24px] bg-[#0F172A] border border-slate-800 text-white p-6 sm:p-10 lg:p-12 text-center shadow-2xl">
           
           {/* Subtle neon gradients inside CTA block */}
           <div className="absolute top-[-40%] left-[-10%] w-[350px] h-[350px] rounded-full bg-emerald-500/10 blur-[90px] pointer-events-none" />

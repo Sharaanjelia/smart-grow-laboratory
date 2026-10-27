@@ -102,10 +102,10 @@ export default function SmartWaterShowcase({
   const allComments = comments.length > 0 ? comments : defaultComments;
 
   return (
-    <div className="space-y-10 animate-fade-in text-slate-800 dark:text-slate-100">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in text-slate-800 dark:text-slate-100 pb-12">
       
       {/* TOP NAVIGATION BAR */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3 sm:pb-4">
         <button
           onClick={onBack}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-sky-500 hover:text-sky-700 dark:hover:text-sky-400 transition-all cursor-pointer shadow-2xs"
@@ -128,7 +128,7 @@ export default function SmartWaterShowcase({
       </div>
 
       {/* HERO BANNER SECTION */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0369a1] via-[#0284c7] to-[#0c4a6e] text-white p-8 sm:p-12 shadow-xl border border-sky-500/30">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0369a1] via-[#0284c7] to-[#0c4a6e] text-white p-6 sm:p-8 shadow-xl border border-sky-500/30">
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-sky-300/15 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/4 -mb-20 w-80 h-80 rounded-full bg-teal-300/15 blur-2xl pointer-events-none" />
 

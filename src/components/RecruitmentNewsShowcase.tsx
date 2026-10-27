@@ -122,7 +122,7 @@ export default function RecruitmentNewsShowcase({
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-24 font-sans animate-fade-in">
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-12 sm:pb-16 font-sans animate-fade-in">
       
       {/* Top Header Sticky Bar */}
       <div className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 py-3 px-4 sm:px-6 shadow-xs">
@@ -155,10 +155,10 @@ export default function RecruitmentNewsShowcase({
       </div>
 
       {/* Main Container */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 space-y-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 space-y-6 sm:space-y-8">
 
         {/* HERO RECRUITMENT BANNER CARD */}
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-950 via-teal-900 to-slate-900 text-white p-6 sm:p-10 shadow-2xl border border-emerald-500/30">
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-950 via-teal-900 to-slate-900 text-white p-5 sm:p-8 shadow-2xl border border-emerald-500/30">
           <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
           
           <div className="relative z-10 space-y-5">

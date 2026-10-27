@@ -25,7 +25,10 @@ import {
   Award,
   Lock,
   MessageCircle,
-  Layers
+  Layers,
+  Download,
+  Image as ImageIcon,
+  Sparkles
 } from 'lucide-react';
 import { ProjectItem, Comment } from '../types';
 
@@ -84,10 +87,13 @@ export default function SapaJamiyyahShowcase({
 }: SapaJamiyyahShowcaseProps) {
   
   const heroImageUrl = '/images/sapa-jamiyyah/sapa-jamiyyah-hero.png';
+  const logoImageUrl = '/images/sapa-jamiyyah/sapa-jamiyyah-logo.png';
+  const posterImageUrl = '/images/sapa-jamiyyah/sapa-jamiyyah-poster.png';
   const officialWebUrl = 'https://www.sapajamiyyah.com/';
 
   const [modalImage, setModalImage] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [activeMediaTab, setActiveMediaTab] = useState<'logo' | 'hero' | 'poster'>('logo');
   const [activeTab, setActiveTab] = useState<'aspirasi' | 'donasi' | 'catatan' | 'berita' | 'angket'>('aspirasi');
 
   // Interactive Aspirasi State
@@ -208,10 +214,10 @@ export default function SapaJamiyyahShowcase({
   const donasiPercent = Math.min(100, Math.round((donasiRaised / donasiTarget) * 100));
 
   return (
-    <div className="space-y-10 animate-fade-in text-slate-800 dark:text-slate-100 pb-16 bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-8 border border-slate-100 dark:border-slate-800 shadow-xs">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in text-slate-800 dark:text-slate-100 pb-12 bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 border border-slate-100 dark:border-slate-800 shadow-xs">
       
       {/* TOP NAVIGATION BAR */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3 sm:pb-4">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
@@ -235,7 +241,7 @@ export default function SapaJamiyyahShowcase({
       </div>
 
       {/* HERO BANNER SECTION (Emerald & Gold Al Azhar Identity) */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#064e3b] via-[#047857] to-[#0f766e] text-white p-8 sm:p-12 shadow-xl border border-emerald-600/30">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#064e3b] via-[#047857] to-[#0f766e] text-white p-6 sm:p-8 shadow-xl border border-emerald-600/30">
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-emerald-400/20 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/4 -mb-20 w-80 h-80 rounded-full bg-amber-400/15 blur-2xl pointer-events-none" />
 
@@ -254,9 +260,33 @@ export default function SapaJamiyyahShowcase({
             </span>
           </div>
 
-          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight drop-shadow-sm">
-            SAPA Jam'iyyah SMPI Al Azhar 36 Bandung
-          </h1>
+          {/* Logo & Project Title Row */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 pt-1">
+            <div 
+              onClick={() => setModalImage(logoImageUrl)}
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white p-2.5 shadow-2xl border-2 border-amber-300/80 cursor-zoom-in shrink-0 hover:scale-105 transition-all flex items-center justify-center group/logo relative overflow-hidden"
+              title="Klik untuk membuka Logo Resmi SAPA Jam'iyyah resolusi penuh"
+            >
+              <img 
+                src={logoImageUrl} 
+                alt="Logo Resmi SAPA Jam'iyyah" 
+                className="w-full h-full object-contain"
+              />
+              <div className="absolute inset-0 bg-emerald-950/0 group-hover/logo:bg-emerald-950/20 transition-colors flex items-center justify-center">
+                <Maximize2 className="h-4 w-4 text-emerald-800 opacity-0 group-hover/logo:opacity-100 transition-opacity drop-shadow" />
+              </div>
+            </div>
+
+            <div>
+              <h1 className="font-display text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight drop-shadow-sm">
+                SAPA Jam'iyyah SMPI Al Azhar 36 Bandung
+              </h1>
+              <p className="text-xs sm:text-sm text-emerald-200 font-mono font-medium mt-1 flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                Media Komunikasi & Kolaborasi Resmi Jam'iyyah SMPI Al Azhar 36 Bandung
+              </p>
+            </div>
+          </div>
 
           <p className="text-base sm:text-lg text-emerald-50/95 font-medium leading-relaxed max-w-3xl">
             Media komunikasi resmi dan terintegrasi antara Orang Tua dan Pihak Sekolah — memfasilitasi penyampaian aspirasi dua arah, transparansi penggalangan donasi & infaq kegiatan santri, publikasi catatan musyawarah pleno, warta berita terkini, serta pengisian angket kebijakan secara terbuka dan bermakna.
@@ -273,51 +303,208 @@ export default function SapaJamiyyahShowcase({
               <span>Kunjungi Website sapajamiyyah.com</span>
               <ExternalLink className="h-4 w-4" />
             </a>
-
-            <button
-              onClick={() => {
-                const el = document.getElementById('demo-interactive-section');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/20 backdrop-blur-md transition-all cursor-pointer"
-            >
-              <span>Coba Demo Interaktif Platform</span>
-              <ChevronRight className="h-4 w-4" />
-            </button>
           </div>
         </div>
       </section>
 
-      {/* SCREENSHOT & VISUAL PREVIEW SECTION */}
+      {/* SCREENSHOT & VISUAL MEDIA SHOWCASE SECTION */}
       <section className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-xs space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-700/60 pb-5">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold font-display text-slate-900 dark:text-white">
-              Tangkapan Layar Antarmuka SAPA Jam'iyyah
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40">
+                <Sparkles className="h-3 w-3" />
+                Media Resmi Proyek
+              </span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold font-display text-slate-900 dark:text-white mt-1">
+              Galeri Visual & Logo SAPA Jam'iyyah
             </h2>
-            <p className="text-sm text-slate-500 mt-1">
-              Desain modern berkarakter Islami, responsif pada ponsel pintar dan peramban desktop wali murid.
+            <p className="text-sm text-slate-500 mt-0.5">
+              Identitas visual resmi, antarmuka web responsif, dan poster sosialisasi SMPI Al Azhar 36 Bandung.
             </p>
+          </div>
+
+          {/* Media Switcher Tab Controls */}
+          <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={() => setActiveMediaTab('logo')}
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeMediaTab === 'logo'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800'
+              }`}
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Logo Resmi</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveMediaTab('hero')}
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeMediaTab === 'hero'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800'
+              }`}
+            >
+              <ImageIcon className="h-3.5 w-3.5" />
+              <span>Tampilan Web</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveMediaTab('poster')}
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeMediaTab === 'poster'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800'
+              }`}
+            >
+              <FileText className="h-3.5 w-3.5" />
+              <span>Poster Sosialisasi</span>
+            </button>
           </div>
         </div>
 
-        {/* Screenshot Image Container */}
-        <div 
-          onClick={() => setModalImage(heroImageUrl)}
-          className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-900 shadow-md cursor-pointer aspect-video sm:aspect-21/9"
-        >
-          <img 
-            src={heroImageUrl} 
-            alt="Tampilan Antarmuka Beranda SAPA Jam'iyyah SMPI Al Azhar 36 Bandung"
-            className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-102"
-          />
-          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/95 text-slate-900 font-bold text-xs shadow-xl">
-              <Maximize2 className="h-4 w-4 text-emerald-600" />
-              Klik untuk Melihat Resolusi Penuh
-            </span>
+        {/* Dynamic Media View */}
+        {activeMediaTab === 'logo' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-radial from-emerald-50/40 via-white to-slate-50 dark:from-emerald-950/20 dark:via-slate-900 dark:to-slate-900 p-6 sm:p-10 rounded-2xl border border-emerald-100 dark:border-emerald-900/30">
+            {/* Logo Preview Card */}
+            <div className="lg:col-span-5 flex flex-col items-center justify-center">
+              <div 
+                onClick={() => setModalImage(logoImageUrl)}
+                className="group relative w-64 h-64 sm:w-80 sm:h-80 bg-white rounded-3xl p-6 shadow-xl border-2 border-emerald-200/80 cursor-zoom-in transition-all duration-300 hover:scale-102 hover:shadow-2xl flex items-center justify-center"
+                title="Klik untuk memperbesar Logo Resolusi Penuh"
+              >
+                <img 
+                  src={logoImageUrl} 
+                  alt="Logo Resmi SAPA Jam'iyyah SMPI Al Azhar 36 Bandung"
+                  className="w-full h-full object-contain"
+                />
+                <div className="absolute inset-0 rounded-3xl bg-emerald-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-emerald-900 font-bold text-xs shadow-lg">
+                    <Maximize2 className="h-3.5 w-3.5 text-emerald-600" />
+                    Lihat Resolusi HD
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3 mt-5">
+                <a 
+                  href={logoImageUrl} 
+                  download="sapa-jamiyyah-logo.png"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>Unduh Logo (PNG)</span>
+                </a>
+                <button
+                  onClick={() => setModalImage(logoImageUrl)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-all cursor-pointer"
+                >
+                  <Maximize2 className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Perbesar</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Logo Philosophy & Meaning */}
+            <div className="lg:col-span-7 space-y-4">
+              <div className="space-y-1">
+                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                  Filosofi Identitas Visual
+                </span>
+                <h3 className="text-xl sm:text-2xl font-bold font-display text-slate-900 dark:text-white">
+                  Makna Logo SAPA Jam'iyyah
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                  Logo SAPA Jam'iyyah memadukan elegansi nilai-nilai keislaman Al Azhar dengan semangat keterbukaan digital era 5.0.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                <div className="p-3.5 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 shadow-2xs space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                    <div className="w-2 h-2 rounded-full bg-emerald-600" />
+                    <span>Lingkaran Ukhuwah</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal">
+                    Lengkungan lingkaran dinamis berwarna hijau pinus mencerminkan wadah silaturahmi tanpa sekat antara sekolah, orang tua, dan komite Jam'iyyah.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 shadow-2xs space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-bold text-amber-800 dark:text-amber-300">
+                    <div className="w-2 h-2 rounded-full bg-amber-500" />
+                    <span>Tipografi SAPA & Jam'iyyah</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal">
+                    Huruf tebal "SAPA" melambangkan ketegasan transparansi tata kelola, dipadukan kaligrafi emas "Jam'iyyah" yang memancarkan kehangatan keluarga.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 shadow-2xs space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span>Bunga Bintang 8 Al Azhar</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal">
+                    Ornamen geometric Islamic Octagram di tengah garis emas melambangkan 8 dimensi kecendekiaan, adab santri, dan kemurnian tauhid.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 shadow-2xs space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-bold text-amber-800 dark:text-amber-300">
+                    <div className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span>Aksen Daun Emas</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal">
+                    Aksen daun emas pada huruf melambangkan tunas peradaban santri yang terus bertumbuh subur dan berkah melalui program pendidikan berkelanjutan.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
+
+        {activeMediaTab === 'hero' && (
+          <div 
+            onClick={() => setModalImage(heroImageUrl)}
+            className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-900 shadow-md cursor-pointer aspect-video sm:aspect-21/9"
+          >
+            <img 
+              src={heroImageUrl} 
+              alt="Tampilan Antarmuka Beranda SAPA Jam'iyyah SMPI Al Azhar 36 Bandung"
+              className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-102"
+            />
+            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/95 text-slate-900 font-bold text-xs shadow-xl">
+                <Maximize2 className="h-4 w-4 text-emerald-600" />
+                Klik untuk Melihat Resolusi Penuh
+              </span>
+            </div>
+          </div>
+        )}
+
+        {activeMediaTab === 'poster' && (
+          <div 
+            onClick={() => setModalImage(posterImageUrl)}
+            className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-900 shadow-md cursor-pointer max-h-[540px] flex items-center justify-center"
+          >
+            <img 
+              src={posterImageUrl} 
+              alt="Poster Sosialisasi SAPA Jam'iyyah SMPI Al Azhar 36 Bandung"
+              className="w-full h-full object-contain max-h-[540px] transition-transform duration-500 group-hover:scale-101"
+            />
+            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/95 text-slate-900 font-bold text-xs shadow-xl">
+                <Maximize2 className="h-4 w-4 text-emerald-600" />
+                Klik untuk Melihat Resolusi Penuh
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Highlight Feature Badges */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
@@ -683,7 +870,7 @@ export default function SapaJamiyyahShowcase({
                   Persetujuan adopsi portal web resmi sapajamiyyah.com sebagai kanal tunggal informasi dan transparansi donasi komite.
                 </p>
                 <div className="pt-2 text-[10px] text-slate-400 font-mono">
-                  Dipublikasikan: 10 September 2026 • Status: Aktif & Live
+                  Dipublikasikan • Status: Aktif & Live
                 </div>
               </div>
             </div>
@@ -991,12 +1178,27 @@ export default function SapaJamiyyahShowcase({
             <img 
               src={modalImage} 
               alt="Resolusi Penuh SAPA Jam'iyyah"
-              className="max-h-[85vh] w-auto max-w-full rounded-2xl shadow-2xl object-contain border border-white/10"
+              className="max-h-[80vh] w-auto max-w-full rounded-2xl shadow-2xl object-contain bg-white/10 border border-white/20 p-2"
               onClick={(e) => e.stopPropagation()}
             />
-            <span className="text-xs text-slate-300 mt-3 font-mono">
-              Tangkapan Layar SAPA Jam'iyyah SMPI Al Azhar 36 Bandung (sapajamiyyah.com)
-            </span>
+            <div className="flex flex-wrap items-center justify-between gap-3 w-full max-w-2xl mt-4 px-2">
+              <span className="text-xs text-slate-300 font-mono">
+                {modalImage.includes('logo') 
+                  ? "Logo Resmi SAPA Jam'iyyah SMPI Al Azhar 36 Bandung" 
+                  : modalImage.includes('poster') 
+                  ? "Poster Sosialisasi Program SAPA Jam'iyyah" 
+                  : "Tangkapan Layar Beranda SAPA Jam'iyyah (sapajamiyyah.com)"}
+              </span>
+              <a 
+                href={modalImage} 
+                download={modalImage.includes('logo') ? 'sapa-jamiyyah-logo.png' : modalImage.includes('poster') ? 'sapa-jamiyyah-poster.png' : 'sapa-jamiyyah-screenshot.png'}
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md transition-all cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Download className="h-3.5 w-3.5" />
+                <span>Unduh Gambar</span>
+              </a>
+            </div>
           </div>
         </div>
       )}

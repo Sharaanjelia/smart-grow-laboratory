@@ -49,6 +49,9 @@ import HtciShowcase from './components/HtciShowcase';
 import SmartWaterShowcase from './components/SmartWaterShowcase';
 import MopsShowcase from './components/MopsShowcase';
 import SapaJamiyyahShowcase from './components/SapaJamiyyahShowcase';
+import DasCikapundungShowcase from './components/DasCikapundungShowcase';
+import SmartMinimarketShowcase from './components/SmartMinimarketShowcase';
+import ClosedSmartHydroponicShowcase from './components/ClosedSmartHydroponicShowcase';
 import ResearchInterestSlider from './components/ResearchInterestSlider';
 import VisionMissionSection from './components/VisionMissionSection';
 
@@ -1401,7 +1404,7 @@ export default function App() {
           if (data && data.id) {
             // Keep official updated logos from built-in projectsData
             const builtIn = projectsData.find(p => p.id === data.id);
-            if (builtIn && builtIn.image && (builtIn.image.includes('logo') || builtIn.image.includes('mops') || builtIn.image.includes('htci'))) {
+            if (builtIn && builtIn.image && (builtIn.image.includes('logo') || builtIn.image.includes('mops') || builtIn.image.includes('htci') || builtIn.image.includes('flocify') || builtIn.image.includes('sapa') || builtIn.image.includes('hycosmarts') || builtIn.image.includes('cikapundung'))) {
               data.image = builtIn.image;
               data.gallery = builtIn.gallery || data.gallery;
             }
@@ -1412,7 +1415,7 @@ export default function App() {
       setProjectsList(Array.from(projectMap.values()));
     }, (err) => console.warn('Projects listener notice:', err));
 
-    // Auto-sync smart-tbn, smart-water, mops, htci, and sapa-jamiyyah to Firestore
+    // Auto-sync projects to Firestore
     const smartTbnProject = projectsData.find(p => p.id === 'smart-tbn');
     if (smartTbnProject) {
       setDoc(doc(db, 'projects', 'smart-tbn'), JSON.parse(JSON.stringify(smartTbnProject)), { merge: true }).catch(() => {});
@@ -1433,6 +1436,30 @@ export default function App() {
     const sapaJamiyyahProject = projectsData.find(p => p.id === 'sapa-jamiyyah');
     if (sapaJamiyyahProject) {
       setDoc(doc(db, 'projects', 'sapa-jamiyyah'), JSON.parse(JSON.stringify(sapaJamiyyahProject)), { merge: true }).catch(() => {});
+    }
+    const flocifyProject = projectsData.find(p => p.id === 'flocify');
+    if (flocifyProject) {
+      setDoc(doc(db, 'projects', 'flocify'), JSON.parse(JSON.stringify(flocifyProject)), { merge: true }).catch(() => {});
+    }
+    const dasCikapundungProject = projectsData.find(p => p.id === 'das-cikapundung');
+    if (dasCikapundungProject) {
+      setDoc(doc(db, 'projects', 'das-cikapundung'), JSON.parse(JSON.stringify(dasCikapundungProject)), { merge: true }).catch(() => {});
+    }
+    const hycosmartsProject = projectsData.find(p => p.id === 'hycosmarts');
+    if (hycosmartsProject) {
+      setDoc(doc(db, 'projects', 'hycosmarts'), JSON.parse(JSON.stringify(hycosmartsProject)), { merge: true }).catch(() => {});
+    }
+    const smartMinimarketProject = projectsData.find(p => p.id === 'smart-minimarket');
+    if (smartMinimarketProject) {
+      setDoc(doc(db, 'projects', 'smart-minimarket'), JSON.parse(JSON.stringify(smartMinimarketProject)), { merge: true }).catch(() => {});
+    }
+    const closedSmartHydroponicProject = projectsData.find(p => p.id === 'closed-smart-hydroponic');
+    if (closedSmartHydroponicProject) {
+      setDoc(doc(db, 'projects', 'closed-smart-hydroponic'), JSON.parse(JSON.stringify(closedSmartHydroponicProject)), { merge: true }).catch(() => {});
+    }
+    const sindulangProject = projectsData.find(p => p.id === 'sindulang-netconnect');
+    if (sindulangProject) {
+      setDoc(doc(db, 'projects', 'sindulang-netconnect'), JSON.parse(JSON.stringify(sindulangProject)), { merge: true }).catch(() => {});
     }
 
     // 2. News listener: Merge Firestore docs with built-in newsData
@@ -2066,7 +2093,7 @@ export default function App() {
 
         {/* --- PAGE: NEWS & EVENTS --- */}
         {currentPage === 'news' && (
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 animate-fade-in" id="news-section">
+          <div className={`mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in ${selectedNewsId ? 'pt-4 sm:pt-6' : 'pt-6 sm:pt-8'}`} id="news-section">
             
             {!selectedNewsId ? (
               <>
@@ -2174,7 +2201,7 @@ export default function App() {
 
         {/* --- PAGE: PROJECT --- */}
         {currentPage === 'project' && (
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 animate-fade-in" id="project-section">
+          <div className={`mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in ${selectedProjectId ? 'pt-4 sm:pt-6' : 'pt-6 sm:pt-8'}`} id="project-section">
             
             {!selectedProjectId ? (
               <>
@@ -2210,21 +2237,8 @@ export default function App() {
                       </div>
                     );
                   }
-
-                  const formatProjectDate = (dateStr: string) => {
-                    const parts = dateStr.split('-');
-                    if (parts.length !== 3) return dateStr;
-                    const year = parts[0];
-                    const monthNum = parseInt(parts[1]);
-                    const monthsIndonesian = [
-                      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-                    ];
-                    return `${monthsIndonesian[monthNum - 1]} ${year}`;
-                  };
-
                   return (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {filtered.map((project) => (
                         <div
                           key={project.id}
@@ -2233,16 +2247,24 @@ export default function App() {
                             setActiveGalleryIndex(0);
                             window.scrollTo({ top: 0, behavior: 'smooth' });
                           }}
-                          className="group cursor-pointer bg-white border border-slate-100 p-5 rounded-3xl transition-all duration-300 hover:shadow-xl hover:border-teal-500/20 hover:scale-[1.01] flex flex-col justify-between shadow-xs min-h-[460px]"
+                          className="group cursor-pointer bg-white border border-slate-100 p-4 sm:p-5 rounded-3xl transition-all duration-300 hover:shadow-xl hover:border-teal-500/20 hover:scale-[1.01] flex flex-col justify-between shadow-xs h-full"
                           id={`project-card-${project.id}`}
                         >
-                          <div className="space-y-5">
-                            {/* Card Media Preview */}
-                            <div className={`relative aspect-video w-full overflow-hidden rounded-2xl border transition-all ${
+                          <div className="space-y-4">
+                            {/* Card Media Preview (Segi Empat / Aspect Square) */}
+                            <div className={`relative aspect-square w-full overflow-hidden rounded-2xl border transition-all ${
                               project.id === 'smart-water' ? 'border-sky-200 bg-white shadow-inner' : 
                               project.id === 'mops' ? 'border-emerald-200 bg-white shadow-inner' :
                               project.id === 'smart-tbn' ? 'border-emerald-200 bg-white shadow-inner' :
+                              project.id === 'sapa-jamiyyah' ? 'border-emerald-200 bg-white shadow-inner' :
+                              project.id === 'flocify' ? 'border-sky-200 bg-white shadow-inner' :
+                              project.id === 'hycosmarts' ? 'border-red-200 bg-white shadow-inner' :
+                              project.id === 'simona' ? 'border-cyan-200 bg-white shadow-inner' :
                               project.id === 'proj_1788926059725' || project.id === 'htci' ? 'border-teal-200 bg-white shadow-inner' :
+                              project.id === 'das-cikapundung' ? 'border-teal-700/30 bg-slate-900' :
+                              project.id === 'smart-minimarket' ? 'border-sky-300/40 bg-slate-900' :
+                              project.id === 'closed-smart-hydroponic' ? 'border-purple-300/40 bg-slate-900' :
+                              project.id === 'sindulang-netconnect' ? 'border-orange-200 bg-white shadow-inner' :
                               'border-slate-100 bg-slate-950'
                             }`}>
                               <img
@@ -2251,77 +2273,67 @@ export default function App() {
                                 referrerPolicy="no-referrer"
                                 className={`h-full w-full transition-transform duration-700 group-hover:scale-105 ${
                                   project.id === 'smart-water'
-                                    ? 'object-contain p-3.5 bg-white'
+                                    ? 'object-contain p-4 bg-white'
                                     : project.id === 'mops'
-                                    ? 'object-contain p-3 bg-white'
+                                    ? 'object-contain p-4 bg-white'
                                     : project.id === 'smart-tbn'
-                                    ? 'object-contain p-3 bg-white'
+                                    ? 'object-contain p-4 bg-white'
+                                    : project.id === 'sapa-jamiyyah'
+                                    ? 'object-contain p-4 bg-white'
+                                    : project.id === 'flocify'
+                                    ? 'object-contain p-4 bg-white'
+                                    : project.id === 'hycosmarts'
+                                    ? 'object-contain p-4 bg-white'
+                                    : project.id === 'simona'
+                                    ? 'object-contain p-4 bg-white'
                                     : project.id === 'proj_1788926059725' || project.id === 'htci'
-                                    ? 'object-contain p-3 bg-white'
-                                    : (project.image || '').includes('logo') || (project.image || '').includes('poster') || (project.image || '').includes('brochure') || (project.image || '').includes('sapa') || project.id === 'sapa-jamiyyah'
-                                    ? 'object-contain p-2 bg-slate-950' 
+                                    ? 'object-contain p-4 bg-white'
+                                    : project.id === 'das-cikapundung'
+                                    ? 'object-cover object-top'
+                                    : project.id === 'smart-minimarket'
+                                    ? 'object-cover object-top'
+                                    : project.id === 'closed-smart-hydroponic'
+                                    ? 'object-cover object-center'
+                                    : project.id === 'sindulang-netconnect'
+                                    ? 'object-contain p-2 bg-gradient-to-br from-amber-50 to-orange-50'
+                                    : (project.image || '').includes('logo') || (project.image || '').includes('poster') || (project.image || '').includes('brochure') || (project.image || '').includes('sapa')
+                                    ? 'object-contain p-3 bg-slate-950' 
                                     : 'object-cover object-center'
                                 }`}
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg';
                                 }}
                               />
-                              {project.id !== 'smart-water' && project.id !== 'mops' && project.id !== 'smart-tbn' && project.id !== 'proj_1788926059725' && project.id !== 'htci' && (
+                              {project.id !== 'smart-water' && project.id !== 'mops' && project.id !== 'smart-tbn' && project.id !== 'sapa-jamiyyah' && project.id !== 'flocify' && project.id !== 'hycosmarts' && project.id !== 'simona' && project.id !== 'proj_1788926059725' && project.id !== 'htci' && project.id !== 'sindulang-netconnect' && (
                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent" />
                               )}
                               
                               {/* Overlay Category Tag */}
-                              <div className="absolute top-4 left-4 flex gap-2">
-                                <span className="rounded-full bg-white/95 backdrop-blur-md border border-slate-100 px-3.5 py-1 text-[10px] font-sans font-bold tracking-wider text-teal-700 uppercase shadow-xs">
+                              <div className="absolute top-3.5 left-3.5 flex gap-2">
+                                <span className="rounded-full bg-white/95 backdrop-blur-md border border-slate-100 px-3 py-1 text-[10px] font-sans font-bold tracking-wider text-teal-700 uppercase shadow-xs">
                                   {project.category}
                                 </span>
-                              </div>
-
-                              {/* Direct Website / App Badge & Buka Gambar Button */}
-                              <div className="absolute top-4 right-4 flex items-center gap-1.5 z-10">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setProjectLightboxImage({
-                                      url: resolveImageUrl(project.image),
-                                      title: project.title,
-                                      category: project.category
-                                    });
-                                  }}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-900/80 hover:bg-sky-600 text-white text-[11px] font-bold backdrop-blur-md border border-white/20 transition-all hover:scale-105 shadow-md cursor-pointer"
-                                  title={`Buka & Perbesar Gambar ${project.title}`}
-                                >
-                                  <Maximize2 className="h-3 w-3" />
-                                  <span>Buka Gambar</span>
-                                </button>
-                              </div>
-                              
-                              {/* Overlay Date Badge */}
-                              <div className="absolute bottom-4 left-4 flex items-center gap-1.5 bg-slate-950/70 border border-white/10 backdrop-blur-md px-3 py-1 rounded-full text-[10px] text-white font-mono font-medium">
-                                <Calendar className="h-3 w-3 text-emerald-400" />
-                                <span>{formatProjectDate(project.date)}</span>
                               </div>
                             </div>
 
                             {/* Project Information */}
-                            <div className="px-1 space-y-2">
-                              <h3 className="font-display text-xl font-black text-slate-950 group-hover:text-teal-600 transition-colors">
+                            <div className="px-1 space-y-1.5">
+                              <h3 className="font-display text-lg sm:text-xl font-black text-slate-950 group-hover:text-teal-600 transition-colors line-clamp-1" title={project.title}>
                                 {project.title}
                               </h3>
-                              <p className="text-xs font-sans font-bold text-slate-400 uppercase tracking-wider">
+                              <p className="text-[11px] font-sans font-bold text-slate-400 uppercase tracking-wider line-clamp-1">
                                 {project.tagline}
                               </p>
-                              <p className="text-sm text-slate-500 leading-relaxed line-clamp-3">
+                              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed line-clamp-3">
                                 {project.description}
                               </p>
                             </div>
                           </div>
 
                           {/* Trigger Arrow Action row */}
-                          <div className="mt-6 pt-4 border-t border-slate-50 px-1 flex items-center justify-between">
-                            <span className="font-sans text-xs font-bold text-teal-600 group-hover:underline flex items-center gap-1.5">
-                              Lihat Spesifikasi & Diagnostik
+                          <div className="mt-5 pt-3.5 border-t border-slate-100/80 px-1 flex flex-wrap items-center justify-between gap-2">
+                            <span className="font-sans text-xs font-bold text-teal-600 group-hover:underline flex items-center gap-1">
+                              Lihat Detail Riset
                             </span>
                             <div className="flex items-center gap-2">
                               {(project.liveUrl || project.id === 'sapa-jamiyyah' || project.id === 'flocify' || project.id === 'mops' || project.id === 'smart-tbn' || project.id === 'proj_1788926059725' || project.id === 'smart-water') && (
@@ -2333,12 +2345,12 @@ export default function App() {
                                   className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white text-[11px] font-bold border border-emerald-200 transition-all hover:scale-105 cursor-pointer"
                                   title={project.id === 'smart-water' ? 'Unduh Aplikasi Smart Water' : `Buka Web Resmi ${project.title}`}
                                 >
-                                  <span>{project.id === 'smart-water' || (project.liveUrl || '').includes('drive.google.com') ? 'Unduh App' : 'Kunjungi Web'}</span>
+                                  <span>{project.id === 'smart-water' || (project.liveUrl || '').includes('drive.google.com') ? 'Unduh App' : (project.liveUrl || '').includes('instagram') ? 'Tonton Reel' : 'Kunjungi Web'}</span>
                                   <ExternalLink className="h-3 w-3" />
                                 </a>
                               )}
-                              <div className="h-8 w-8 rounded-full bg-slate-50 group-hover:bg-teal-50 flex items-center justify-center text-slate-400 group-hover:text-teal-600 transition-all">
-                                <ArrowUpRight className="h-4 w-4" />
+                              <div className="h-7 w-7 rounded-full bg-slate-50 group-hover:bg-teal-50 flex items-center justify-center text-slate-400 group-hover:text-teal-600 transition-all">
+                                <ArrowUpRight className="h-3.5 w-3.5" />
                               </div>
                             </div>
                           </div>
@@ -2482,20 +2494,57 @@ export default function App() {
                   );
                 }
 
-                const formatProjectDate = (dateStr: string) => {
-                  const parts = dateStr.split('-');
-                  if (parts.length !== 3) return dateStr;
-                  const year = parts[0];
-                  const monthNum = parseInt(parts[1]);
-                  const monthsIndonesian = [
-                    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-                  ];
-                  return `${monthsIndonesian[monthNum - 1]} ${year}`;
-                };
+                if (
+                  project.id === 'das-cikapundung' || 
+                  project.id?.includes('cikapundung') || 
+                  project.title?.toLowerCase().includes('cikapundung')
+                ) {
+                  return (
+                    <DasCikapundungShowcase
+                      item={project}
+                      onBack={() => {
+                        setSelectedProjectId(null);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
+                  );
+                }
+
+                if (
+                  project.id === 'smart-minimarket' || 
+                  project.id?.includes('minimarket') || 
+                  project.id?.includes('qmart') ||
+                  project.title?.toLowerCase().includes('minimarket')
+                ) {
+                  return (
+                    <SmartMinimarketShowcase
+                      item={project}
+                      onBack={() => {
+                        setSelectedProjectId(null);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
+                  );
+                }
+
+                if (
+                  project.id === 'closed-smart-hydroponic' || 
+                  project.id?.includes('closed-smart-hydroponic') || 
+                  project.title?.toLowerCase().includes('closed smart hydroponic')
+                ) {
+                  return (
+                    <ClosedSmartHydroponicShowcase
+                      item={project}
+                      onBack={() => {
+                        setSelectedProjectId(null);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    />
+                  );
+                }
 
                 return (
-                  <div className="space-y-8 animate-fade-in" id="project-detail-container">
+                  <div className="space-y-6 animate-fade-in" id="project-detail-container">
                     
                     {/* Back to Project Showcase List button */}
                     <button 
@@ -2509,7 +2558,7 @@ export default function App() {
                       <span>Kembali ke Semua Projek</span>
                     </button>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start pt-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start pt-2">
                       
                       {/* Left Column: Slider & Thumbnails */}
                       <div className="lg:col-span-6 flex flex-col gap-6">
@@ -2527,33 +2576,92 @@ export default function App() {
                         </div>
 
                         {/* Main Image View */}
-                        <div className="relative aspect-[16/10] overflow-hidden rounded-[2.5rem] border border-slate-100 bg-slate-50 shadow-lg">
-                          <img 
-                            src={resolveImageUrl(project.gallery?.[activeGalleryIndex] || project.image)} 
-                            alt={`${project.title} slide`}
-                            referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover transition-all duration-700"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg';
-                            }}
-                          />
-                          
-                          {/* Warm Cream Floating Metadata Banner (Matching User's Uploaded Mockup Exactly) */}
-                          <div className="absolute bottom-6 left-6 right-6 flex justify-between items-center bg-[#efeae4]/90 px-8 py-5 rounded-[1.75rem] border border-[#dfd6c8]/60 shadow-xl backdrop-blur-md">
-                            <span className="text-xs font-sans font-bold tracking-wider text-[#0a5c4e] uppercase">
-                              MICRO-ENVIRONMENT DIAGRAMS
-                            </span>
-                            <div className="flex items-center gap-1.5 font-sans font-bold text-sm text-[#5c544d]">
-                              <span>0{activeGalleryIndex + 1}</span>
-                              <span className="text-[#a89d91]">/</span>
-                              <span className="text-[#8c8175]">0{(project.gallery || []).length || 1}</span>
+                        {(() => {
+                          const activeImageSrc = resolveImageUrl(project.gallery?.[activeGalleryIndex] || project.image);
+                          const isContainMode = 
+                            activeImageSrc.includes('logo') ||
+                            activeImageSrc.includes('spanduk') ||
+                            activeImageSrc.includes('poster') ||
+                            activeImageSrc.includes('container') ||
+                            activeImageSrc.includes('sindulang') ||
+                            project.id === 'sindulang-netconnect' ||
+                            project.id === 'closed-smart-hydroponic';
+
+                          return (
+                            <div 
+                              onClick={() => {
+                                if (project.liveUrl && project.liveUrl !== '#') {
+                                  window.open(project.liveUrl, '_blank', 'noopener,noreferrer');
+                                } else {
+                                  setProjectLightboxImage({
+                                    url: activeImageSrc,
+                                    title: `${project.title} - ${
+                                      activeImageSrc.includes('spanduk')
+                                        ? 'Spanduk Resmi Peresmian'
+                                        : activeImageSrc.includes('container')
+                                        ? 'Dokumentasi Unit Kontainer'
+                                        : `Slide 0${activeGalleryIndex + 1}`
+                                    }`,
+                                    category: project.category
+                                  });
+                                }
+                              }}
+                              className="relative aspect-[16/10] overflow-hidden rounded-[2.5rem] border border-slate-200/80 bg-slate-950 shadow-xl cursor-pointer group"
+                              title={project.liveUrl && project.liveUrl !== '#' ? `Buka tautan: ${project.liveUrl}` : 'Klik untuk perbesar foto (Lightbox)'}
+                            >
+                              {/* Ambient Blurred Backdrop for contain images */}
+                              {isContainMode && (
+                                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                                  <img 
+                                    src={activeImageSrc} 
+                                    alt="" 
+                                    aria-hidden="true"
+                                    className="w-full h-full object-cover blur-2xl scale-125 opacity-25"
+                                  />
+                                  <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-xs" />
+                                </div>
+                              )}
+
+                              <img 
+                                src={activeImageSrc} 
+                                alt={`${project.title} slide`}
+                                referrerPolicy="no-referrer"
+                                className={`relative z-10 w-full h-full transition-all duration-500 ${
+                                  isContainMode
+                                    ? 'object-contain p-3 sm:p-5'
+                                    : 'object-cover'
+                                } group-hover:scale-[1.02]`}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg';
+                                }}
+                              />
+                              
+                              {/* Hover Play / Open indicator if liveUrl exists */}
+                              {project.liveUrl && project.liveUrl !== '#' && (
+                                <div className="absolute inset-0 z-20 bg-slate-950/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                  <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-slate-900 font-bold text-xs shadow-2xl">
+                                    {project.liveUrl.includes('instagram') ? (
+                                      <>
+                                        <Instagram className="h-4 w-4 text-pink-600" />
+                                        <span>Tonton di Instagram Reel</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <ExternalLink className="h-4 w-4 text-teal-600" />
+                                        <span>Buka Tautan Resmi</span>
+                                      </>
+                                    )}
+                                  </span>
+                                </div>
+                              )}
+                              
                             </div>
-                          </div>
-                        </div>
+                          );
+                        })()}
 
                         {/* Slide Thumbnails (Matching User's Thumbnail Mockup Styling Exactly) */}
                         {project.gallery && project.gallery.length > 0 && (
-                          <div className="grid grid-cols-4 gap-4 mt-2">
+                          <div className={`grid ${project.gallery.length >= 5 ? 'grid-cols-5 gap-3' : 'grid-cols-4 gap-4'} mt-2`}>
                             {project.gallery.map((thumb, index) => {
                               const isActive = activeGalleryIndex === index;
                               return (
@@ -2570,7 +2678,11 @@ export default function App() {
                                     src={resolveImageUrl(thumb)} 
                                     alt="Thumbnail" 
                                     referrerPolicy="no-referrer"
-                                    className="w-full h-full object-cover rounded-[1.1rem]" 
+                                    className={`w-full h-full rounded-[1.1rem] ${
+                                      thumb.includes('logo') || thumb.includes('spanduk') || thumb.includes('poster')
+                                        ? 'object-contain p-1.5 bg-white' 
+                                        : 'object-cover'
+                                    }`} 
                                     onError={(e) => {
                                       (e.target as HTMLImageElement).src = '/images/harvest-team-bg.jpg';
                                     }}
@@ -2590,15 +2702,11 @@ export default function App() {
                             <span className="rounded-full bg-teal-50 border border-teal-100 px-3 py-1 font-sans text-[10px] font-bold text-teal-600 uppercase tracking-wider">
                               {project.category}
                             </span>
-                            <span className="text-[11px] text-slate-400 font-mono font-bold uppercase flex items-center gap-1.5">
-                              <Calendar className="h-3.5 w-3.5 text-teal-600" />
-                              Selesai: {formatProjectDate(project.date)}
-                            </span>
                           </div>
                           
-                          <p className="text-sm text-slate-600 leading-relaxed font-sans pt-2">
+                          <div className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-sans pt-2 whitespace-pre-line space-y-3">
                             {project.fullDescription}
-                          </p>
+                          </div>
                         </div>
 
                         {/* Active Real Sensors Metrics */}
@@ -2632,6 +2740,34 @@ export default function App() {
                           </div>
                         </div>
 
+                        {/* Direct Action Link if liveUrl exists */}
+                        {project.liveUrl && project.liveUrl !== '#' && (
+                          <div className="pt-1">
+                            <a
+                              href={project.liveUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`inline-flex items-center justify-center gap-2.5 w-full py-4 px-6 rounded-2xl font-bold text-sm shadow-md transition-all hover:scale-[1.01] cursor-pointer ${
+                                project.liveUrl.includes('instagram')
+                                  ? 'bg-gradient-to-r from-pink-600 via-rose-600 to-purple-600 text-white hover:from-pink-700 hover:to-purple-700 shadow-pink-500/20'
+                                  : 'bg-teal-600 hover:bg-teal-700 text-white shadow-teal-500/20'
+                              }`}
+                            >
+                              {project.liveUrl.includes('instagram') ? (
+                                <Instagram className="h-4 w-4 text-white" />
+                              ) : (
+                                <ExternalLink className="h-4 w-4" />
+                              )}
+                              <span>
+                                {project.liveUrl.includes('instagram')
+                                  ? 'Tonton Reel Resmi di Instagram'
+                                  : (project.liveUrl.includes('drive.google.com') ? 'Buka Tutorial di Google Drive' : 'Kunjungi Web / Sistem Resmi')}
+                              </span>
+                              <ExternalLink className="h-3.5 w-3.5 opacity-80" />
+                            </a>
+                          </div>
+                        )}
+
                       </div>
 
                     </div>
@@ -2645,7 +2781,7 @@ export default function App() {
 
         {/* --- PAGE: ABOUT --- */}
         {currentPage === 'about' && (
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 animate-fade-in" id="about-section">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 animate-fade-in" id="about-section">
             
             {/* Header info */}
             <div className="flex flex-col gap-2 mb-10 text-center">

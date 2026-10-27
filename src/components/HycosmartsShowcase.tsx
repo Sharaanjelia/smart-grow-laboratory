@@ -43,6 +43,11 @@ export default function HycosmartsShowcase({
   // Real images uploaded by user
   const galleryImages = [
     {
+      url: '/images/hycosmarts/hycosmarts-logo.png',
+      caption: 'Official HYCOSMARTS Identity Logo - Kolaborasi Telkom University, AKAR, & APTI (Asosiasi Pertanian Teknologi Indonesia).',
+      title: 'HYCOSMARTS Official Logo & Identity'
+    },
+    {
       url: '/images/hycosmarts/hycosmarts-3.png',
       caption: '3D Exterior Render of standard repurposed ISO shipping container modified into a cleanroom farm.',
       title: 'Container Modular Exterior'
@@ -102,10 +107,10 @@ export default function HycosmartsShowcase({
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 pb-20 animate-fade-in space-y-12">
+    <div className="w-full space-y-6 sm:space-y-8 animate-fade-in pb-12">
       
       {/* Top Navigation & Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3 sm:pb-4">
         <button 
           onClick={onBack}
           className="group inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 shadow-sm hover:shadow hover:border-emerald-500 cursor-pointer self-start"
@@ -116,20 +121,35 @@ export default function HycosmartsShowcase({
       </div>
 
       {/* Hero Showcase Title Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         <div className="lg:col-span-8 space-y-4">
           <div className="flex items-center gap-2">
-            <span className="h-2 w-10 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"></span>
-            <span className="font-mono text-xs font-extrabold tracking-widest text-emerald-600 uppercase">
+            <span className="h-2 w-10 rounded-full bg-gradient-to-r from-red-500 via-amber-500 to-teal-500"></span>
+            <span className="font-mono text-xs font-extrabold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase">
               FLAGSHIP INNOVATION // HYCOSMARTS
             </span>
           </div>
-          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
-            HYCOSMARTS
-          </h1>
-          <p className="text-lg font-sans font-bold text-teal-600 dark:text-teal-400">
-            Smart Container-Based Intelligent Farming System
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-1">
+            <div 
+              onClick={() => setModalImage('/images/hycosmarts/hycosmarts-logo.png')}
+              className="h-20 w-36 sm:h-24 sm:w-48 bg-white rounded-2xl p-2.5 border border-red-200 shadow-md flex items-center justify-center shrink-0 cursor-pointer hover:scale-105 transition-transform"
+              title="Klik untuk memperbesar Logo HYCOSMARTS"
+            >
+              <img 
+                src="/images/hycosmarts/hycosmarts-logo.png" 
+                alt="HYCOSMARTS Official Logo" 
+                className="h-full w-full object-contain"
+              />
+            </div>
+            <div>
+              <h1 className="font-display text-4xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                HYCOSMARTS
+              </h1>
+              <p className="text-base sm:text-lg font-sans font-bold text-red-600 dark:text-red-400 mt-1">
+                Smart Container-Based Intelligent Farming System
+              </p>
+            </div>
+          </div>
           <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-sans pt-2">
             HYCOSMARTS is a smart container-based intelligent farming system designed to manage indoor hydroponic farming automatically, efficiently, and sustainably. The system is equipped with various important sensors such as pH, TDS, DO, EC, and ultrasonic sensors to monitor water quality, nutrient availability, and growing conditions in real time.
           </p>
@@ -198,7 +218,11 @@ export default function HycosmartsShowcase({
                 key={activeImageIndex}
                 src={galleryImages[activeImageIndex].url} 
                 alt={galleryImages[activeImageIndex].title} 
-                className="w-full h-full object-cover transition-all duration-500 animate-fade-in group-hover:scale-105" 
+                className={`w-full h-full transition-all duration-500 animate-fade-in group-hover:scale-105 ${
+                  galleryImages[activeImageIndex].url.includes('logo')
+                    ? 'object-contain p-8 sm:p-12 bg-white'
+                    : 'object-cover'
+                }`} 
               />
               
               {/* Top-Right Expand Lightbox Button */}
@@ -214,15 +238,6 @@ export default function HycosmartsShowcase({
                 <Maximize2 className="w-4 h-4" />
               </button>
 
-              {/* Title & Caption Bottom Gradient Overlay */}
-              <div className="absolute inset-x-0 bottom-0 pt-16 pb-12 px-5 bg-gradient-to-t from-slate-950/95 via-slate-950/70 to-transparent pointer-events-none">
-                <p className="text-white text-sm sm:text-base font-bold font-display line-clamp-1">
-                  {galleryImages[activeImageIndex].title}
-                </p>
-                <p className="text-slate-300 text-xs line-clamp-2 mt-1 font-sans">
-                  {galleryImages[activeImageIndex].caption}
-                </p>
-              </div>
             </div>
 
             {/* Left Navigation Chevron Button */}
@@ -268,6 +283,16 @@ export default function HycosmartsShowcase({
             </div>
           </div>
 
+          {/* Clean Description Card Below Image */}
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
+            <p className="text-slate-900 dark:text-white text-sm font-bold font-display">
+              {galleryImages[activeImageIndex].title}
+            </p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed font-sans">
+              {galleryImages[activeImageIndex].caption}
+            </p>
+          </div>
+
           {/* Quick Thumbnail Strip */}
           <div className="grid grid-cols-5 gap-2 pt-1">
             {galleryImages.map((img, idx) => (
@@ -282,7 +307,11 @@ export default function HycosmartsShowcase({
                     : 'border-slate-200 dark:border-slate-800 opacity-60 hover:opacity-100'
                 }`}
               >
-                <img src={img.url} alt={img.title} className="w-full h-full object-cover" />
+                <img 
+                  src={img.url} 
+                  alt={img.title} 
+                  className={`w-full h-full ${img.url.includes('logo') ? 'object-contain p-1 bg-white' : 'object-cover'}`} 
+                />
               </button>
             ))}
           </div>
@@ -540,7 +569,7 @@ export default function HycosmartsShowcase({
               <X className="w-5 h-5" />
             </button>
             
-            <div className="relative aspect-[16/9] w-full bg-slate-950 flex items-center justify-center overflow-hidden">
+            <div className={`relative aspect-[16/9] w-full flex items-center justify-center overflow-hidden ${modalImage.includes('logo') ? 'bg-white p-6' : 'bg-slate-950'}`}>
               <img src={modalImage} alt="Expanded View" className="w-full h-full object-contain max-h-[75vh]" />
             </div>
 
