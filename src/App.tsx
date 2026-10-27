@@ -141,11 +141,50 @@ const parseUrlNavigationState = () => {
   };
 };
 
+const HERO_SLIDES = [
+  {
+    id: 'harvest-team',
+    image: '/images/harvest-team-bg.jpg',
+    tag: 'DOKUMENTASI RISET // PANEN PERDANA',
+    title: 'Driving Agricultural Progress Through Technological Innovation',
+    subtitle: 'Integrated research and innovation hub focused on developing intelligent agricultural systems, bridging electrical automation with organic plant physiology.',
+    locationBadge: 'Fakultas Ilmu Terapan, Telkom University'
+  },
+  {
+    id: 'greenhouse-hd',
+    image: '/images/hero-greenhouse-hd.jpg',
+    tag: 'SMART GREENHOUSE // IOT MONITORING',
+    title: 'Precision Hydroponics & Autonomous Climate Control',
+    subtitle: 'Riset otomasi lingkungan mikroklimat tanaman dengan sensor IoT presisi, spektrum LED buatan terkalibrasi, dan sirkulasi udara terkontrol.',
+    locationBadge: 'Smart Greenhouse Research Facility'
+  },
+  {
+    id: 'hydroponic-lab-hd',
+    image: '/images/hero-hydroponic-lab-hd.jpg',
+    tag: 'VERTICAL FARMING // CYBER-AGRICULTURE',
+    title: 'High-Density Indoor Vertical Farming & Clean Agriculture',
+    subtitle: 'Sistem rak hidroponik multi-tingkat dalam ruangan berdensitas tinggi untuk ketahanan pangan perkotaan dan efisiensi ruang tumbuh.',
+    locationBadge: 'Indoor Agriculture Research Cleanroom'
+  }
+];
+
 export default function App() {
   const initialNav = parseUrlNavigationState();
   const [currentPage, setCurrentPage] = useState<PageId>(initialNav.page);
   const [selectedNewsId, setSelectedNewsId] = useState<string | null>(initialNav.newsId);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(initialNav.projId);
+
+  // Hero Image Carousel State
+  const [heroSlideIndex, setHeroSlideIndex] = useState(0);
+
+  // Auto-advance hero carousel every 6 seconds on home page
+  useEffect(() => {
+    if (currentPage !== 'home') return;
+    const interval = setInterval(() => {
+      setHeroSlideIndex(prev => (prev + 1) % HERO_SLIDES.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [currentPage]);
 
   const [projectCategory, setProjectCategory] = useState<string>('All');
   const [joinModalOpen, setJoinModalOpen] = useState(false);
@@ -1994,56 +2033,122 @@ export default function App() {
         {currentPage === 'home' && (
           <div className="animate-fade-in">
             {/* Hero Section — Next-Gen Cyber-Agriculture Glassmorphic Hub */}
-            <section className="relative px-4 pt-4 pb-12 sm:pt-6 sm:pb-16 sm:px-6 lg:px-8 text-left overflow-hidden bg-slate-900 z-10" id="home-hero">
-              {/* Immersive Background Layer - 100% Crystal Clear Photo */}
-              <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
-                {/* 1. Background Photo: Harvest Team Background - 100% Sharp & Vivid */}
-                <img 
-                  src="/images/harvest-team-bg.jpg" 
-                  className="absolute inset-0 w-full h-full object-cover opacity-100 filter brightness-100 contrast-100"
-                  alt="Telkom University Smart Grow Laboratory Harvest Team"
-                />
+            <section className="relative px-4 pt-4 pb-12 sm:pt-6 sm:pb-16 sm:px-6 lg:px-8 text-left overflow-hidden bg-slate-900 z-10 min-h-[560px] sm:min-h-[620px] flex items-center" id="home-hero">
+              {/* Immersive Background Layer - Dynamic Carousel with Cross-Fade & Ken Burns Effect */}
+              <div className="absolute inset-0 z-0 overflow-hidden select-none">
+                {HERO_SLIDES.map((slide, idx) => {
+                  const isActive = idx === heroSlideIndex;
+                  return (
+                    <div
+                      key={slide.id}
+                      className={`absolute inset-0 transition-opacity duration-1000 ease-in-out pointer-events-none ${
+                        isActive ? 'opacity-100 z-1' : 'opacity-0 z-0'
+                      }`}
+                    >
+                      <img 
+                        src={slide.image} 
+                        className={`w-full h-full object-cover filter brightness-[1.02] contrast-[1.05] transition-transform duration-[7000ms] ease-out ${
+                          isActive ? 'scale-105' : 'scale-100'
+                        }`}
+                        style={{ imageRendering: 'high-quality' }}
+                        alt={slide.title}
+                      />
+                      {/* Subtle Dark Vignette & Gradient for ultra crisp text readability */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/60 via-slate-950/25 to-transparent" />
+                    </div>
+                  );
+                })}
 
-                {/* 2. Soft Bottom Fade to White for Section Transition */}
-                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white via-white/40 to-transparent" />
+                {/* Soft Bottom Fade to White for Seamless Section Transition */}
+                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white via-white/50 to-transparent pointer-events-none z-2" />
+
+                {/* Carousel Controls (Floating Prev & Next Arrows on Edge) */}
+                <div className="absolute inset-y-0 left-3 right-3 flex items-center justify-between pointer-events-none z-20">
+                  <button
+                    onClick={() => setHeroSlideIndex(prev => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
+                    className="pointer-events-auto p-2.5 sm:p-3 rounded-full bg-white/70 hover:bg-white text-slate-800 hover:text-emerald-700 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer border border-white/60"
+                    title="Foto Sebelumnya"
+                    aria-label="Foto Sebelumnya"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() => setHeroSlideIndex(prev => (prev + 1) % HERO_SLIDES.length)}
+                    className="pointer-events-auto p-2.5 sm:p-3 rounded-full bg-white/70 hover:bg-white text-slate-800 hover:text-emerald-700 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer border border-white/60"
+                    title="Foto Berikutnya"
+                    aria-label="Foto Berikutnya"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
 
               {/* Main Content Grid — Right Side Text Panel with Deep Frosted Glass Protection */}
-              <div className="mx-auto max-w-7xl relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              <div className="mx-auto max-w-7xl relative z-10 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center py-6 sm:py-8">
                 
                 {/* Right Side (7 Cols): Headline, Subtext, CTAs & Metrics */}
-                <div className="lg:col-span-7 lg:col-start-6 flex flex-col items-start text-left space-y-5 bg-white/45 backdrop-blur-2xl backdrop-saturate-150 p-6 sm:p-8 rounded-3xl border border-white/60 shadow-2xl">
+                <div className="lg:col-span-7 lg:col-start-6 flex flex-col items-start text-left space-y-4 sm:space-y-5 bg-white/65 backdrop-blur-2xl backdrop-saturate-150 p-6 sm:p-8 rounded-3xl border border-white/70 shadow-2xl">
                   
+                  {/* Dynamic Slide Badge */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0A5247] text-emerald-200 font-mono text-[11px] font-bold tracking-wider uppercase shadow-xs">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      {HERO_SLIDES[heroSlideIndex].tag}
+                    </span>
+                    <span className="text-[11px] font-mono text-slate-700 font-semibold hidden sm:inline-block">
+                      • {HERO_SLIDES[heroSlideIndex].locationBadge}
+                    </span>
+                  </div>
 
                   {/* Headline */}
-                  <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-[#0A5247] leading-[1.15] drop-shadow-xs">
-                    Driving Agricultural Progress <br className="hidden sm:inline" />
-                    Through <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#058257] via-teal-700 to-emerald-700">Technological Innovation</span>
+                  <h1 className="font-display text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-[#0A5247] leading-[1.15] drop-shadow-xs transition-all duration-500">
+                    {HERO_SLIDES[heroSlideIndex].title}
                   </h1>
 
                   {/* Description */}
-                  <p className="max-w-2xl text-sm sm:text-base leading-relaxed text-slate-800 font-sans font-medium">
-                    Integrated research and innovation hub focused on developing intelligent agricultural systems, bridging electrical automation with organic plant physiology.
+                  <p className="max-w-2xl text-xs sm:text-base leading-relaxed text-slate-800 font-sans font-medium transition-all duration-500">
+                    {HERO_SLIDES[heroSlideIndex].subtitle}
                   </p>
 
-                  {/* Action Buttons */}
-                  <div className="flex flex-wrap items-center gap-4 pt-1">
-                    <button
-                      onClick={() => handleNavigate('project')}
-                      id="btn-see-more-home"
-                      className="group relative inline-flex items-center gap-2.5 rounded-full bg-[#0A5247] hover:bg-[#073D35] px-7 py-3 text-xs font-extrabold tracking-wider uppercase text-white hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl shadow-emerald-950/20 cursor-pointer border border-emerald-700/30 overflow-hidden"
-                    >
-                      <span className="relative z-10">See More</span>
-                      <ArrowUpRight className="h-4 w-4 relative z-10 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                    </button>
+                  {/* Action Buttons & Indicator Bar */}
+                  <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        onClick={() => handleNavigate('project')}
+                        id="btn-see-more-home"
+                        className="group relative inline-flex items-center gap-2.5 rounded-full bg-[#0A5247] hover:bg-[#073D35] px-6 sm:px-7 py-3 text-xs font-extrabold tracking-wider uppercase text-white hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl shadow-emerald-950/20 cursor-pointer border border-emerald-700/30 overflow-hidden"
+                      >
+                        <span className="relative z-10">See More</span>
+                        <ArrowUpRight className="h-4 w-4 relative z-10 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      </button>
 
-                    <button
-                      onClick={() => handleNavigate('news')}
-                      className="inline-flex items-center gap-2 rounded-full bg-white/80 hover:bg-white backdrop-blur-xl border border-emerald-400 px-6 py-3 text-xs font-extrabold tracking-wider uppercase text-[#0A5247] hover:scale-105 active:scale-95 transition-all duration-300 shadow-sm cursor-pointer"
-                    >
-                      <span>Explore Lab News</span>
+                      <button
+                        onClick={() => handleNavigate('news')}
+                        className="inline-flex items-center gap-2 rounded-full bg-white/80 hover:bg-white backdrop-blur-xl border border-emerald-400 px-5 sm:px-6 py-3 text-xs font-extrabold tracking-wider uppercase text-[#0A5247] hover:scale-105 active:scale-95 transition-all duration-300 shadow-sm cursor-pointer"
+                      >
+                        <span>Explore Lab News</span>
+                      </button>
+                    </div>
 
-                    </button>
+                    {/* Carousel Dots & Number Indicator */}
+                    <div className="flex items-center gap-2 sm:ml-auto">
+                      {HERO_SLIDES.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setHeroSlideIndex(idx)}
+                          className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                            idx === heroSlideIndex 
+                              ? 'w-7 bg-[#0A5247] shadow-sm' 
+                              : 'w-2.5 bg-slate-400/80 hover:bg-slate-500'
+                          }`}
+                          title={`Foto ${idx + 1}: ${HERO_SLIDES[idx].tag}`}
+                          aria-label={`Foto ${idx + 1}`}
+                        />
+                      ))}
+                      <span className="text-[11px] font-mono font-bold text-slate-700 pl-1">
+                        0{heroSlideIndex + 1} / 0{HERO_SLIDES.length}
+                      </span>
+                    </div>
                   </div>
 
                 </div>
