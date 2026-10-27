@@ -143,12 +143,13 @@ const parseUrlNavigationState = () => {
 
 const HERO_SLIDES = [
   {
-    id: 'fakultas-ilmu-terapan',
-    image: '/images/hero/hero-fakultas-ilmu-terapan.jpg',
-    tag: 'FAKULTAS ILMU TERAPAN // TELKOM UNIVERSITY',
+    id: 'harvest-team',
+    image: '/images/harvest-team-bg.jpg',
+    tag: 'DOKUMENTASI RISET // PANEN PERDANA',
     title: 'Driving Agricultural Progress Through Technological Innovation',
     subtitle: 'Integrated research and innovation hub focused on developing intelligent agricultural systems, bridging electrical automation with organic plant physiology.',
-    locationBadge: 'Gedung Fakultas Ilmu Terapan, Telkom University'
+    locationBadge: 'Fakultas Ilmu Terapan, Telkom University',
+    position: 'object-center'
   },
   {
     id: 'htci-banner',
@@ -156,7 +157,8 @@ const HERO_SLIDES = [
     tag: 'KOLABORASI INTERNASIONAL // PENGABDIAN MASYARAKAT',
     title: 'Hydrothermal Cogeneration Incinerator (HTCI) for Sustainable Communities',
     subtitle: 'Implementasi teknologi HTCI untuk pengolahan sampah dan pemanfaatan kogenerasi energi terpadu di TPS Desa Cimanintin, Sumedang bersama mitra internasional INTI University.',
-    locationBadge: 'Desa Cimanintin, Sumedang'
+    locationBadge: 'Desa Cimanintin, Sumedang',
+    position: 'object-center'
   },
   {
     id: 'htci-team',
@@ -164,15 +166,17 @@ const HERO_SLIDES = [
     tag: 'GREEN TECHNOLOGY // WASTE-TO-ENERGY',
     title: 'Pioneering Clean Energy & Waste Management Technology',
     subtitle: 'Tim peneliti Smart Grow Laboratory bersama unit insinerator kogenerasi hidrotermal ramah lingkungan dalam mendukung program Sustainable Development Goals (SDGs).',
-    locationBadge: 'TPS Desa Cimanintin, Sumedang'
+    locationBadge: 'TPS Desa Cimanintin, Sumedang',
+    position: 'object-center'
   },
   {
-    id: 'harvest-team',
-    image: '/images/harvest-team-bg.jpg',
-    tag: 'DOKUMENTASI RISET // PANEN PERDANA',
-    title: 'Smart Hydroponics & Precision Nutrient Control',
-    subtitle: 'Dokumentasi panen perdana tanaman hidroponik bernutrisi tinggi hasil inovasi sistem kontrol mikroklimat cerdas di Smart Grow Laboratory.',
-    locationBadge: 'Smart Grow Laboratory, Telkom University'
+    id: 'fakultas-ilmu-terapan',
+    image: '/images/hero/hero-fakultas-ilmu-terapan.jpg',
+    tag: 'FAKULTAS ILMU TERAPAN // TELKOM UNIVERSITY',
+    title: 'Smart Grow Laboratory Research Ecosystem',
+    subtitle: 'Pusat riset dan inkubasi teknologi rekayasa pertanian cerdas di bawah naungan Fakultas Ilmu Terapan, Telkom University.',
+    locationBadge: 'Gedung Fakultas Ilmu Terapan, Telkom University',
+    position: 'object-[center_20%]'
   }
 ];
 
@@ -2055,7 +2059,7 @@ export default function App() {
                     >
                       <img 
                         src={slide.image} 
-                        className={`w-full h-full object-cover filter brightness-[1.02] contrast-[1.05] transition-transform duration-[7000ms] ease-out ${
+                        className={`w-full h-full object-cover ${slide.position || 'object-center'} filter brightness-[1.02] contrast-[1.05] transition-transform duration-[7000ms] ease-out ${
                           isActive ? 'scale-105' : 'scale-100'
                         }`}
                         style={{ imageRendering: 'high-quality' }}
