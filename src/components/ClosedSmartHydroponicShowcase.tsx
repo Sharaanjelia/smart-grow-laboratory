@@ -84,28 +84,28 @@ export default function ClosedSmartHydroponicShowcase({
   const allComments = comments.length > 0 ? comments : defaultComments;
 
   return (
-    <div className="space-y-6 sm:space-y-8 animate-fade-in text-slate-800 dark:text-slate-100 pb-12 bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 border border-slate-100 dark:border-slate-800 shadow-xs">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in text-slate-800 dark:text-slate-100 pb-12 bg-white dark:bg-slate-900 rounded-3xl p-3 sm:p-6 border border-slate-100 dark:border-slate-800 shadow-xs">
       
       {/* TOP NAVIGATION BAR */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3 sm:pb-4">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-purple-500 hover:text-purple-700 dark:hover:text-purple-400 transition-all cursor-pointer shadow-2xs group"
+          className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-purple-500 hover:text-purple-700 dark:hover:text-purple-400 transition-all cursor-pointer shadow-2xs group"
           id="closed-hydroponic-back-btn"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
           <span>Kembali ke Daftar Proyek</span>
         </button>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
           <a
             href={reelUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-pink-50 dark:bg-pink-950/60 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-pink-800 text-xs font-semibold hover:bg-pink-100 dark:hover:bg-pink-900/60 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-pink-50 dark:bg-pink-950/60 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-pink-800 text-xs font-semibold hover:bg-pink-100 dark:hover:bg-pink-900/60 transition-all cursor-pointer"
           >
             <Instagram className="h-3.5 w-3.5 text-pink-600" />
-            <span>Tonton Reel di Instagram</span>
+            <span>Tonton Reel<span className="hidden sm:inline"> di Instagram</span></span>
             <ExternalLink className="h-3 w-3 opacity-70" />
           </a>
 
@@ -121,12 +121,12 @@ export default function ClosedSmartHydroponicShowcase({
       </div>
 
       {/* HERO BANNER SECTION (Purple / Fuchsia / Emerald Theme) */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#4c1d95] via-[#5b21b6] to-[#0f172a] text-white p-6 sm:p-8 shadow-xl border border-purple-500/30">
+      <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#4c1d95] via-[#5b21b6] to-[#0f172a] text-white p-4 sm:p-6 md:p-8 shadow-xl border border-purple-500/30">
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-pink-500/20 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/4 -mb-20 w-80 h-80 rounded-full bg-purple-500/20 blur-2xl pointer-events-none" />
 
-        <div className="relative z-10 max-w-4xl space-y-5">
-          <div className="flex flex-wrap items-center gap-2.5">
+        <div className="relative z-10 max-w-4xl space-y-4 sm:space-y-5">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/70 border border-purple-400/40 text-purple-200 font-mono text-xs font-bold uppercase tracking-wider backdrop-blur-md">
               <Leaf className="h-3.5 w-3.5 text-emerald-300" />
               Smart Agriculture & Green Technology
@@ -138,7 +138,7 @@ export default function ClosedSmartHydroponicShowcase({
           </div>
 
           {/* Thumbnail & Project Title Row */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-5 pt-1">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 pt-1">
             <div 
               onClick={() => window.open(reelUrl, '_blank', 'noopener,noreferrer')}
               className="w-20 h-28 sm:w-24 sm:h-32 rounded-2xl bg-slate-900 p-1 shadow-2xl border-2 border-purple-300/80 cursor-pointer shrink-0 hover:scale-105 transition-all flex flex-col items-center justify-center group/thumb relative overflow-hidden"
@@ -158,17 +158,17 @@ export default function ClosedSmartHydroponicShowcase({
             </div>
 
             <div className="space-y-1">
-              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight drop-shadow-sm">
+              <h1 className="font-display text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight drop-shadow-sm">
                 Closed Smart Hydroponic
               </h1>
-              <p className="text-sm sm:text-base text-purple-200 font-mono font-medium flex items-center gap-2">
-                <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <p className="text-xs sm:text-base text-purple-200 font-mono font-medium flex items-center gap-2">
+                <span className="inline-block w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-emerald-400 animate-pulse" />
                 Smart Cabinet & Green Technology
               </p>
             </div>
           </div>
 
-          <p className="text-base sm:text-lg text-purple-100/95 font-medium leading-relaxed max-w-3xl">
+          <p className="text-sm sm:text-base md:text-lg text-purple-100/95 font-medium leading-relaxed max-w-3xl">
             Dokumentasi sistem Closed Smart Hydroponic (Smart Cabinet) untuk budidaya tanaman presisi di dalam ruang tertutup dengan pencahayaan buatan LED grow light dan sirkulasi udara terkontrol.
           </p>
 
@@ -177,7 +177,7 @@ export default function ClosedSmartHydroponicShowcase({
               href={reelUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs shadow-lg transition-all hover:scale-105 cursor-pointer"
+              className="w-full sm:w-auto justify-center inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs shadow-lg transition-all hover:scale-105 cursor-pointer"
             >
               <Instagram className="h-4 w-4" />
               <span>Tonton Reel di Instagram</span>
@@ -188,7 +188,7 @@ export default function ClosedSmartHydroponicShowcase({
       </section>
 
       {/* DOKUMENTASI REEL & SMART CABINET SECTION */}
-      <section id="dokumentasi-reel-section" className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-xs space-y-6">
+      <section id="dokumentasi-reel-section" className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 border border-slate-200 dark:border-slate-700 shadow-xs space-y-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-100 dark:border-slate-700/80 pb-5">
           <div className="space-y-1">
             <span className="text-xs font-bold font-mono uppercase tracking-widest text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
@@ -207,26 +207,26 @@ export default function ClosedSmartHydroponicShowcase({
             href={reelUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 text-xs font-bold hover:bg-purple-100 transition-all cursor-pointer"
+            className="w-full sm:w-auto justify-center shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 text-xs font-bold hover:bg-purple-100 transition-all cursor-pointer"
           >
             <span>Buka Tautan Asli</span>
             <ExternalLink className="h-3 w-3" />
           </a>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           
           {/* Left: Instagram Embed & Video Player Container */}
-          <div className="lg:col-span-6 flex flex-col items-center space-y-3">
+          <div className="lg:col-span-6 flex flex-col items-center space-y-3 w-full">
             <div className="w-full max-w-sm rounded-2xl overflow-hidden border-2 border-purple-200 dark:border-purple-800 shadow-xl bg-slate-950 relative">
               <iframe
                 src={reelEmbedUrl}
                 title="Instagram Reel - Closed Smart Hydroponic"
-                className="w-full h-[520px] border-0"
+                className="w-full h-[460px] sm:h-[520px] border-0"
                 allowFullScreen
               />
             </div>
-            <p className="text-[11px] font-mono text-slate-400 text-center">
+            <p className="text-[11px] font-mono text-slate-400 text-center break-all px-2">
               Tautan Reel: <a href={reelUrl} target="_blank" rel="noopener noreferrer" className="text-purple-600 dark:text-purple-400 hover:underline">instagram.com/reel/CwpE-96NzPK/</a>
             </p>
           </div>
@@ -235,8 +235,8 @@ export default function ClosedSmartHydroponicShowcase({
           <div className="lg:col-span-6 space-y-4">
             
             {/* Original Caption Card */}
-            <div className="p-5 rounded-2xl bg-gradient-to-br from-purple-50/60 to-white dark:from-slate-800 dark:to-slate-900 border border-purple-200/80 dark:border-purple-900/40 space-y-3">
-              <div className="flex items-center justify-between">
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-purple-50/60 to-white dark:from-slate-800 dark:to-slate-900 border border-purple-200/80 dark:border-purple-900/40 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-[11px] font-mono font-bold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-950 px-2.5 py-0.5 rounded-full">
                   Caption Postingan Resmi
                 </span>
@@ -245,7 +245,7 @@ export default function ClosedSmartHydroponicShowcase({
                   <span>1 September 2023</span>
                 </span>
               </div>
-              <blockquote className="text-sm italic font-serif text-slate-800 dark:text-slate-200 border-l-4 border-purple-500 pl-3 py-1">
+              <blockquote className="text-xs sm:text-sm italic font-serif text-slate-800 dark:text-slate-200 border-l-4 border-purple-500 pl-3 py-1">
                 &ldquo;Never stop learning because life will never stop teaching.<br />
                 Let's use every opportunity to learn something new anytime and anywhere.&rdquo;
               </blockquote>
@@ -266,7 +266,7 @@ export default function ClosedSmartHydroponicShowcase({
             </div>
 
             {/* Factual Visible Components in Documentation */}
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <h4 className="text-xs font-bold font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Komponen Sistem pada Smart Cabinet:
               </h4>
@@ -324,15 +324,15 @@ export default function ClosedSmartHydroponicShowcase({
       </section>
 
       {/* COMMENTS & COMMUNITY FEEDBACK */}
-      <section className="bg-slate-50 dark:bg-slate-800/40 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-700 space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-4">
+      <section className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 border border-slate-200/80 dark:border-slate-700 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-4">
           <div className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-purple-600" />
-            <h3 className="font-display text-lg font-bold text-slate-900 dark:text-white">
+            <MessageSquare className="h-5 w-5 text-purple-600 shrink-0" />
+            <h3 className="font-display text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               Diskusi & Masukan Proyek ({allComments.length})
             </h3>
           </div>
-          <span className="text-xs font-mono text-slate-400">
+          <span className="text-[11px] sm:text-xs font-mono text-slate-400">
             Dikelola oleh Administrator Smart Grow Lab
           </span>
         </div>
@@ -340,16 +340,16 @@ export default function ClosedSmartHydroponicShowcase({
         {/* Existing Comments */}
         <div className="space-y-4">
           {allComments.map((comment) => (
-            <div key={comment.id} className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 space-y-1.5 shadow-2xs">
+            <div key={comment.id} className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 space-y-1.5 shadow-2xs">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-bold text-xs text-slate-900 dark:text-white">
+                <span className="font-bold text-xs text-slate-900 dark:text-white break-words">
                   {comment.name}
                 </span>
-                <span className="text-[11px] font-mono text-slate-400">
+                <span className="text-[11px] font-mono text-slate-400 shrink-0">
                   {comment.timestamp}
                 </span>
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-sans">
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-sans break-words">
                 {comment.content}
               </p>
             </div>
@@ -357,7 +357,7 @@ export default function ClosedSmartHydroponicShowcase({
         </div>
 
         {/* Add Comment Form */}
-        <form onSubmit={handleFormSubmit} className="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-3 shadow-xs">
+        <form onSubmit={handleFormSubmit} className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-3 shadow-xs">
           <h4 className="font-bold text-xs uppercase tracking-wider text-slate-500 font-mono">
             Beri Tanggapan / Masukan untuk Proyek Ini:
           </h4>
@@ -386,16 +386,16 @@ export default function ClosedSmartHydroponicShowcase({
             className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 focus:outline-hidden focus:border-purple-500"
             required
           />
-          <div className="flex items-center justify-between pt-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
             {commentSuccess && (
               <span className="text-xs font-bold text-emerald-600 flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4" />
-                Terima kasih! Masukan Anda telah berhasil dicatat.
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span>Terima kasih! Masukan Anda telah berhasil dicatat.</span>
               </span>
             )}
             <button
               type="submit"
-              className="ml-auto inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+              className="w-full sm:w-auto sm:ml-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
             >
               <Send className="h-3.5 w-3.5" />
               <span>Kirim Masukan</span>
@@ -407,30 +407,31 @@ export default function ClosedSmartHydroponicShowcase({
       {/* FULLSCREEN IMAGE MODAL */}
       {modalImage && (
         <div 
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4"
           onClick={() => setModalImage(null)}
         >
           <div className="relative max-w-lg w-full max-h-[90vh] flex flex-col items-center">
             <button
               onClick={() => setModalImage(null)}
-              className="absolute -top-12 right-0 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+              className="absolute -top-11 sm:-top-12 right-1 sm:right-0 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+              aria-label="Tutup modal"
             >
-              <X className="h-6 w-6" />
+              <X className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
             <img 
               src={modalImage} 
               alt="Resolusi Penuh Closed Smart Hydroponic"
-              className="max-h-[80vh] w-auto max-w-full rounded-2xl shadow-2xl object-contain bg-white/10 border border-white/20 p-2"
+              className="max-h-[75vh] sm:max-h-[80vh] w-auto max-w-full rounded-2xl shadow-2xl object-contain bg-white/10 border border-white/20 p-1.5 sm:p-2"
               onClick={(e) => e.stopPropagation()}
             />
-            <div className="flex flex-wrap items-center justify-between gap-3 w-full mt-4 px-2">
-              <span className="text-xs text-slate-300 font-mono">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-3 w-full mt-3 sm:mt-4 px-1 sm:px-2">
+              <span className="text-xs text-slate-300 font-mono text-center sm:text-left truncate max-w-full">
                 Closed Smart Hydroponic - Smart Cabinet (@indrarini_dya)
               </span>
               <a 
                 href={modalImage} 
                 download="closed-smart-hydroponic.jpg"
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-md transition-all cursor-pointer"
+                className="w-full sm:w-auto justify-center inline-flex items-center gap-1.5 px-4 py-2 sm:py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-md transition-all cursor-pointer"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Download className="h-3.5 w-3.5" />
