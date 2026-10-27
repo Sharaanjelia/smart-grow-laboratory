@@ -143,28 +143,36 @@ const parseUrlNavigationState = () => {
 
 const HERO_SLIDES = [
   {
+    id: 'fakultas-ilmu-terapan',
+    image: '/images/hero/hero-fakultas-ilmu-terapan.jpg',
+    tag: 'FAKULTAS ILMU TERAPAN // TELKOM UNIVERSITY',
+    title: 'Driving Agricultural Progress Through Technological Innovation',
+    subtitle: 'Integrated research and innovation hub focused on developing intelligent agricultural systems, bridging electrical automation with organic plant physiology.',
+    locationBadge: 'Gedung Fakultas Ilmu Terapan, Telkom University'
+  },
+  {
+    id: 'htci-banner',
+    image: '/images/hero/hero-htci-cimanintin-banner.jpg',
+    tag: 'KOLABORASI INTERNASIONAL // PENGABDIAN MASYARAKAT',
+    title: 'Hydrothermal Cogeneration Incinerator (HTCI) for Sustainable Communities',
+    subtitle: 'Implementasi teknologi HTCI untuk pengolahan sampah dan pemanfaatan kogenerasi energi terpadu di TPS Desa Cimanintin, Sumedang bersama mitra internasional INTI University.',
+    locationBadge: 'Desa Cimanintin, Sumedang'
+  },
+  {
+    id: 'htci-team',
+    image: '/images/hero/hero-htci-cimanintin-team.jpg',
+    tag: 'GREEN TECHNOLOGY // WASTE-TO-ENERGY',
+    title: 'Pioneering Clean Energy & Waste Management Technology',
+    subtitle: 'Tim peneliti Smart Grow Laboratory bersama unit insinerator kogenerasi hidrotermal ramah lingkungan dalam mendukung program Sustainable Development Goals (SDGs).',
+    locationBadge: 'TPS Desa Cimanintin, Sumedang'
+  },
+  {
     id: 'harvest-team',
     image: '/images/harvest-team-bg.jpg',
     tag: 'DOKUMENTASI RISET // PANEN PERDANA',
-    title: 'Driving Agricultural Progress Through Technological Innovation',
-    subtitle: 'Integrated research and innovation hub focused on developing intelligent agricultural systems, bridging electrical automation with organic plant physiology.',
-    locationBadge: 'Fakultas Ilmu Terapan, Telkom University'
-  },
-  {
-    id: 'greenhouse-hd',
-    image: '/images/hero-greenhouse-hd.jpg',
-    tag: 'SMART GREENHOUSE // IOT MONITORING',
-    title: 'Precision Hydroponics & Autonomous Climate Control',
-    subtitle: 'Riset otomasi lingkungan mikroklimat tanaman dengan sensor IoT presisi, spektrum LED buatan terkalibrasi, dan sirkulasi udara terkontrol.',
-    locationBadge: 'Smart Greenhouse Research Facility'
-  },
-  {
-    id: 'hydroponic-lab-hd',
-    image: '/images/hero-hydroponic-lab-hd.jpg',
-    tag: 'VERTICAL FARMING // CYBER-AGRICULTURE',
-    title: 'High-Density Indoor Vertical Farming & Clean Agriculture',
-    subtitle: 'Sistem rak hidroponik multi-tingkat dalam ruangan berdensitas tinggi untuk ketahanan pangan perkotaan dan efisiensi ruang tumbuh.',
-    locationBadge: 'Indoor Agriculture Research Cleanroom'
+    title: 'Smart Hydroponics & Precision Nutrient Control',
+    subtitle: 'Dokumentasi panen perdana tanaman hidroponik bernutrisi tinggi hasil inovasi sistem kontrol mikroklimat cerdas di Smart Grow Laboratory.',
+    locationBadge: 'Smart Grow Laboratory, Telkom University'
   }
 ];
 
