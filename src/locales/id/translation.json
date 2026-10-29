@@ -1,0 +1,242 @@
+{
+  "lang": "id",
+
+  "nav": {
+    "home": "Beranda",
+    "news": "Berita & Acara",
+    "project": "Projek",
+    "about": "Tim Kami",
+    "join": "Kolaborasi",
+    "labLogin": "Lab Login",
+    "labPortal": "Lab Portal",
+    "mobileMenuTitle": "Menu Utama",
+    "mobileAccessLabel": "Akses Lab & Keanggotaan",
+    "enterPortal": "Masuk Lab Portal",
+    "openNav": "Buka menu navigasi",
+    "closeNav": "Tutup menu"
+  },
+
+  "hero": {
+    "seeMore": "Lihat Selengkapnya",
+    "exploreNews": "Jelajahi Berita Lab",
+    "prevSlide": "Foto Sebelumnya",
+    "nextSlide": "Foto Berikutnya",
+    "slideLabel": "Foto"
+  },
+
+  "home": {
+    "ctaBadge": "KOLABORASI & TALENTA RISET",
+    "ctaTitle": "Tertarik Berkolaborasi atau Bergabung dalam Riset Kami?",
+    "ctaDesc": "Smart Grow Laboratory membuka peluang kemitraan industri, riset bersama, dan program magang intensif bagi mahasiswa berdedikasi.",
+    "ctaRegisterInternship": "Daftar Magang Riset",
+    "ctaCollaborate": "Ajukan Kolaborasi Riset"
+  },
+
+  "visionMission": {
+    "sectionTitle": "Komitmen Riset & Inovasi Pertanian Cerdas",
+    "sectionDesc": "Smart Grow Laboratory Telkom University berdedikasi menjadi pusat unggulan teknologi terapan, menjembatani otomasi rekayasa dengan fisiologi tanaman modern.",
+    "visionTitle": "Visi Laboratorium",
+    "visionText": "\"Menjadi pusat riset dan inovasi unggulan di tingkat nasional maupun internasional dalam pengembangan teknologi pertanian cerdas (Smart Agriculture), otomasi IoT, dan AI biosistem guna mewujudkan ketahanan pangan yang tangguh, efisien, dan berkelanjutan.\"",
+    "threePillars": "3 PILAR UTAMA PENGEMBANGAN:",
+    "missionTitle": "Misi Kami",
+    "pillars": {
+      "global": "Riset Multidisiplin Berstandar Global",
+      "iot": "Otomasi IoT & AI Biosistem Presisi",
+      "food": "Kedaulatan Pangan Berkelanjutan"
+    },
+    "missions": {
+      "m01Title": "Riset & Pengembangan Solutif",
+      "m01Desc": "Melaksanakan penelitian terapan mutakhir dalam sensor telemetri nirkabel, edge AI, computer vision, dan otomasi biosistem presisi.",
+      "m02Title": "Hilirisasi & Kolaborasi Industri",
+      "m02Desc": "Menghubungkan prototipe inovasi lab dengan kebutuhan riil industri agrikultur, program hibah (Kedaireka/Dikti), dan masyarakat petani.",
+      "m03Title": "Pemberdayaan Talenta Unggul",
+      "m03Desc": "Menyelenggarakan ekosistem magang riset terstruktur bagi mahasiswa untuk mencetak inovator dan perekayasa teknologi masa depan.",
+      "m04Title": "Keberlanjutan & Efisiensi Energi",
+      "m04Desc": "Menerapkan teknologi ramah lingkungan, energi terbarukan agrivoltaik, serta konservasi nutrisi air tertutup (closed-loop)."
+    }
+  },
+
+  "research": {
+    "sectionLabel": "BIDANG RISET",
+    "sectionTitle": "Area Penelitian Aktif",
+    "sectionDesc": "Smart Grow Laboratory menjadi pusat riset dan inkubasi teknologi rekayasa pertanian cerdas yang mencakup berbagai bidang ilmu terapan dan rekayasa sistem.",
+    "techStackLabel": "TECH STACK",
+    "prevSlide": "Bidang Sebelumnya",
+    "nextSlide": "Bidang Berikutnya"
+  },
+
+  "news": {
+    "pageTitle": "Berita & Acara",
+    "readFull": "Baca Artikel Lengkap",
+    "comments": "Komentar",
+    "readTime": "baca",
+    "backToNews": "Kembali ke Berita"
+  },
+
+  "project": {
+    "pageTitle": "Projek R&D Hub",
+    "pageDesc": "Sistem cerdas pertanian siber, telemetri nirkabel, dan otomatisasi kontrol bio-lingkungan yang dikembangkan oleh tim laboratorium kami.",
+    "noProjects": "Tidak ada projek yang sesuai dengan filter kategori ini.",
+    "backToProjects": "Kembali ke Semua Projek",
+    "showcaseLabel": "PROJECT // SHOWCASE",
+    "sensorFramework": "Kerangka Kerja Sensorik Terkalibrasi",
+    "operationalStatus": "Status Operasional",
+    "operationalDesc": "berjalan penuh dan terkalibrasi di kawasan riset Telkom University.",
+    "openInstagramReel": "Tonton Reel Resmi di Instagram",
+    "openGoogleDrive": "Buka Tutorial di Google Drive",
+    "openOfficialSite": "Kunjungi Web / Sistem Resmi",
+    "openInstagramHover": "Tonton di Instagram Reel",
+    "openLinkHover": "Buka Tautan Resmi",
+    "lightboxClose": "Klik di luar gambar atau tombol silang untuk menutup",
+    "lightboxOpenFull": "Buka Ukuran Asli di Tab Baru",
+    "lightboxCloseBtn": "Tutup Modal"
+  },
+
+  "about": {
+    "pageLabel": "THE RESEARCHERS",
+    "pageTitle": "Tim Kami",
+    "pageDesc": "Mahasiswa multidisiplin dan spesialis pertanian siber di Telkom University",
+    "mentorLabel": "PEMBINA LAB SMART GROW",
+    "assistantLabel": "KOORDINATOR RISET & OPERASIONAL",
+    "viewInstagram": "Lihat Profil Instagram (@indrarini_dya)",
+    "activeStudentsTitle": "Mahasiswa Magang Riset",
+    "activeStudentsDesc": "Mahasiswa multidisiplin aktif dalam program riset dan pengembangan inovasi Smart Grow Laboratory",
+    "alumniTitle": "Alumni Riset Smart Grow Lab",
+    "alumniDesc": "Alumni peneliti dan pengembang sistem inovasi pertanian cerdas di Smart Grow Laboratory",
+    "students": "Mahasiswa",
+    "alumni": "Alumni",
+    "aboutLabTitle": "Smart Grow Lab",
+    "aboutLabDesc1": "SMART GROW LAB adalah pusat riset dan inovasi terpadu yang berfokus pada pengembangan sistem pertanian cerdas, berkelanjutan, dan berbasis data. Dengan memanfaatkan teknologi mutakhir seperti Internet of Things (IoT), Kecerdasan Buatan (AI), dan otomasi, SMART GROW LAB bertujuan merevolusi praktik pertanian tradisional dan mengatasi tantangan global terkait ketahanan pangan, perubahan iklim, dan efisiensi sumber daya.",
+    "aboutLabDesc2": "Aktivitas inti kami meliputi perancangan dan implementasi solusi pertanian cerdas—mulai dari hidroponik dan akuaponik hingga greenhouse cerdas dan sistem pemantauan akuakultur berbasis AIoT. Melalui kolaborasi multidisiplin dan komitmen terhadap pembangunan berkelanjutan, SMART GROW LAB mendukung transformasi pertanian menjadi sektor berteknologi tinggi dan bertanggung jawab terhadap lingkungan.",
+    "collaborateBtn": "Ajukan Kolaborasi Riset"
+  },
+
+  "join": {
+    "applyTitle": "Apply to Join the Lab",
+    "applyDesc": "We are always looking for passionate researchers and students interested in bridging hardware instrumentation, automation, and agriculture.",
+    "labelName": "Nama Lengkap",
+    "labelEmail": "Email Student / General",
+    "labelRole": "Role of Interest",
+    "labelMotivation": "Mengapa ingin bergabung dengan Smart Grow Laboratory?",
+    "labelGithub": "Profil GitHub",
+    "labelInstagram": "Instagram Handle",
+    "required": "*wajib",
+    "optional": "opsional",
+    "submitBtn": "Kirim Lamaran",
+    "successTitle": "Lamaran Diterima!",
+    "successDesc": "Terima kasih telah mendaftar, {name}. Tim Smart Grow Laboratory akan mereview data kamu dan menghubungi lewat email ({email}). Keep growing!",
+    "closingDialog": "Menutup dialog dalam 2 detik..."
+  },
+
+  "footer": {
+    "officeAddress": "Office Address",
+    "researchInnovation": "Research & Innovation",
+    "researchUnit": "Bagian Penelitian dan Pengabdian Masyarakat",
+    "contactUs": "Contact Us",
+    "socialMedia": "Media Sosial",
+    "copyright": "© {year} Smart Grow Laboratory • Telkom University. All rights reserved."
+  },
+
+  "common": {
+    "loading": "Memuat...",
+    "loadingSession": "Memuat sesi laboratorium...",
+    "loadingDashboard": "Memuat Dashboard...",
+    "backToHome": "Kembali ke Beranda",
+    "search": "Cari",
+    "filter": "Filter",
+    "all": "Semua",
+    "submit": "Kirim",
+    "cancel": "Batal",
+    "close": "Tutup",
+    "save": "Simpan",
+    "delete": "Hapus",
+    "edit": "Edit",
+    "view": "Lihat",
+    "more": "Selengkapnya",
+    "less": "Lebih sedikit",
+    "yes": "Ya",
+    "no": "Tidak",
+    "ok": "OK",
+    "error": "Terjadi kesalahan",
+    "empty": "Tidak ada data",
+    "noResults": "Hasil tidak ditemukan"
+  },
+
+  "language": {
+    "select": "Pilih Bahasa",
+    "id": "Bahasa Indonesia",
+    "en": "English",
+    "ko": "한국어",
+    "current": "Bahasa aktif"
+  },
+
+  "joinView": {
+    "backToLab": "Kembali ke Laboratorium",
+    "interactiveApp": "Aplikasi Interaktif",
+    "presentationMockup": "Presentasi Mockup",
+    "heroTitle1": "Jalin Kemitraan &",
+    "heroTitle2": "Kolaborasi Riset",
+    "heroTitle3": "Smart Agriculture AIoT",
+    "heroDesc": "Smart Grow Laboratory Telkom University membuka kemitraan industri, kolaborasi riset bersama, pengujian teknologi cerdas (AI & IoT), studi banding institusi, dan implementasi lapangan solusi pertanian cerdas berkelanjutan.",
+    "statRealHardware": "Perangkat Keras Riil",
+    "statCoreFocus": "Fokus Utama",
+    "statActiveGrants": "Hibah Aktif",
+    "fillFormBtn": "Isi Formulir Kolaborasi",
+    "viewProjectsBtn": "Lihat Proyek Riset",
+    "formTitle": "Formulir Pengajuan Kolaborasi",
+    "formSubtitle": "Kemitraan Riset & Industri Telkom University",
+    "nameLabel": "Nama Lengkap / PIC Mitra",
+    "namePlaceholder": "cth. Ir. Budi Santoso, M.T. / PT Agro Cerdas",
+    "emailLabel": "Email Mahasiswa / Umum",
+    "emailPlaceholder": "cth. budi@student.telkomuniversity.ac.id",
+    "roleLabel": "Bentuk Kerja Sama / Kolaborasi",
+    "roleOption1": "Kemitraan Industri & Hilirisasi Produk",
+    "roleOption2": "Riset Bersama & Hibah Kolaboratif (Joint Research)",
+    "roleOption3": "Implementasi Lapangan / Pilot Project (Smart City / Smart Agriculture)",
+    "roleOption4": "Studi Banding, Kunjungan Lab & Edukasi",
+    "roleOption5": "Dosen Tamu / Workshop & Pelatihan Teknis",
+    "roleOption6": "Lainnya",
+    "motivationLabel": "Rincian Usulan / Topik Kolaborasi",
+    "motivationPlaceholder": "Jelaskan secara ringkas usulan kemitraan, latar belakang instansi Anda, dan harapan hasil kerja sama bersama Smart Grow Laboratory.",
+    "githubLabel": "Akun GitHub",
+    "instagramLabel": "Akun Instagram",
+    "submitting": "Mengirim Usulan...",
+    "submitBtn": "Kirim Usulan Kolaborasi",
+    "successTitle": "Usulan Terkirim!",
+    "successDesc": "Terima kasih atas ketertarikan Anda untuk berkolaborasi dengan Smart Grow Laboratory. Data Anda telah berhasil tercatat. Tim Riset kami akan segera menghubungi Anda melalui email.",
+    "submitAnother": "Kirim Usulan Lain",
+    "backHome": "Kembali ke Beranda",
+    "card1Title": "Kolaborasi & Belajar",
+    "card1Desc": "Bekerja langsung bersama para ahli dan spesialis dalam proyek rekayasa dan pertanian siber yang inovatif.",
+    "card2Title": "Riset Berdampak",
+    "card2Desc": "Membangun solusi untuk menjawab tantangan nyata pertanian global termasuk konservasi air dan otomasi cerdas.",
+    "card3Title": "Pengalaman Langsung",
+    "card3Desc": "Mengeksplorasi instrumentasi perangkat keras sibernetika nyata, jaringan sensor nirkabel, dan node kontrol IoT.",
+    "card4Title": "Komunitas Suportif",
+    "card4Desc": "Menjadi bagian dari tim riset kolaboratif yang antusias, multidisiplin, dan berkembang pesat."
+  },
+
+  "showcase": {
+    "backToList": "Kembali ke Daftar Proyek",
+    "backToNews": "Kembali ke News & Events",
+    "watchReel": "Tonton Reel di Instagram",
+    "watchReelBtn": "Tonton Reel",
+    "openOriginal": "Buka Tautan Asli",
+    "share": "Bagikan",
+    "linkCopied": "Link Tersalin!",
+    "copiedToast": "Tautan artikel berhasil disalin ke clipboard!",
+    "appreciateArticle": "Apresiasi Artikel",
+    "saveArticle": "Simpan Artikel",
+    "shareArticle": "Bagikan Artikel",
+    "feedbackTitle": "Beri Tanggapan / Masukan:",
+    "fullName": "Nama Lengkap *",
+    "emailOptional": "Email (Opsional)",
+    "yourEmail": "Email Anda",
+    "commentPlaceholder": "Tuliskan komentar atau apresiasi Anda...",
+    "commentSuccess": "Terima kasih! Masukan Anda telah berhasil dicatat.",
+    "submitComment": "Kirim Masukan",
+    "noComments": "Belum ada tanggapan. Jadilah pembaca pertama yang memberikan tanggapan!",
+    "downloadImage": "Unduh Gambar",
+    "closeModal": "Tutup modal"
+  }
+}

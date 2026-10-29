@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { PageId } from '../types';
 import Logo from './Logo';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useLanguage } from '../contexts/LanguageContext';
 import { 
   Menu, 
   X, 
@@ -12,7 +14,6 @@ import {
   Handshake, 
   LayoutDashboard,
   ChevronRight,
-  Sparkles
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -32,6 +33,7 @@ export default function Navbar({
   currentUserRole,
   onOpenLogin 
 }: NavbarProps) {
+  const { t } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -64,12 +66,12 @@ export default function Navbar({
     };
   }, [isMobileMenuOpen]);
 
-  const navItems: { id: PageId; label: string; icon: React.ElementType }[] = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'news', label: 'News & Events', icon: Newspaper },
-    { id: 'project', label: 'Project', icon: FlaskConical },
-    { id: 'about', label: 'About', icon: Info },
-    { id: 'join', label: 'Kolaborasi', icon: Handshake },
+  const navItems: { id: PageId; labelKey: string; icon: React.ElementType }[] = [
+    { id: 'home', labelKey: 'nav.home', icon: Home },
+    { id: 'news', labelKey: 'nav.news', icon: Newspaper },
+    { id: 'project', labelKey: 'nav.project', icon: FlaskConical },
+    { id: 'about', labelKey: 'nav.about', icon: Info },
+    { id: 'join', labelKey: 'nav.join', icon: Handshake },
   ];
 
   const handleNavClick = (id: PageId) => {
@@ -88,7 +90,7 @@ export default function Navbar({
 
   const handleJoinClick = () => {
     setIsMobileMenuOpen(false);
-    onOpenJoin();
+    onOpenJoin?.();
   };
 
   const handlePortalClick = () => {
@@ -129,7 +131,7 @@ export default function Navbar({
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <span>{item.label}</span>
+                  <span>{t(item.labelKey)}</span>
                   {isActive && (
                     <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-teal-500 to-emerald-600 rounded-full"></span>
                   )}
@@ -138,8 +140,11 @@ export default function Navbar({
             })}
           </nav>
 
-            {/* Desktop CTA Action Buttons (Visible on md: 768px+) */}
+            {/* Desktop CTA Action Buttons + Language Switcher (Visible on md: 768px+) */}
           <div className="hidden md:flex items-center gap-2.5 lg:gap-3 shrink-0" id="navbar-cta-container">
+            {/* Language Switcher */}
+            <LanguageSwitcher variant="compact" />
+
             {isLoggedIn ? (
               <button
                 onClick={handlePortalClick}
@@ -147,7 +152,7 @@ export default function Navbar({
                 className="rounded-full bg-[#0A5247] hover:bg-[#073d34] px-4 lg:px-5 py-2 text-xs lg:text-sm font-bold text-white transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shadow-md flex items-center gap-2"
               >
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Lab Portal</span>
+                <span>{t('nav.labPortal')}</span>
                 {currentUserRole && (
                   <span className="text-[10px] font-mono uppercase bg-white/20 px-2 py-0.5 rounded-full">
                     {currentUserRole}
@@ -160,7 +165,7 @@ export default function Navbar({
                 id="login-navbar-button"
                 className="rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-700 px-4 lg:px-5 py-2 text-xs lg:text-sm font-semibold text-slate-200 transition-all duration-300 hover:text-white cursor-pointer"
               >
-                <span>Lab Login</span>
+                <span>{t('nav.labLogin')}</span>
               </button>
             )}
           </div>
@@ -180,7 +185,7 @@ export default function Navbar({
 
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              aria-label="Buka menu navigasi"
+              aria-label={t('nav.openNav')}
               aria-expanded={isMobileMenuOpen}
               className="p-2.5 rounded-xl border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all active:scale-95 cursor-pointer shadow-xs bg-white"
             >
@@ -207,7 +212,7 @@ export default function Navbar({
           {/* Slide-in Sidebar Panel */}
           <aside 
             className="fixed inset-y-0 right-0 w-[84%] max-w-sm bg-white shadow-2xl flex flex-col justify-between z-50 border-l border-slate-100 animate-slide-left overflow-y-auto"
-            aria-label="Navigasi Mobile"
+            aria-label={t('nav.mobileMenuTitle')}
           >
             {/* Top Drawer Header */}
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
@@ -216,7 +221,7 @@ export default function Navbar({
               </div>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
-                aria-label="Tutup menu"
+                aria-label={t('nav.closeNav')}
                 className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
@@ -226,7 +231,7 @@ export default function Navbar({
             {/* Middle Nav Links */}
             <div className="p-5 space-y-2 flex-1 overflow-y-auto">
               <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 pb-1">
-                Menu Utama
+                {t('nav.mobileMenuTitle')}
               </p>
               {navItems.map((item) => {
                 const IconComponent = item.icon;
@@ -245,18 +250,21 @@ export default function Navbar({
                       <div className={`p-2 rounded-xl ${isActive ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
                         <IconComponent className="w-4 h-4" />
                       </div>
-                      <span>{item.label}</span>
+                      <span>{t(item.labelKey)}</span>
                     </div>
                     <ChevronRight className={`w-4 h-4 ${isActive ? 'text-emerald-600' : 'text-slate-300'}`} />
                   </button>
                 );
               })}
+
+              {/* Language Switcher inline in mobile drawer */}
+              <LanguageSwitcher variant="full" />
             </div>
 
             {/* Bottom Actions & CTAs */}
             <div className="p-5 border-t border-slate-100 bg-slate-50/50 space-y-3">
               <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
-                Akses Lab & Keanggotaan
+                {t('nav.mobileAccessLabel')}
               </p>
 
               {isLoggedIn ? (
@@ -265,7 +273,7 @@ export default function Navbar({
                   className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#0A5247] hover:bg-[#073d34] text-white font-bold text-sm shadow-md transition-all active:scale-95 cursor-pointer"
                 >
                   <LayoutDashboard className="w-4 h-4 text-emerald-400" />
-                  <span>Masuk Lab Portal</span>
+                  <span>{t('nav.enterPortal')}</span>
                   {currentUserRole && (
                     <span className="text-[10px] uppercase font-mono bg-white/20 px-2 py-0.5 rounded-full ml-1">
                       {currentUserRole}
@@ -278,7 +286,7 @@ export default function Navbar({
                   className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm shadow-sm transition-all active:scale-95 cursor-pointer border border-slate-700"
                 >
                   <LogIn className="w-4 h-4 text-slate-300" />
-                  <span>Lab Login</span>
+                  <span>{t('nav.labLogin')}</span>
                 </button>
               )}
 

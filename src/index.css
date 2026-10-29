@@ -106,3 +106,26 @@ h1, h2, h3, h4, h5, h6 {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* Language Switcher Dropdown Animation */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Korean & CJK font support fallback */
+:root {
+  --font-cjk: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Nanum Gothic", sans-serif;
+}
+
+/* Ensure CJK characters render correctly */
+:lang(ko) {
+  font-family: var(--font-cjk), var(--font-sans);
+  word-break: keep-all;
+}

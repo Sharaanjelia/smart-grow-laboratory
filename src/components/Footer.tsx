@@ -1,11 +1,14 @@
 import React from 'react';
 import Logo from './Logo';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface FooterProps {
   setCurrentPage?: (page: any) => void;
 }
 
 export default function Footer({ setCurrentPage }: FooterProps) {
+  const { t } = useLanguage();
+
   return (
     <footer className="relative w-full bg-[#090C12] text-slate-300 pt-16 pb-20 border-t border-slate-900/80 font-sans overflow-hidden" id="main-footer">
       <div className="mx-auto max-w-7xl px-6 sm:px-10 lg:px-12 w-full">
@@ -24,7 +27,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
           {/* Office Address Column */}
           <div className="lg:col-span-3 space-y-3 pt-1 min-w-0">
             <h3 className="text-white font-bold text-base sm:text-lg tracking-wide">
-              Office Address
+              {t('footer.officeAddress')}
             </h3>
             <a 
               href="https://www.google.com/maps/search/?api=1&query=Jl.+Telekomunikasi+No.1+Sukapura+Dayeuhkolot+Bandung"
@@ -43,12 +46,11 @@ export default function Footer({ setCurrentPage }: FooterProps) {
           {/* Research & Innovation Column */}
           <div className="lg:col-span-3 space-y-3 pt-1 min-w-0">
             <h3 className="text-white font-bold text-base sm:text-lg tracking-wide">
-              Research & Innovation
+              {t('footer.researchInnovation')}
             </h3>
             <div className="text-slate-400 text-sm leading-relaxed space-y-3 font-sans">
               <div>
-                <p>Bagian Penelitian dan Pengabdian</p>
-                <p>Masyarakat</p>
+                <p>{t('footer.researchUnit')}</p>
               </div>
               <a 
                 href="https://www.google.com/maps/search/?api=1&query=Bandung+Techno+Park"
@@ -65,7 +67,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
           {/* Contact Us Column */}
           <div className="lg:col-span-3 space-y-3 pt-1 min-w-0">
             <h3 className="text-white font-bold text-base sm:text-lg tracking-wide">
-              Contact Us
+              {t('footer.contactUs')}
             </h3>
             <div className="text-slate-400 text-sm leading-relaxed space-y-2 font-sans">
               <a 
@@ -88,7 +90,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
             {/* Social Media Links */}
             <div className="pt-2.5 border-t border-slate-900/90 space-y-2">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block font-mono">
-                Media Sosial
+                {t('footer.socialMedia')}
               </span>
               <div className="flex flex-col gap-2">
                 <a
@@ -128,7 +130,7 @@ export default function Footer({ setCurrentPage }: FooterProps) {
 
         {/* Bottom Bar: Copyright & Attribution */}
         <div className="mt-12 pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} Smart Grow Laboratory • Telkom University. All rights reserved.</p>
+          <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
           <div className="flex items-center gap-4">
             <a
               href="https://www.instagram.com/smart_growlab/"
@@ -153,4 +155,3 @@ export default function Footer({ setCurrentPage }: FooterProps) {
     </footer>
   );
 }
-

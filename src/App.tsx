@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Suspense } from 'react';
+import { useLanguage } from './contexts/LanguageContext';
 import TeamAvatar from './components/TeamAvatar';
 import { 
   newsData, 
@@ -181,6 +182,7 @@ const HERO_SLIDES = [
 ];
 
 export default function App() {
+  const { t } = useLanguage();
   const initialNav = parseUrlNavigationState();
   const [currentPage, setCurrentPage] = useState<PageId>(initialNav.page);
   const [selectedNewsId, setSelectedNewsId] = useState<string | null>(initialNav.newsId);
@@ -1842,7 +1844,7 @@ export default function App() {
         authLoading ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 py-24">
             <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-sm font-semibold text-slate-500 font-sans">Memuat sesi laboratorium...</p>
+            <p className="text-sm font-semibold text-slate-500 font-sans">{t('common.loadingSession')}</p>
           </div>
         ) : currentUser ? (
           <LmsLayout
@@ -1862,7 +1864,7 @@ export default function App() {
             <div className="flex items-center justify-center min-h-[60vh]">
               <div className="flex flex-col items-center gap-4">
                 <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-sm font-semibold text-slate-500">Memuat Dashboard...</p>
+                <p className="text-sm font-semibold text-slate-500">{t('common.loadingDashboard')}</p>
               </div>
             </div>
           }>
@@ -2074,25 +2076,7 @@ export default function App() {
                 {/* Soft Bottom Fade to White for Seamless Section Transition */}
                 <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white via-white/50 to-transparent pointer-events-none z-2" />
 
-                {/* Carousel Controls (Floating Prev & Next Arrows on Edge) */}
-                <div className="absolute inset-y-0 left-3 right-3 flex items-center justify-between pointer-events-none z-20">
-                  <button
-                    onClick={() => setHeroSlideIndex(prev => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
-                    className="pointer-events-auto p-2.5 sm:p-3 rounded-full bg-white/70 hover:bg-white text-slate-800 hover:text-emerald-700 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer border border-white/60"
-                    title="Foto Sebelumnya"
-                    aria-label="Foto Sebelumnya"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                  <button
-                    onClick={() => setHeroSlideIndex(prev => (prev + 1) % HERO_SLIDES.length)}
-                    className="pointer-events-auto p-2.5 sm:p-3 rounded-full bg-white/70 hover:bg-white text-slate-800 hover:text-emerald-700 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer border border-white/60"
-                    title="Foto Berikutnya"
-                    aria-label="Foto Berikutnya"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                </div>
+
               </div>
 
               {/* Main Content Grid — Right Side Text Panel with Deep Frosted Glass Protection */}
@@ -2130,7 +2114,7 @@ export default function App() {
                         id="btn-see-more-home"
                         className="group relative inline-flex items-center gap-2.5 rounded-full bg-[#0A5247] hover:bg-[#073D35] px-6 sm:px-7 py-3 text-xs font-extrabold tracking-wider uppercase text-white hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl shadow-emerald-950/20 cursor-pointer border border-emerald-700/30 overflow-hidden"
                       >
-                        <span className="relative z-10">See More</span>
+                        <span className="relative z-10">{t('hero.seeMore')}</span>
                         <ArrowUpRight className="h-4 w-4 relative z-10 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                       </button>
 
@@ -2138,7 +2122,7 @@ export default function App() {
                         onClick={() => handleNavigate('news')}
                         className="inline-flex items-center gap-2 rounded-full bg-white/80 hover:bg-white backdrop-blur-xl border border-emerald-400 px-5 sm:px-6 py-3 text-xs font-extrabold tracking-wider uppercase text-[#0A5247] hover:scale-105 active:scale-95 transition-all duration-300 shadow-sm cursor-pointer"
                       >
-                        <span>Explore Lab News</span>
+                        <span>{t('hero.exploreNews')}</span>
                       </button>
                     </div>
 
@@ -2153,8 +2137,8 @@ export default function App() {
                               ? 'w-7 bg-[#0A5247] shadow-sm' 
                               : 'w-2.5 bg-slate-400/80 hover:bg-slate-500'
                           }`}
-                          title={`Foto ${idx + 1}: ${HERO_SLIDES[idx].tag}`}
-                          aria-label={`Foto ${idx + 1}`}
+                          title={`${t('hero.slideLabel')} ${idx + 1}: ${HERO_SLIDES[idx].tag}`}
+                          aria-label={`${t('hero.slideLabel')} ${idx + 1}`}
                         />
                       ))}
                       <span className="text-[11px] font-mono font-bold text-slate-700 pl-1">
@@ -2178,13 +2162,13 @@ export default function App() {
               <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#0A5247] via-[#084239] to-[#042823] p-8 sm:p-12 text-white shadow-xl shadow-emerald-950/15 border border-emerald-700/30 flex flex-col lg:flex-row items-center justify-between gap-8">
                 <div className="space-y-3 text-center lg:text-left max-w-2xl">
                   <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-emerald-300 text-xs font-mono font-bold uppercase tracking-widest">
-                    KOLABORASI & TALENTA RISET
+                    {t('home.ctaBadge')}
                   </span>
                   <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
-                    Tertarik Berkolaborasi atau Bergabung dalam Riset Kami?
+                    {t('home.ctaTitle')}
                   </h3>
                   <p className="text-sm sm:text-base text-emerald-100/90 leading-relaxed font-sans">
-                    Smart Grow Laboratory membuka peluang kemitraan industri, riset bersama, dan program magang intensif bagi mahasiswa berdedikasi.
+                    {t('home.ctaDesc')}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-4 shrink-0">
@@ -2192,14 +2176,14 @@ export default function App() {
                     onClick={handleOpenRecruitmentNews}
                     className="inline-flex items-center gap-2 rounded-full bg-white text-[#0A5247] hover:bg-emerald-50 px-7 py-3.5 text-xs font-extrabold tracking-wider uppercase transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg cursor-pointer"
                   >
-                    <span>Daftar Magang Riset</span>
+                    <span>{t('home.ctaRegisterInternship')}</span>
                     <ArrowUpRight className="h-4 w-4 text-[#0A5247]" />
                   </button>
                   <button
                     onClick={() => handleNavigate('join')}
                     className="inline-flex items-center gap-2 rounded-full bg-emerald-900/60 hover:bg-emerald-800/80 border border-emerald-400/30 text-white px-6 py-3.5 text-xs font-bold tracking-wider uppercase transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
                   >
-                    <span>Ajukan Kolaborasi Riset</span>
+                    <span>{t('home.ctaCollaborate')}</span>
                   </button>
                 </div>
               </div>
@@ -2216,7 +2200,7 @@ export default function App() {
               <>
                 <div className="flex flex-col gap-2 mb-7">
                   <h1 className="font-display text-4xl font-bold text-slate-900 md:text-5xl">
-                    News & Events
+                    {t('news.pageTitle')}
                   </h1>
                 </div>
 
@@ -2252,7 +2236,7 @@ export default function App() {
                           <div className="flex items-center gap-3 font-mono text-[11px] text-slate-400 mb-2">
                             <span>{item.date}</span>
                             <span>•</span>
-                            <span>{item.readTime} read</span>
+                            <span>{item.readTime} {t('news.readTime')}</span>
                           </div>
                           
                           <h3 className="font-display text-lg font-bold text-slate-900 leading-snug group-hover:text-teal-600 transition-colors">
@@ -2267,11 +2251,11 @@ export default function App() {
 
                       <div className="mt-6 pt-4 border-t border-slate-100 px-1 flex items-center justify-between">
                         <span className="font-sans text-xs font-bold text-teal-600 group-hover:underline flex items-center gap-1">
-                          Read Full Article
+                          {t('news.readFull')}
                         </span>
                         <div className="flex items-center gap-1 text-slate-400 font-sans text-xs">
                           <span>{(commentsMap[item.id] || []).length}</span>
-                          <span>Comments</span>
+                          <span>{t('news.comments')}</span>
                         </div>
                       </div>
                     </article>
@@ -2326,10 +2310,10 @@ export default function App() {
                 <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-7">
                   <div className="flex flex-col gap-2">
                     <h1 className="font-display text-4xl font-extrabold text-slate-900 md:text-5xl tracking-tight">
-                      Projek R&D Hub
+                      {t('project.pageTitle')}
                     </h1>
                     <p className="max-w-2xl text-sm sm:text-base text-slate-500 font-sans mt-1">
-                      Sistem cerdas pertanian siber, telemetri nirkabel, dan otomatisasi kontrol bio-lingkungan yang dikembangkan oleh tim laboratorium kami.
+                      {t('project.pageDesc')}
                     </p>
                   </div>
 
@@ -2349,7 +2333,7 @@ export default function App() {
                       <div className="text-center py-20 border border-dashed border-slate-200 rounded-3xl bg-slate-50/30">
                         <Sliders className="h-10 w-10 text-slate-300 mx-auto mb-3" />
                         <p className="text-sm text-slate-500 font-sans font-bold uppercase tracking-wider">
-                          Tidak ada projek yang sesuai dengan filter kategori ini.
+                          {t('project.noProjects')}
                         </p>
                       </div>
                     );
@@ -2672,7 +2656,7 @@ export default function App() {
                       className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 transition-all duration-300 shadow-sm hover:shadow hover:border-slate-300 cursor-pointer"
                     >
                       <ChevronLeft className="h-4 w-4 text-teal-600 group-hover:-translate-x-1 transition-transform" />
-                      <span>Kembali ke Semua Projek</span>
+                      <span>{t('project.backToProjects')}</span>
                     </button>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start pt-2">
@@ -2682,7 +2666,7 @@ export default function App() {
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center gap-2">
                             <span className="h-1.5 w-8 rounded bg-teal-600"></span>
-                            <span className="font-sans text-xs font-bold tracking-widest text-teal-600 uppercase">PROJECT // SHOWCASE</span>
+                            <span className="font-sans text-xs font-bold tracking-widest text-teal-600 uppercase">{t('project.showcaseLabel')}</span>
                           </div>
                           <h1 className="font-display text-4xl font-extrabold text-slate-900">
                             {project.title}
@@ -2760,12 +2744,12 @@ export default function App() {
                                     {project.liveUrl.includes('instagram') ? (
                                       <>
                                         <Instagram className="h-4 w-4 text-pink-600" />
-                                        <span>Tonton di Instagram Reel</span>
+                                        <span>{t('project.openInstagramHover')}</span>
                                       </>
                                     ) : (
                                       <>
                                         <ExternalLink className="h-4 w-4 text-teal-600" />
-                                        <span>Buka Tautan Resmi</span>
+                                        <span>{t('project.openLinkHover')}</span>
                                       </>
                                     )}
                                   </span>
@@ -2830,7 +2814,7 @@ export default function App() {
                         <div className="space-y-4">
                           <h3 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2">
                             <Activity className="h-4 w-4 text-teal-600" />
-                            <span>Kerangka Kerja Sensorik Terkalibrasi</span>
+                            <span>{t('project.sensorFramework')}</span>
                           </h3>
                           
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2852,8 +2836,8 @@ export default function App() {
                             <CheckCircle2 className="h-5 w-5" />
                           </div>
                           <div>
-                            <p className="text-xs font-bold text-slate-900 uppercase tracking-wider font-sans">Status Operasional</p>
-                            <p className="text-xs text-slate-500 mt-0.5">Sistem {project.title} berjalan penuh dan terkalibrasi di kawasan riset Telkom University.</p>
+                            <p className="text-xs font-bold text-slate-900 uppercase tracking-wider font-sans">{t('project.operationalStatus')}</p>
+                            <p className="text-xs text-slate-500 mt-0.5">Sistem {project.title} {t('project.operationalDesc')}</p>
                           </div>
                         </div>
 
@@ -2877,8 +2861,8 @@ export default function App() {
                               )}
                               <span>
                                 {project.liveUrl.includes('instagram')
-                                  ? 'Tonton Reel Resmi di Instagram'
-                                  : (project.liveUrl.includes('drive.google.com') ? 'Buka Tutorial di Google Drive' : 'Kunjungi Web / Sistem Resmi')}
+                                  ? t('project.openInstagramReel')
+                                  : (project.liveUrl.includes('drive.google.com') ? t('project.openGoogleDrive') : t('project.openOfficialSite'))}
                               </span>
                               <ExternalLink className="h-3.5 w-3.5 opacity-80" />
                             </a>
@@ -2902,12 +2886,12 @@ export default function App() {
             
             {/* Header info */}
             <div className="flex flex-col gap-2 mb-10 text-center">
-              <span className="font-sans text-xs font-bold tracking-widest text-teal-600 uppercase">THE RESEARCHERS</span>
+              <span className="font-sans text-xs font-bold tracking-widest text-teal-600 uppercase">{t('about.pageLabel')}</span>
               <h1 className="font-display text-4xl font-extrabold text-slate-900 sm:text-5xl">
-                Our Team
+                {t('about.pageTitle')}
               </h1>
               <p className="mx-auto max-w-xl text-xs text-slate-500 font-sans mt-1 uppercase font-semibold">
-                Multidisciplinary cyber-agricultural students and specialists in Telkom University
+                {t('about.pageDesc')}
               </p>
             </div>
 
@@ -2930,7 +2914,7 @@ export default function App() {
                         <span className="rounded bg-pink-50 border border-pink-200 px-2.5 py-0.5 font-sans text-xs font-bold text-pink-700 uppercase tracking-wider">
                           {mentor.role}
                         </span>
-                        <span className="text-slate-400 font-sans text-xs font-semibold">PEMBINA LAB SMART GROW</span>
+                        <span className="text-slate-400 font-sans text-xs font-semibold">{t('about.mentorLabel')}</span>
                       </div>
                       <h2 className="font-display text-xl font-bold text-slate-900">
                         {mentor.name}
@@ -2950,7 +2934,7 @@ export default function App() {
                         className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-700 font-sans font-bold text-xs transition-all shadow-2xs group/btn cursor-pointer"
                       >
                         <Instagram className="h-3.5 w-3.5 text-pink-600" />
-                        <span>Lihat Profil Instagram (@indrarini_dya)</span>
+                        <span>{t('about.viewInstagram')}</span>
                         <ExternalLink className="h-3.5 w-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
                       </a>
                     </div>
@@ -2982,7 +2966,7 @@ export default function App() {
                       <span className="rounded bg-amber-50 border border-amber-200 px-2.5 py-0.5 font-sans text-xs font-bold text-amber-700 uppercase tracking-wider">
                         {assistant.role}
                       </span>
-                      <span className="text-slate-400 font-sans text-xs font-semibold">KOORDINATOR RISET & OPERASIONAL</span>
+                      <span className="text-slate-400 font-sans text-xs font-semibold">{t('about.assistantLabel')}</span>
                     </div>
                     <h3 className="font-display text-xl font-bold text-slate-900">{assistant.name}</h3>
                     <p className="font-sans text-xs font-bold text-teal-600">{assistant.email}</p>
@@ -3004,13 +2988,13 @@ export default function App() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 border-b border-slate-200 pb-3">
                 <div>
                   <h2 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2.5">
-                    <span>Mahasiswa Magang Riset</span>
+                    <span>{t('about.activeStudentsTitle')}</span>
                     <span className="rounded-full bg-teal-100 text-teal-800 text-xs font-mono font-bold px-2.5 py-0.5">
-                      {teamList.filter(m => m.role !== 'Pembina Lab' && m.role !== 'Mentor' && !m.role.toLowerCase().includes('asisten') && !m.role.toLowerCase().includes('alumni')).length} Mahasiswa
+                      {teamList.filter(m => m.role !== 'Pembina Lab' && m.role !== 'Mentor' && !m.role.toLowerCase().includes('asisten') && !m.role.toLowerCase().includes('alumni')).length} {t('about.students')}
                     </span>
                   </h2>
                   <p className="text-xs text-slate-500 font-sans mt-0.5">
-                    Mahasiswa multidisiplin aktif dalam program riset dan pengembangan inovasi Smart Grow Laboratory
+                    {t('about.activeStudentsDesc')}
                   </p>
                 </div>
               </div>
@@ -3065,13 +3049,13 @@ export default function App() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 border-b border-slate-200 pb-3">
                 <div>
                   <h2 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2.5">
-                    <span>Alumni Riset Smart Grow Lab</span>
+                    <span>{t('about.alumniTitle')}</span>
                     <span className="rounded-full bg-emerald-100 text-emerald-800 text-xs font-mono font-bold px-2.5 py-0.5">
-                      {teamList.filter(m => m.role.toLowerCase().includes('alumni')).length} Alumni
+                      {teamList.filter(m => m.role.toLowerCase().includes('alumni')).length} {t('about.alumni')}
                     </span>
                   </h2>
                   <p className="text-xs text-slate-500 font-sans mt-0.5">
-                    Alumni peneliti dan pengembang sistem inovasi pertanian cerdas di Smart Grow Laboratory
+                    {t('about.alumniDesc')}
                   </p>
                 </div>
               </div>
@@ -3122,15 +3106,15 @@ export default function App() {
               
               <div className="relative z-10 max-w-2xl mx-auto space-y-6">
                 <h2 className="font-display text-2xl font-bold text-slate-900 sm:text-3xl">
-                  Smart Grow Lab
+                  {t('about.aboutLabTitle')}
                 </h2>
                 
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
-                  SMART GROW LAB is an integrated research and innovation hub focused on developing intelligent, sustainable, and data-driven agricultural systems. By leveraging cutting-edge technologies such as the Internet of Things (IoT), Artificial Intelligence (AI), and automation, SMART GROW LAB aims to revolutionize traditional farming practices and address global challenges related to food security, climate change, and resource efficiency.
+                  {t('about.aboutLabDesc1')}
                 </p>
 
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
-                  Our core activities include the design and implementation of smart farming solutions—ranging from hydroponics and aquaponics to smart greenhouses and AIoT-based aquaculture monitoring systems. Through multidisciplinary collaboration and a commitment to sustainable development, SMART GROW LAB supports the transformation of agriculture into a high-tech, environmentally responsible sector.
+                  {t('about.aboutLabDesc2')}
                 </p>
 
                 <div className="pt-4">
@@ -3138,7 +3122,7 @@ export default function App() {
                     onClick={() => handleNavigate('join')}
                     className="rounded-full bg-emerald-600 hover:bg-emerald-700 px-8 py-3 text-sm font-bold tracking-wider uppercase text-white hover:scale-105 active:scale-95 transition-all shadow-md shadow-emerald-600/10 cursor-pointer"
                   >
-                    <span>Ajukan Kolaborasi Riset</span>
+                    <span>{t('about.collaborateBtn')}</span>
                   </button>
                 </div>
               </div>
@@ -3191,14 +3175,14 @@ export default function App() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
-                title="Buka Ukuran Asli di Tab Baru"
+                title={t('project.lightboxOpenFull')}
               >
                 <ExternalLink className="h-4 w-4" />
               </a>
               <button
                 onClick={() => setProjectLightboxImage(null)}
                 className="p-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white transition-colors cursor-pointer"
-                title="Tutup Modal"
+                title={t('project.lightboxCloseBtn')}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -3223,7 +3207,7 @@ export default function App() {
           </div>
 
           <div className="text-center text-xs text-slate-400 font-mono py-2">
-            Klik di luar gambar atau tombol silang untuk menutup
+            {t('project.lightboxClose')}
           </div>
         </div>
       )}
@@ -3239,7 +3223,7 @@ export default function App() {
               <div className="flex items-center gap-2">
 
                 <h3 className="font-display text-lg font-bold text-slate-900 uppercase tracking-wider">
-                  Apply to Join the Lab
+                  {t('join.applyTitle')}
                 </h3>
               </div>
               <button 
@@ -3257,14 +3241,14 @@ export default function App() {
             {!joinSubmitted ? (
               <form onSubmit={handleJoinSubmit} className="space-y-4 pt-4" id="join-lab-form">
                 <p className="text-xs text-slate-500 font-sans leading-relaxed">
-                  We are always looking for passionate researchers and students interested in bridging hardware instrumentation, automation, and agriculture.
+                  {t('join.applyDesc')}
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-sans font-bold text-slate-700 uppercase flex items-center justify-between">
-                      <span>Nama Lengkap</span>
-                      <span className="text-emerald-600 font-extrabold text-[9px] lowercase bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">*wajib</span>
+                      <span>{t('join.labelName')}</span>
+                      <span className="text-emerald-600 font-extrabold text-[9px] lowercase bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">{t('join.required')}</span>
                     </label>
                     <input 
                       type="text" 
@@ -3278,8 +3262,8 @@ export default function App() {
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-sans font-bold text-slate-700 uppercase flex items-center justify-between">
-                      <span>Email Student / General</span>
-                      <span className="text-emerald-600 font-extrabold text-[9px] lowercase bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">*wajib</span>
+                      <span>{t('join.labelEmail')}</span>
+                      <span className="text-emerald-600 font-extrabold text-[9px] lowercase bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">{t('join.required')}</span>
                     </label>
                     <input 
                       type="email" 
@@ -3294,8 +3278,8 @@ export default function App() {
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-sans font-bold text-slate-700 uppercase flex items-center justify-between">
-                    <span>Role Of Interest</span>
-                    <span className="text-emerald-600 font-extrabold text-[9px] lowercase bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">*wajib</span>
+                    <span>{t('join.labelRole')}</span>
+                    <span className="text-emerald-600 font-extrabold text-[9px] lowercase bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">{t('join.required')}</span>
                   </label>
                   <select 
                     value={joinForm.role}
@@ -3312,8 +3296,8 @@ export default function App() {
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-sans font-bold text-slate-700 uppercase flex items-center justify-between">
-                    <span>Why do you want to join Smart Grow Laboratory?</span>
-                    <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-100 px-1.5 py-0.5 rounded">opsional</span>
+                    <span>{t('join.labelMotivation')}</span>
+                    <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-100 px-1.5 py-0.5 rounded">{t('join.optional')}</span>
                   </label>
                   <textarea 
                     rows={3}
@@ -3327,8 +3311,8 @@ export default function App() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-sans font-bold text-slate-700 uppercase flex items-center justify-between">
-                      <span>GitHub Profile</span>
-                      <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-100 px-1.5 py-0.5 rounded">opsional</span>
+                      <span>{t('join.labelGithub')}</span>
+                      <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-100 px-1.5 py-0.5 rounded">{t('join.optional')}</span>
                     </label>
                     <input 
                       type="text" 
@@ -3341,8 +3325,8 @@ export default function App() {
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-sans font-bold text-slate-700 uppercase flex items-center justify-between">
-                      <span>Instagram Handles</span>
-                      <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-100 px-1.5 py-0.5 rounded">opsional</span>
+                      <span>{t('join.labelInstagram')}</span>
+                      <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-100 px-1.5 py-0.5 rounded">{t('join.optional')}</span>
                     </label>
                     <input 
                       type="text" 
@@ -3358,7 +3342,7 @@ export default function App() {
                   type="submit"
                   className="w-full relative flex items-center justify-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-bold tracking-wider uppercase text-white hover:scale-102 active:scale-98 transition-all cursor-pointer shadow-md shadow-emerald-600/10"
                 >
-                  <span>Submit Application</span>
+                  <span>{t('join.submitBtn')}</span>
                   <Send className="h-4 w-4" />
                 </button>
               </form>
@@ -3368,13 +3352,13 @@ export default function App() {
                   <CheckCircle2 className="h-8 w-8" />
                 </div>
                 <div>
-                  <h4 className="font-display text-xl font-bold text-slate-900">Application Received!</h4>
+                  <h4 className="font-display text-xl font-bold text-slate-900">{t('join.successTitle')}</h4>
                   <p className="text-xs text-slate-500 mt-2 max-w-sm mx-auto font-sans leading-relaxed">
-                    Terima kasih telah mendaftar, <strong className="text-slate-900">{joinForm.name}</strong>. Tim Smart Grow Laboratory akan mereview data kamu dan menghubungi lewat email (<strong className="text-slate-900">{joinForm.email}</strong>). Keep growing!
+                    {t('join.successDesc', { name: joinForm.name, email: joinForm.email })}
                   </p>
                 </div>
                 <div className="pt-4 font-sans text-[10px] text-slate-400 uppercase font-bold">
-                  Closing dialog in 2 seconds...
+                  {t('join.closingDialog')}
                 </div>
               </div>
             )}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import { 
   ChevronLeft, 
   Calendar, 
@@ -33,6 +34,7 @@ export default function StandardNewsArticleView({
   onBack,
   onAddComment
 }: StandardNewsArticleViewProps) {
+  const { t } = useLanguage();
   // Interactive Reaction State
   const [likesCount, setLikesCount] = useState(24);
   const [hasLiked, setHasLiked] = useState(false);
@@ -131,7 +133,7 @@ export default function StandardNewsArticleView({
       {copiedToast && (
         <div className="fixed top-20 right-6 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-2 border border-slate-700 animate-bounce">
           <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-          <span>Tautan artikel berhasil disalin ke clipboard!</span>
+          <span>{t('showcase.copiedToast')}</span>
         </div>
       )}
 
@@ -143,7 +145,7 @@ export default function StandardNewsArticleView({
             className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
           >
             <ChevronLeft className="h-4 w-4" />
-            <span>Kembali ke News & Events</span>
+            <span>{t('showcase.backToNews')}</span>
           </button>
           
           <div className="flex items-center gap-2">
@@ -154,7 +156,7 @@ export default function StandardNewsArticleView({
                   ? 'bg-emerald-600 text-white border-emerald-500 shadow-xs'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-200'
               }`}
-              title="Apresiasi Artikel"
+              title={t('showcase.appreciateArticle')}
             >
               <ThumbsUp className="h-3.5 w-3.5" />
               <span>{likesCount}</span>
@@ -167,7 +169,7 @@ export default function StandardNewsArticleView({
                   ? 'bg-amber-500 text-white border-amber-400'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-200'
               }`}
-              title="Simpan Artikel"
+              title={t('showcase.saveArticle')}
             >
               <Bookmark className="h-3.5 w-3.5" />
             </button>
@@ -175,7 +177,7 @@ export default function StandardNewsArticleView({
             <button
               onClick={handleCopyLink}
               className="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 cursor-pointer transition-all"
-              title="Bagikan Artikel"
+              title={t('showcase.shareArticle')}
             >
               <Share2 className="h-3.5 w-3.5" />
             </button>
@@ -201,7 +203,7 @@ export default function StandardNewsArticleView({
             <span className="text-slate-300 dark:text-slate-700">•</span>
             <span className="flex items-center gap-1 text-xs font-mono text-slate-500 dark:text-slate-400">
               <Clock className="h-3.5 w-3.5" />
-              <span>{item.readTime || '4 min'} read</span>
+              <span>{item.readTime || '4 min'} {t('news.readTime')}</span>
             </span>
           </div>
 
@@ -340,7 +342,7 @@ export default function StandardNewsArticleView({
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div>
-                <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Nama Lengkap</label>
+                <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">{t('showcase.fullName')}</label>
                 <input
                   type="text"
                   value={nameInput}
@@ -351,7 +353,7 @@ export default function StandardNewsArticleView({
                 />
               </div>
               <div>
-                <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">Email Anda</label>
+                <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1">{t('showcase.yourEmail')}</label>
                 <input
                   type="email"
                   value={emailInput}
@@ -364,12 +366,12 @@ export default function StandardNewsArticleView({
             </div>
 
             <div>
-              <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1 text-xs">Tanggapan / Komentar</label>
+              <label className="block text-slate-600 dark:text-slate-400 font-semibold mb-1 text-xs">{t('showcase.feedbackTitle')}</label>
               <textarea
                 rows={3}
                 value={textInput}
                 onChange={e => setTextInput(e.target.value)}
-                placeholder="Berikan pendapat atau masukan Anda mengenai hasil riset/kegiatan ini..."
+                placeholder={t('showcase.commentPlaceholder')}
                 required
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-xs focus:outline-none focus:border-emerald-600"
               />
@@ -378,7 +380,7 @@ export default function StandardNewsArticleView({
             <div className="flex items-center justify-between pt-1">
               {commentSuccess ? (
                 <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                  <CheckCircle2 className="h-4 w-4" /> Tanggapan Anda berhasil dipublikasikan!
+                  <CheckCircle2 className="h-4 w-4" /> {t('showcase.commentSuccess')}
                 </span>
               ) : <span />}
 
@@ -387,7 +389,7 @@ export default function StandardNewsArticleView({
                 className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md cursor-pointer flex items-center gap-2 transition-all ml-auto"
               >
                 <Send className="h-3.5 w-3.5" />
-                <span>Kirim Tanggapan</span>
+                <span>{t('showcase.submitComment')}</span>
               </button>
             </div>
           </form>
@@ -396,7 +398,7 @@ export default function StandardNewsArticleView({
           <div className="space-y-3 pt-2">
             {comments.length === 0 ? (
               <div className="p-8 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 text-center space-y-1">
-                <p className="text-xs text-slate-400 font-medium">Belum ada tanggapan. Jadilah pembaca pertama yang memberikan tanggapan!</p>
+                <p className="text-xs text-slate-400 font-medium">{t('showcase.noComments')}</p>
               </div>
             ) : (
               comments.map(c => (

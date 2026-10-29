@@ -1,0 +1,242 @@
+{
+  "lang": "en",
+
+  "nav": {
+    "home": "Home",
+    "news": "News & Events",
+    "project": "Projects",
+    "about": "Our Team",
+    "join": "Collaborate",
+    "labLogin": "Lab Login",
+    "labPortal": "Lab Portal",
+    "mobileMenuTitle": "Main Menu",
+    "mobileAccessLabel": "Lab Access & Membership",
+    "enterPortal": "Enter Lab Portal",
+    "openNav": "Open navigation menu",
+    "closeNav": "Close menu"
+  },
+
+  "hero": {
+    "seeMore": "See More",
+    "exploreNews": "Explore Lab News",
+    "prevSlide": "Previous Photo",
+    "nextSlide": "Next Photo",
+    "slideLabel": "Photo"
+  },
+
+  "home": {
+    "ctaBadge": "COLLABORATION & RESEARCH TALENT",
+    "ctaTitle": "Interested in Collaborating or Joining Our Research?",
+    "ctaDesc": "Smart Grow Laboratory welcomes industry partnerships, joint research programs, and intensive internship opportunities for dedicated students.",
+    "ctaRegisterInternship": "Register for Research Internship",
+    "ctaCollaborate": "Submit Research Collaboration"
+  },
+
+  "visionMission": {
+    "sectionTitle": "Commitment to Smart Agricultural Research & Innovation",
+    "sectionDesc": "Smart Grow Laboratory at Telkom University is dedicated to becoming a center of excellence in applied technology, bridging engineering automation with modern plant physiology.",
+    "visionTitle": "Laboratory Vision",
+    "visionText": "\"To become a leading research and innovation center at the national and international level in developing Smart Agriculture technologies, IoT automation, and AI biosystems to achieve robust, efficient, and sustainable food security.\"",
+    "threePillars": "3 CORE DEVELOPMENT PILLARS:",
+    "missionTitle": "Our Mission",
+    "pillars": {
+      "global": "Global-Standard Multidisciplinary Research",
+      "iot": "IoT Automation & Precision AI Biosystems",
+      "food": "Sustainable Food Sovereignty"
+    },
+    "missions": {
+      "m01Title": "Solution-Oriented Research & Development",
+      "m01Desc": "Conducting cutting-edge applied research in wireless telemetry sensors, edge AI, computer vision, and precision biosystem automation.",
+      "m02Title": "Commercialization & Industry Collaboration",
+      "m02Desc": "Connecting laboratory innovation prototypes with real agricultural industry needs, grant programs (Kedaireka/Dikti), and farming communities.",
+      "m03Title": "Empowering Exceptional Talent",
+      "m03Desc": "Organizing structured research internship ecosystems for students to cultivate future innovators and technology engineers.",
+      "m04Title": "Sustainability & Energy Efficiency",
+      "m04Desc": "Implementing eco-friendly technologies, agrivoltaic renewable energy, and closed-loop water nutrient conservation."
+    }
+  },
+
+  "research": {
+    "sectionLabel": "RESEARCH AREAS",
+    "sectionTitle": "Active Research Areas",
+    "sectionDesc": "Smart Grow Laboratory serves as a research and incubation hub for smart agricultural engineering technologies spanning multiple applied science and systems engineering disciplines.",
+    "techStackLabel": "TECH STACK",
+    "prevSlide": "Previous Area",
+    "nextSlide": "Next Area"
+  },
+
+  "news": {
+    "pageTitle": "News & Events",
+    "readFull": "Read Full Article",
+    "comments": "Comments",
+    "readTime": "read",
+    "backToNews": "Back to News"
+  },
+
+  "project": {
+    "pageTitle": "R&D Project Hub",
+    "pageDesc": "Intelligent cyber-agriculture systems, wireless telemetry, and bio-environmental control automation developed by our laboratory team.",
+    "noProjects": "No projects match the selected category filter.",
+    "backToProjects": "Back to All Projects",
+    "showcaseLabel": "PROJECT // SHOWCASE",
+    "sensorFramework": "Calibrated Sensor Framework",
+    "operationalStatus": "Operational Status",
+    "operationalDesc": "fully operational and calibrated at Telkom University research campus.",
+    "openInstagramReel": "Watch Official Reel on Instagram",
+    "openGoogleDrive": "Open Tutorial on Google Drive",
+    "openOfficialSite": "Visit Official Website / System",
+    "openInstagramHover": "Watch on Instagram Reel",
+    "openLinkHover": "Open Official Link",
+    "lightboxClose": "Click outside image or the X button to close",
+    "lightboxOpenFull": "Open Full Size in New Tab",
+    "lightboxCloseBtn": "Close Modal"
+  },
+
+  "about": {
+    "pageLabel": "THE RESEARCHERS",
+    "pageTitle": "Our Team",
+    "pageDesc": "Multidisciplinary cyber-agricultural students and specialists at Telkom University",
+    "mentorLabel": "SMART GROW LAB SUPERVISOR",
+    "assistantLabel": "RESEARCH & OPERATIONS COORDINATOR",
+    "viewInstagram": "View Instagram Profile (@indrarini_dya)",
+    "activeStudentsTitle": "Research Interns",
+    "activeStudentsDesc": "Multidisciplinary students actively involved in Smart Grow Laboratory's research and innovation development programs",
+    "alumniTitle": "Smart Grow Lab Research Alumni",
+    "alumniDesc": "Former researchers and developers of smart agricultural innovation systems at Smart Grow Laboratory",
+    "students": "Students",
+    "alumni": "Alumni",
+    "aboutLabTitle": "Smart Grow Lab",
+    "aboutLabDesc1": "SMART GROW LAB is an integrated research and innovation hub focused on developing intelligent, sustainable, and data-driven agricultural systems. By leveraging cutting-edge technologies such as the Internet of Things (IoT), Artificial Intelligence (AI), and automation, SMART GROW LAB aims to revolutionize traditional farming practices and address global challenges related to food security, climate change, and resource efficiency.",
+    "aboutLabDesc2": "Our core activities include the design and implementation of smart farming solutions—ranging from hydroponics and aquaponics to smart greenhouses and AIoT-based aquaculture monitoring systems. Through multidisciplinary collaboration and a commitment to sustainable development, SMART GROW LAB supports the transformation of agriculture into a high-tech, environmentally responsible sector.",
+    "collaborateBtn": "Submit Research Collaboration"
+  },
+
+  "join": {
+    "applyTitle": "Apply to Join the Lab",
+    "applyDesc": "We are always looking for passionate researchers and students interested in bridging hardware instrumentation, automation, and agriculture.",
+    "labelName": "Full Name",
+    "labelEmail": "Student / General Email",
+    "labelRole": "Role of Interest",
+    "labelMotivation": "Why do you want to join Smart Grow Laboratory?",
+    "labelGithub": "GitHub Profile",
+    "labelInstagram": "Instagram Handle",
+    "required": "*required",
+    "optional": "optional",
+    "submitBtn": "Submit Application",
+    "successTitle": "Application Received!",
+    "successDesc": "Thank you for applying, {name}. The Smart Grow Laboratory team will review your information and reach out via email ({email}). Keep growing!",
+    "closingDialog": "Closing dialog in 2 seconds..."
+  },
+
+  "footer": {
+    "officeAddress": "Office Address",
+    "researchInnovation": "Research & Innovation",
+    "researchUnit": "Research and Community Service Division",
+    "contactUs": "Contact Us",
+    "socialMedia": "Social Media",
+    "copyright": "© {year} Smart Grow Laboratory • Telkom University. All rights reserved."
+  },
+
+  "common": {
+    "loading": "Loading...",
+    "loadingSession": "Loading laboratory session...",
+    "loadingDashboard": "Loading Dashboard...",
+    "backToHome": "Back to Home",
+    "search": "Search",
+    "filter": "Filter",
+    "all": "All",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "more": "More",
+    "less": "Less",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "error": "An error occurred",
+    "empty": "No data available",
+    "noResults": "No results found"
+  },
+
+  "language": {
+    "select": "Select Language",
+    "id": "Bahasa Indonesia",
+    "en": "English",
+    "ko": "한국어",
+    "current": "Active language"
+  },
+
+  "joinView": {
+    "backToLab": "Back to Laboratory",
+    "interactiveApp": "Interactive Application",
+    "presentationMockup": "Mockup Presentation",
+    "heroTitle1": "Forge Partnerships &",
+    "heroTitle2": "Research Collaboration",
+    "heroTitle3": "Smart Agriculture AIoT",
+    "heroDesc": "Smart Grow Laboratory at Telkom University welcomes industry partnerships, joint research collaborations, smart technology testing (AI & IoT), institutional benchmarking, and field implementation of sustainable smart agriculture solutions.",
+    "statRealHardware": "Real Hardware",
+    "statCoreFocus": "Core Focus",
+    "statActiveGrants": "Active Grants",
+    "fillFormBtn": "Fill Collaboration Form",
+    "viewProjectsBtn": "View Research Projects",
+    "formTitle": "Collaboration Application Form",
+    "formSubtitle": "Research & Industry Partnership Telkom University",
+    "nameLabel": "Full Name / Partner PIC",
+    "namePlaceholder": "e.g. Dr. John Doe / PT Agro Tech",
+    "emailLabel": "Student / General Email",
+    "emailPlaceholder": "e.g. john@student.telkomuniversity.ac.id",
+    "roleLabel": "Type of Collaboration",
+    "roleOption1": "Industry Partnership & Product Downstreaming",
+    "roleOption2": "Joint Research & Collaborative Grants",
+    "roleOption3": "Field Implementation / Pilot Project (Smart City / Smart Agriculture)",
+    "roleOption4": "Benchmarking, Lab Visits & Educational Tours",
+    "roleOption5": "Guest Lecturing / Technical Workshops & Training",
+    "roleOption6": "Other",
+    "motivationLabel": "Proposal Details / Collaboration Topic",
+    "motivationPlaceholder": "Briefly describe your partnership proposal, organization background, and expected outcomes from collaborating with Smart Grow Laboratory.",
+    "githubLabel": "GitHub Account",
+    "instagramLabel": "Instagram Account",
+    "submitting": "Submitting Proposal...",
+    "submitBtn": "Submit Collaboration Proposal",
+    "successTitle": "Application Sent!",
+    "successDesc": "Thank you for your interest in collaborating with Smart Grow Laboratory. Your information has been safely registered in our system database. Our research leads will reach out to you via email.",
+    "submitAnother": "Submit Another",
+    "backHome": "Back to Home",
+    "card1Title": "Collaborate & Learn",
+    "card1Desc": "Work directly with field experts and senior specialists on innovative engineering and cyber-agricultural projects.",
+    "card2Title": "Impactful Research",
+    "card2Desc": "Build solutions targeting real global agriculture challenges including water conservation and smart automation.",
+    "card3Title": "Hands-on Experience",
+    "card3Desc": "Explore real cybernetic hardware instrumentation, wireless sensor networks, and IoT control nodes.",
+    "card4Title": "Supportive Community",
+    "card4Desc": "Be part of a highly passionate, multidisciplinary, and rapidly growing collaborative research team."
+  },
+
+  "showcase": {
+    "backToList": "Back to Projects List",
+    "backToNews": "Back to News & Events",
+    "watchReel": "Watch Reel on Instagram",
+    "watchReelBtn": "Watch Reel",
+    "openOriginal": "Open Original Link",
+    "share": "Share",
+    "linkCopied": "Link Copied!",
+    "copiedToast": "Link successfully copied to clipboard!",
+    "appreciateArticle": "Like Article",
+    "saveArticle": "Save Article",
+    "shareArticle": "Share Article",
+    "feedbackTitle": "Leave Feedback / Comments:",
+    "fullName": "Full Name *",
+    "emailOptional": "Email (Optional)",
+    "yourEmail": "Your Email",
+    "commentPlaceholder": "Write your comments or thoughts...",
+    "commentSuccess": "Thank you! Your feedback has been recorded.",
+    "submitComment": "Submit Feedback",
+    "noComments": "No responses yet. Be the first to share your thoughts!",
+    "downloadImage": "Download Image",
+    "closeModal": "Close Modal"
+  }
+}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import { 
   User, 
   Mail, 
@@ -34,6 +35,7 @@ interface JoinLabViewProps {
 }
 
 export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps) {
+  const { t } = useLanguage();
   // Navigation inside Join page
   const [activeTab, setActiveTab] = useState<'app' | 'showcase'>('app');
 
@@ -228,7 +230,7 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
               className="group flex items-center gap-2 px-3.5 py-2 rounded-xl border border-white/10 bg-white/5 text-xs font-bold text-slate-200 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-300 cursor-pointer"
             >
               <span className="group-hover:-translate-x-0.5 transition-transform">←</span>
-              <span>Back to Laboratory</span>
+              <span>{t('joinView.backToLab')}</span>
             </button>
 
           </div>
@@ -244,7 +246,7 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
               }`}
             >
               <Layers className="h-3.5 w-3.5" />
-              <span>Interactive Application</span>
+              <span>{t('joinView.interactiveApp')}</span>
             </button>
             <button
               onClick={() => setActiveTab('showcase')}
@@ -255,7 +257,7 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
               }`}
             >
               <BookOpen className="h-3.5 w-3.5" />
-              <span>Mockup Presentation</span>
+              <span>{t('joinView.presentationMockup')}</span>
             </button>
           </div>
 
@@ -277,16 +279,16 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
               {/* Large Display Heading */}
               <div className="space-y-4">
                 <h1 className="font-display text-4xl sm:text-5xl xl:text-6xl font-extrabold tracking-tight text-white leading-[1.08]">
-                  Jalin Kemitraan & <br />
-                  Kolaborasi Riset <br />
+                  {t('joinView.heroTitle1')} <br />
+                  {t('joinView.heroTitle2')} <br />
                   <span className="bg-gradient-to-r from-[#22C55E] via-[#10B981] to-[#2E86FF] bg-clip-text text-transparent">
-                    Smart Agriculture AIoT
+                    {t('joinView.heroTitle3')}
                   </span>
                 </h1>
                 
                 {/* Subtitle */}
                 <p className="text-sm sm:text-base lg:text-lg text-slate-300 font-sans leading-relaxed max-w-2xl font-medium">
-                  Smart Grow Laboratory Telkom University membuka kemitraan industri, kolaborasi riset bersama, pengujian teknologi cerdas (AI & IoT), studi banding institusi, dan implementasi lapangan solusi pertanian cerdas berkelanjutan.
+                  {t('joinView.heroDesc')}
                 </p>
               </div>
 
@@ -294,15 +296,15 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
               <div className="grid grid-cols-3 gap-4 py-4 max-w-md border-t border-b border-white/5">
                 <div className="space-y-1">
                   <span className="text-xl sm:text-2xl font-extrabold font-display bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">100%</span>
-                  <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">Real Hardware</p>
+                  <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">{t('joinView.statRealHardware')}</p>
                 </div>
                 <div className="space-y-1 border-l border-white/5 pl-4">
                   <span className="text-xl sm:text-2xl font-extrabold font-display bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">IoT + AI</span>
-                  <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">Core Focus</p>
+                  <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">{t('joinView.statCoreFocus')}</p>
                 </div>
                 <div className="space-y-1 border-l border-white/5 pl-4">
                   <span className="text-xl sm:text-2xl font-extrabold font-display bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">3+</span>
-                  <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">Active Grants</p>
+                  <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">{t('joinView.statActiveGrants')}</p>
                 </div>
               </div>
 
@@ -312,14 +314,14 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                   href="#application-form-card"
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 px-6 py-4 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                 >
-                  <span>Isi Formulir Kolaborasi</span>
+                  <span>{t('joinView.fillFormBtn')}</span>
                   <ArrowRight className="h-4 w-4" />
                 </a>
                 <button 
                   onClick={() => setActiveTab('showcase')}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-200 hover:text-white transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                 >
-                  <span>Lihat Proyek Riset</span>
+                  <span>{t('joinView.viewProjectsBtn')}</span>
                 </button>
               </div>
 
@@ -342,9 +344,9 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                     </div>
                     
                     <div className="space-y-2">
-                      <h3 className="font-display text-xl font-bold text-white">Application Sent!</h3>
+                      <h3 className="font-display text-xl font-bold text-white">{t('joinView.successTitle')}</h3>
                       <p className="text-xs text-slate-400 font-sans leading-relaxed max-w-md mx-auto">
-                        Thank you for your interest in joining Smart Grow Laboratory. Your information has been safely registered in our local system database. Our research Leads will reach out to you via email.
+                        {t('joinView.successDesc')}
                       </p>
                     </div>
 
@@ -354,13 +356,13 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                         className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-xs font-bold text-slate-200 hover:bg-white/10 transition-all cursor-pointer"
                       >
                         <RotateCcw className="h-3.5 w-3.5" />
-                        <span>Submit Another</span>
+                        <span>{t('joinView.submitAnother')}</span>
                       </button>
                       <button
                         onClick={onBack}
                         className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-3 text-xs font-bold hover:shadow-lg transition-all cursor-pointer"
                       >
-                        <span>Back to Home</span>
+                        <span>{t('joinView.backHome')}</span>
                       </button>
                     </div>
                   </div>
@@ -370,8 +372,8 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                     {/* Form header inside card */}
                     <div className="border-b border-white/5 pb-4 mb-2 flex items-center justify-between">
                       <div>
-                        <h2 className="font-display text-base font-bold text-white">Formulir Pengajuan Kolaborasi</h2>
-                        <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mt-0.5">Kemitraan Riset & Industri Telkom University</p>
+                        <h2 className="font-display text-base font-bold text-white">{t('joinView.formTitle')}</h2>
+                        <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mt-0.5">{t('joinView.formSubtitle')}</p>
                       </div>
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400">
                         <FileText className="h-4 w-4" />
@@ -383,15 +385,15 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                       <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-300 uppercase flex items-center justify-between px-0.5">
                         <span className="flex items-center gap-1.5">
                           <User className="h-3.5 w-3.5 text-emerald-400" />
-                          <span>Nama Lengkap / PIC Mitra</span>
+                          <span>{t('joinView.nameLabel')}</span>
                         </span>
-                        <span className="text-emerald-400 font-extrabold text-[9px] lowercase bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-500/30">*wajib</span>
+                        <span className="text-emerald-400 font-extrabold text-[9px] lowercase bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-500/30">{t('join.required')}</span>
                       </label>
                       <div className="relative">
                         <input 
                           type="text"
                           required
-                          placeholder="e.g. Ir. Budi Santoso, M.T. / PT Agro Cerdas"
+                          placeholder={t('joinView.namePlaceholder')}
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                           className="w-full rounded-[14px] border border-white/10 bg-slate-950/40 hover:bg-slate-950/60 focus:bg-slate-950 px-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-300 font-medium"
@@ -409,15 +411,15 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                       <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-300 uppercase flex items-center justify-between px-0.5">
                         <span className="flex items-center gap-1.5">
                           <Mail className="h-3.5 w-3.5 text-emerald-400" />
-                          <span>Student / General Email</span>
+                          <span>{t('joinView.emailLabel')}</span>
                         </span>
-                        <span className="text-emerald-400 font-extrabold text-[9px] lowercase bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-500/30">*wajib</span>
+                        <span className="text-emerald-400 font-extrabold text-[9px] lowercase bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-500/30">{t('join.required')}</span>
                       </label>
                       <div className="relative">
                         <input 
                           type="email"
                           required
-                          placeholder="e.g. shara@student.telkomuniversity.ac.id"
+                          placeholder={t('joinView.emailPlaceholder')}
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           className="w-full rounded-[14px] border border-white/10 bg-slate-950/40 hover:bg-slate-950/60 focus:bg-slate-950 px-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-300 font-medium"
@@ -435,9 +437,9 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                       <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-300 uppercase flex items-center justify-between px-0.5">
                         <span className="flex items-center gap-1.5">
                           <Briefcase className="h-3.5 w-3.5 text-emerald-400" />
-                          <span>Bentuk Kerja Sama / Kolaborasi</span>
+                          <span>{t('joinView.roleLabel')}</span>
                         </span>
-                        <span className="text-emerald-400 font-extrabold text-[9px] lowercase bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-500/30">*wajib</span>
+                        <span className="text-emerald-400 font-extrabold text-[9px] lowercase bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-500/30">{t('join.required')}</span>
                       </label>
                       <div className="relative">
                         <select
@@ -445,12 +447,12 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                           onChange={(e) => setRole(e.target.value)}
                           className="w-full appearance-none rounded-[14px] border border-white/10 bg-slate-950/40 hover:bg-slate-950/60 focus:bg-slate-950 px-4 py-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-300 font-medium cursor-pointer pr-10"
                         >
-                          <option value="Kemitraan Industri & Hilirisasi Produk" className="bg-slate-900 text-white">Kemitraan Industri & Hilirisasi Produk</option>
-                          <option value="Riset Bersama & Hibah Kolaboratif (Joint Research)" className="bg-slate-900 text-white">Riset Bersama & Hibah Kolaboratif (Joint Research)</option>
-                          <option value="Implementasi Lapangan / Pilot Project (Smart City / Smart Agriculture)" className="bg-slate-900 text-white">Implementasi Lapangan / Pilot Project (Smart City / Smart Agriculture)</option>
-                          <option value="Studi Banding, Kunjungan Lab & Edukasi" className="bg-slate-900 text-white">Studi Banding, Kunjungan Lab & Edukasi</option>
-                          <option value="Dosen Tamu / Workshop & Pelatihan Teknis" className="bg-slate-900 text-white">Dosen Tamu / Workshop & Pelatihan Teknis</option>
-                          <option value="Lainnya" className="bg-slate-900 text-white">Lainnya</option>
+                          <option value="Kemitraan Industri & Hilirisasi Produk" className="bg-slate-900 text-white">{t('joinView.roleOption1')}</option>
+                          <option value="Riset Bersama & Hibah Kolaboratif (Joint Research)" className="bg-slate-900 text-white">{t('joinView.roleOption2')}</option>
+                          <option value="Implementasi Lapangan / Pilot Project (Smart City / Smart Agriculture)" className="bg-slate-900 text-white">{t('joinView.roleOption3')}</option>
+                          <option value="Studi Banding, Kunjungan Lab & Edukasi" className="bg-slate-900 text-white">{t('joinView.roleOption4')}</option>
+                          <option value="Dosen Tamu / Workshop & Pelatihan Teknis" className="bg-slate-900 text-white">{t('joinView.roleOption5')}</option>
+                          <option value="Lainnya" className="bg-slate-900 text-white">{t('joinView.roleOption6')}</option>
                         </select>
                         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400 text-[9px]">
                           ▼
@@ -463,14 +465,14 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                       <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-400 uppercase flex items-center justify-between px-0.5">
                         <span className="flex items-center gap-1.5">
                           <Heart className="h-3.5 w-3.5 text-emerald-400" />
-                          <span>Rincian Usulan / Topik Kolaborasi</span>
+                          <span>{t('joinView.motivationLabel')}</span>
                         </span>
-                        <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-800 px-1.5 py-0.5 rounded">opsional</span>
+                        <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-800 px-1.5 py-0.5 rounded">{t('join.optional')}</span>
                       </label>
                       <div className="relative">
                         <textarea
                           rows={3}
-                          placeholder="Jelaskan secara ringkas usulan kemitraan, latar belakang instansi Anda, dan harapan hasil kerja sama bersama Smart Grow Laboratory."
+                          placeholder={t('joinView.motivationPlaceholder')}
                           value={motivation}
                           onChange={(e) => setMotivation(e.target.value)}
                           className="w-full rounded-[14px] border border-white/10 bg-slate-950/40 hover:bg-slate-950/60 focus:bg-slate-950 px-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-300 font-medium leading-relaxed"
@@ -489,9 +491,9 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                         <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-400 uppercase flex items-center justify-between px-0.5">
                           <span className="flex items-center gap-1.5">
                             <Github className="h-3.5 w-3.5 text-slate-400" />
-                            <span>Github Account</span>
+                            <span>{t('joinView.githubLabel')}</span>
                           </span>
-                          <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-800 px-1.5 py-0.5 rounded">opsional</span>
+                          <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-800 px-1.5 py-0.5 rounded">{t('join.optional')}</span>
                         </label>
                         <input 
                           type="url"
@@ -506,9 +508,9 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                         <label className="text-[9px] font-mono font-extrabold tracking-wider text-slate-400 uppercase flex items-center justify-between px-0.5">
                           <span className="flex items-center gap-1.5">
                             <Instagram className="h-3.5 w-3.5 text-slate-400" />
-                            <span>Instagram Account</span>
+                            <span>{t('joinView.instagramLabel')}</span>
                           </span>
-                          <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-800 px-1.5 py-0.5 rounded">opsional</span>
+                          <span className="text-slate-400 font-bold text-[9px] lowercase bg-slate-800 px-1.5 py-0.5 rounded">{t('join.optional')}</span>
                         </label>
                         <input 
                           type="text"
@@ -530,11 +532,11 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
                         {isSubmitting ? (
                           <>
                             <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                            <span>Mengirim Usulan...</span>
+                            <span>{t('joinView.submitting')}</span>
                           </>
                         ) : (
                           <>
-                            <span>Kirim Usulan Kolaborasi</span>
+                            <span>{t('joinView.submitBtn')}</span>
                             <Send className="h-3.5 w-3.5 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform" />
                           </>
                         )}
@@ -726,11 +728,11 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
             {/* Card 1: Collaborate & Learn */}
             <div className="bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 hover:shadow-xl hover:border-emerald-500/20 hover:-translate-y-1 transition-all duration-300">
               <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
-                
+                <Users className="h-5 w-5" />
               </div>
-              <h3 className="font-display text-base font-bold text-white mb-1.5">Collaborate & Learn</h3>
+              <h3 className="font-display text-base font-bold text-white mb-1.5">{t('joinView.card1Title')}</h3>
               <p className="text-xs text-slate-400 font-sans leading-relaxed">
-                Work directly with field experts and senior specialists on innovative engineering and cyber-agricultural projects.
+                {t('joinView.card1Desc')}
               </p>
             </div>
 
@@ -739,9 +741,9 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
               <div className="h-10 w-10 rounded-xl bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] flex items-center justify-center mb-4">
                 <BookOpen className="h-5 w-5" />
               </div>
-              <h3 className="font-display text-base font-bold text-white mb-1.5">Impactful Research</h3>
+              <h3 className="font-display text-base font-bold text-white mb-1.5">{t('joinView.card2Title')}</h3>
               <p className="text-xs text-slate-400 font-sans leading-relaxed">
-                Build solutions targeting real global agriculture challenges including water conservation and smart automation.
+                {t('joinView.card2Desc')}
               </p>
             </div>
 
@@ -750,9 +752,9 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
               <div className="h-10 w-10 rounded-xl bg-[#2E86FF]/10 border border-[#2E86FF]/20 text-[#2E86FF] flex items-center justify-center mb-4">
                 <Network className="h-5 w-5" />
               </div>
-              <h3 className="font-display text-base font-bold text-white mb-1.5">Hands-on Experience</h3>
+              <h3 className="font-display text-base font-bold text-white mb-1.5">{t('joinView.card3Title')}</h3>
               <p className="text-xs text-slate-400 font-sans leading-relaxed">
-                Explore real cybernetic hardware instrumentation, wireless sensor networks, and IoT control nodes.
+                {t('joinView.card3Desc')}
               </p>
             </div>
 
@@ -761,9 +763,9 @@ export default function JoinLabView({ onBack, onAddApplicant }: JoinLabViewProps
               <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
                 <Users className="h-5 w-5" />
               </div>
-              <h3 className="font-display text-base font-bold text-white mb-1.5">Supportive Community</h3>
+              <h3 className="font-display text-base font-bold text-white mb-1.5">{t('joinView.card4Title')}</h3>
               <p className="text-xs text-slate-400 font-sans leading-relaxed">
-                Be part of a highly passionate, multidisciplinary, and rapidly growing collaborative research team.
+                {t('joinView.card4Desc')}
               </p>
             </div>
 

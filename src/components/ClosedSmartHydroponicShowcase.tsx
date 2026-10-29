@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import { 
   Maximize2, 
   X, 
@@ -33,6 +34,7 @@ export default function ClosedSmartHydroponicShowcase({
   onBack, 
   onAddComment 
 }: ClosedSmartHydroponicShowcaseProps) {
+  const { t } = useLanguage();
   
   const thumbnailImageUrl = '/images/closed-smart-hydroponic/closed-smart-hydroponic.jpg';
   const reelUrl = 'https://www.instagram.com/reel/CwpE-96NzPK/?utm_source=ig_web_copy_link&exln=MzRlODBiNWFlZA%3D%3D&srtk=MzRlODBiNWFlZA%3D%3D';
@@ -94,7 +96,7 @@ export default function ClosedSmartHydroponicShowcase({
           id="closed-hydroponic-back-btn"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-          <span>Kembali ke Daftar Proyek</span>
+          <span>{t('showcase.backToList')}</span>
         </button>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
@@ -105,7 +107,7 @@ export default function ClosedSmartHydroponicShowcase({
             className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-pink-50 dark:bg-pink-950/60 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-pink-800 text-xs font-semibold hover:bg-pink-100 dark:hover:bg-pink-900/60 transition-all cursor-pointer"
           >
             <Instagram className="h-3.5 w-3.5 text-pink-600" />
-            <span>Tonton Reel<span className="hidden sm:inline"> di Instagram</span></span>
+            <span>{t('showcase.watchReelBtn')}<span className="hidden sm:inline"> di Instagram</span></span>
             <ExternalLink className="h-3 w-3 opacity-70" />
           </a>
 
@@ -115,7 +117,7 @@ export default function ClosedSmartHydroponicShowcase({
             title="Salin tautan proyek ini"
           >
             {copiedLink ? <Check className="h-3.5 w-3.5 text-purple-600" /> : <Share2 className="h-3.5 w-3.5" />}
-            <span>{copiedLink ? 'Link Tersalin!' : 'Bagikan'}</span>
+            <span>{copiedLink ? t('showcase.linkCopied') : t('showcase.share')}</span>
           </button>
         </div>
       </div>
@@ -359,12 +361,12 @@ export default function ClosedSmartHydroponicShowcase({
         {/* Add Comment Form */}
         <form onSubmit={handleFormSubmit} className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-3 shadow-xs">
           <h4 className="font-bold text-xs uppercase tracking-wider text-slate-500 font-mono">
-            Beri Tanggapan / Masukan untuk Proyek Ini:
+            {t('showcase.feedbackTitle')}
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input 
               type="text" 
-              placeholder="Nama Lengkap *" 
+              placeholder={t('showcase.fullName')} 
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
               className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 focus:outline-hidden focus:border-purple-500"
@@ -372,14 +374,14 @@ export default function ClosedSmartHydroponicShowcase({
             />
             <input 
               type="email" 
-              placeholder="Email (Opsional)" 
+              placeholder={t('showcase.emailOptional')} 
               value={emailInput}
               onChange={(e) => setEmailInput(e.target.value)}
               className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 focus:outline-hidden focus:border-purple-500"
             />
           </div>
           <textarea 
-            placeholder="Tuliskan komentar atau apresiasi Anda untuk proyek Closed Smart Hydroponic..." 
+            placeholder={t('showcase.commentPlaceholder')} 
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
             rows={3}
@@ -390,7 +392,7 @@ export default function ClosedSmartHydroponicShowcase({
             {commentSuccess && (
               <span className="text-xs font-bold text-emerald-600 flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4 shrink-0" />
-                <span>Terima kasih! Masukan Anda telah berhasil dicatat.</span>
+                <span>{t('showcase.commentSuccess')}</span>
               </span>
             )}
             <button
@@ -398,7 +400,7 @@ export default function ClosedSmartHydroponicShowcase({
               className="w-full sm:w-auto sm:ml-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
             >
               <Send className="h-3.5 w-3.5" />
-              <span>Kirim Masukan</span>
+              <span>{t('showcase.submitComment')}</span>
             </button>
           </div>
         </form>
@@ -435,7 +437,7 @@ export default function ClosedSmartHydroponicShowcase({
                 onClick={(e) => e.stopPropagation()}
               >
                 <Download className="h-3.5 w-3.5" />
-                <span>Unduh Gambar</span>
+                <span>{t('showcase.downloadImage')}</span>
               </a>
             </div>
           </div>

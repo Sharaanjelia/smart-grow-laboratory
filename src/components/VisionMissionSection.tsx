@@ -1,6 +1,5 @@
 import React from 'react';
 import { 
-  CheckCircle2, 
   Target, 
   Cpu, 
   Handshake, 
@@ -9,34 +8,37 @@ import {
   Globe, 
   Quote 
 } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function VisionMissionSection() {
+  const { t } = useLanguage();
+
   const missions = [
     {
       number: '01',
-      title: 'Riset & Pengembangan Solutif',
-      desc: 'Melaksanakan penelitian terapan mutakhir dalam sensor telemetri nirkabel, edge AI, computer vision, dan otomasi biosistem presisi.',
+      title: t('visionMission.missions.m01Title'),
+      desc: t('visionMission.missions.m01Desc'),
       icon: Cpu,
       badges: ['Edge AI', 'Telemetri IoT', 'Biosistem Presisi']
     },
     {
       number: '02',
-      title: 'Hilirisasi & Kolaborasi Industri',
-      desc: 'Menghubungkan prototipe inovasi lab dengan kebutuhan riil industri agrikultur, program hibah (Kedaireka/Dikti), dan masyarakat petani.',
+      title: t('visionMission.missions.m02Title'),
+      desc: t('visionMission.missions.m02Desc'),
       icon: Handshake,
       badges: ['Kedaireka / Dikti', 'Mitra Industri', 'Dampak Nyata']
     },
     {
       number: '03',
-      title: 'Pemberdayaan Talenta Unggul',
-      desc: 'Menyelenggarakan ekosistem magang riset terstruktur bagi mahasiswa untuk mencetak inovator dan perekayasa teknologi masa depan.',
+      title: t('visionMission.missions.m03Title'),
+      desc: t('visionMission.missions.m03Desc'),
       icon: GraduationCap,
       badges: ['Magang Terstruktur', 'Talenta Unggul', 'Future Inovator']
     },
     {
       number: '04',
-      title: 'Keberlanjutan & Efisiensi Energi',
-      desc: 'Menerapkan teknologi ramah lingkungan, energi terbarukan agrivoltaik, serta konservasi nutrisi air tertutup (closed-loop).',
+      title: t('visionMission.missions.m04Title'),
+      desc: t('visionMission.missions.m04Desc'),
       icon: Leaf,
       badges: ['Agrivoltaik', 'Closed-Loop Nutrisi', 'Green Tech']
     }
@@ -44,17 +46,17 @@ export default function VisionMissionSection() {
 
   const visionPillars = [
     {
-      title: 'Riset Multidisiplin Berstandar Global',
+      title: t('visionMission.pillars.global'),
       icon: Globe,
       color: 'text-emerald-400 bg-emerald-500/20'
     },
     {
-      title: 'Otomasi IoT & AI Biosistem Presisi',
+      title: t('visionMission.pillars.iot'),
       icon: Cpu,
       color: 'text-teal-300 bg-teal-500/20'
     },
     {
-      title: 'Kedaulatan Pangan Berkelanjutan',
+      title: t('visionMission.pillars.food'),
       icon: Leaf,
       color: 'text-lime-300 bg-lime-500/20'
     }
@@ -65,10 +67,10 @@ export default function VisionMissionSection() {
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-14 space-y-4">
         <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-          Komitmen Riset & Inovasi Pertanian Cerdas
+          {t('visionMission.sectionTitle')}
         </h2>
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-sans max-w-2xl mx-auto">
-          Smart Grow Laboratory Telkom University berdedikasi menjadi pusat unggulan teknologi terapan, menjembatani otomasi rekayasa dengan fisiologi tanaman modern.
+          {t('visionMission.sectionDesc')}
         </p>
       </div>
 
@@ -86,19 +88,19 @@ export default function VisionMissionSection() {
           <div className="relative z-10 space-y-5">
             <div>
               <h3 className="font-display text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight">
-                Visi Laboratorium
+                {t('visionMission.visionTitle')}
               </h3>
               <div className="h-1.5 w-20 bg-gradient-to-r from-emerald-400 via-teal-300 to-transparent rounded-full mt-3" />
             </div>
 
             <p className="font-sans text-sm sm:text-base text-emerald-50/95 leading-relaxed font-normal">
-              "Menjadi pusat riset dan inovasi unggulan di tingkat nasional maupun internasional dalam pengembangan teknologi <span className="text-emerald-300 font-bold">pertanian cerdas (Smart Agriculture)</span>, <span className="text-teal-200 font-bold">otomasi IoT</span>, dan <span className="text-emerald-300 font-bold">AI biosistem</span> guna mewujudkan ketahanan pangan yang tangguh, efisien, dan berkelanjutan."
+              {t('visionMission.visionText')}
             </p>
 
-            {/* Core Pillars - langsung di bawah visi dengan jarak dekat */}
+            {/* Core Pillars */}
             <div className="pt-4 mt-2 border-t border-emerald-800/60 space-y-3">
               <span className="text-xs font-mono font-bold uppercase tracking-widest text-emerald-300/90 block">
-                3 PILAR UTAMA PENGEMBANGAN:
+                {t('visionMission.threePillars')}
               </span>
               <div className="space-y-2.5">
                 {visionPillars.map((pillar, idx) => {
@@ -129,7 +131,7 @@ export default function VisionMissionSection() {
               <Target className="w-5 h-5" />
             </div>
             <h3 className="font-display text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight">
-              Misi Kami
+              {t('visionMission.missionTitle')}
             </h3>
           </div>
 

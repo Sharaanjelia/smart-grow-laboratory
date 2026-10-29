@@ -11,6 +11,7 @@ import {
   Network,
   Zap
 } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ResearchItem {
   id: number;
@@ -125,6 +126,7 @@ const RESEARCH_ITEMS: ResearchItem[] = [
 ];
 
 export default function ResearchInterestSlider() {
+  const { t } = useLanguage();
   const sliderRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -230,10 +232,10 @@ export default function ResearchInterestSlider() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
           <div className="max-w-2xl space-y-2">
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-              Research Interest
+              {t('research.sectionTitle')}
             </h2>
             <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed font-sans font-medium">
-              Fokus kepakaran dan kelompok laboratorium riset terpadu dalam memajukan teknologi pertanian cerdas, otomasi biosistem, dan sistem siber.
+              {t('research.sectionDesc')}
             </p>
           </div>
 
@@ -251,14 +253,16 @@ export default function ResearchInterestSlider() {
 
             <button
               onClick={scrollPrev}
-              aria-label="Previous slide"
+              aria-label={t('research.prevSlide')}
+              title={t('research.prevSlide')}
               className="h-12 w-12 rounded-2xl bg-white dark:bg-slate-900 hover:bg-emerald-600 dark:hover:bg-emerald-600 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-600 text-slate-700 dark:text-slate-200 hover:text-white flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 shadow-md shadow-slate-200/50 dark:shadow-none cursor-pointer"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
             <button
               onClick={scrollNext}
-              aria-label="Next slide"
+              aria-label={t('research.nextSlide')}
+              title={t('research.nextSlide')}
               className="h-12 w-12 rounded-2xl bg-white dark:bg-slate-900 hover:bg-emerald-600 dark:hover:bg-emerald-600 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-600 text-slate-700 dark:text-slate-200 hover:text-white flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 shadow-md shadow-slate-200/50 dark:shadow-none cursor-pointer"
             >
               <ChevronRight className="h-5 w-5" />
